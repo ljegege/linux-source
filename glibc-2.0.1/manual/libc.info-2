@@ -1,0 +1,1202 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: Header Files,  Next: Macro Definitions,  Up: Using the Library
+
+Header Files
+------------
+
+   Libraries for use by C programs really consist of two parts: "header
+files" that define types and macros and declare variables and
+functions; and the actual library or "archive" that contains the
+definitions of the variables and functions.
+
+   (Recall that in C, a "declaration" merely provides information that
+a function or variable exists and gives its type.  For a function
+declaration, information about the types of its arguments might be
+provided as well.  The purpose of declarations is to allow the compiler
+to correctly process references to the declared variables and functions.
+A "definition", on the other hand, actually allocates storage for a
+variable or says what a function does.)
+
+   In order to use the facilities in the GNU C library, you should be
+sure that your program source files include the appropriate header
+files.  This is so that the compiler has declarations of these
+facilities available and can correctly process references to them.
+Once your program has been compiled, the linker resolves these
+references to the actual definitions provided in the archive file.
+
+   Header files are included into a program source file by the
+`#include' preprocessor directive.  The C language supports two forms
+of this directive; the first,
+
+     #include "HEADER"
+
+is typically used to include a header file HEADER that you write
+yourself; this would contain definitions and declarations describing the
+interfaces between the different parts of your particular application.
+By contrast,
+
+     #include <file.h>
+
+is typically used to include a header file `file.h' that contains
+definitions and declarations for a standard library.  This file would
+normally be installed in a standard place by your system administrator.
+You should use this second form for the C library header files.
+
+   Typically, `#include' directives are placed at the top of the C
+source file, before any other code.  If you begin your source files with
+some comments explaining what the code in the file does (a good idea),
+put the `#include' directives immediately afterwards, following the
+feature test macro definition (*note Feature Test Macros::.).
+
+   For more information about the use of header files and `#include'
+directives, *note Header Files: (cpp.info)Header Files..
+
+   The GNU C library provides several header files, each of which
+contains the type and macro definitions and variable and function
+declarations for a group of related facilities.  This means that your
+programs may need to include several header files, depending on exactly
+which facilities you are using.
+
+   Some library header files include other library header files
+automatically.  However, as a matter of programming style, you should
+not rely on this; it is better to explicitly include all the header
+files required for the library facilities you are using.  The GNU C
+library header files have been written in such a way that it doesn't
+matter if a header file is accidentally included more than once;
+including a header file a second time has no effect.  Likewise, if your
+program needs to include multiple header files, the order in which they
+are included doesn't matter.
+
+   *Compatibility Note:* Inclusion of standard header files in any
+order and any number of times works in any ISO C implementation.
+However, this has traditionally not been the case in many older C
+implementations.
+
+   Strictly speaking, you don't *have to* include a header file to use
+a function it declares; you could declare the function explicitly
+yourself, according to the specifications in this manual.  But it is
+usually better to include the header file because it may define types
+and macros that are not otherwise available and because it may define
+more efficient macro replacements for some functions.  It is also a sure
+way to have the correct declaration.
+
+
+File: libc.info,  Node: Macro Definitions,  Next: Reserved Names,  Prev: Header Files,  Up: Using the Library
+
+Macro Definitions of Functions
+------------------------------
+
+   If we describe something as a function in this manual, it may have a
+macro definition as well.  This normally has no effect on how your
+program runs--the macro definition does the same thing as the function
+would.  In particular, macro equivalents for library functions evaluate
+arguments exactly once, in the same way that a function call would.  The
+main reason for these macro definitions is that sometimes they can
+produce an inline expansion that is considerably faster than an actual
+function call.
+
+   Taking the address of a library function works even if it is also
+defined as a macro.  This is because, in this context, the name of the
+function isn't followed by the left parenthesis that is syntactically
+necessary to recognize a macro call.
+
+   You might occasionally want to avoid using the macro definition of a
+function--perhaps to make your program easier to debug.  There are two
+ways you can do this:
+
+   * You can avoid a macro definition in a specific use by enclosing
+     the name of the function in parentheses.  This works because the
+     name of the function doesn't appear in a syntactic context where
+     it is recognizable as a macro call.
+
+   * You can suppress any macro definition for a whole source file by
+     using the `#undef' preprocessor directive, unless otherwise stated
+     explicitly in the description of that facility.
+
+   For example, suppose the header file `stdlib.h' declares a function
+named `abs' with
+
+     extern int abs (int);
+
+and also provides a macro definition for `abs'.  Then, in:
+
+     #include <stdlib.h>
+     int f (int *i) { return (abs (++*i)); }
+
+the reference to `abs' might refer to either a macro or a function.  On
+the other hand, in each of the following examples the reference is to a
+function and not a macro.
+
+     #include <stdlib.h>
+     int g (int *i) { return ((abs)(++*i)); }
+     
+     #undef abs
+     int h (int *i) { return (abs (++*i)); }
+
+   Since macro definitions that double for a function behave in exactly
+the same way as the actual function version, there is usually no need
+for any of these methods.  In fact, removing macro definitions usually
+just makes your program slower.
+
+
+File: libc.info,  Node: Reserved Names,  Next: Feature Test Macros,  Prev: Macro Definitions,  Up: Using the Library
+
+Reserved Names
+--------------
+
+   The names of all library types, macros, variables and functions that
+come from the ISO C standard are reserved unconditionally; your program
+*may not* redefine these names.  All other library names are reserved
+if your program explicitly includes the header file that defines or
+declares them.  There are several reasons for these restrictions:
+
+   * Other people reading your code could get very confused if you were
+     using a function named `exit' to do something completely different
+     from what the standard `exit' function does, for example.
+     Preventing this situation helps to make your programs easier to
+     understand and contributes to modularity and maintainability.
+
+   * It avoids the possibility of a user accidentally redefining a
+     library function that is called by other library functions.  If
+     redefinition were allowed, those other functions would not work
+     properly.
+
+   * It allows the compiler to do whatever special optimizations it
+     pleases on calls to these functions, without the possibility that
+     they may have been redefined by the user.  Some library
+     facilities, such as those for dealing with variadic arguments
+     (*note Variadic Functions::.) and non-local exits (*note Non-Local
+     Exits::.), actually require a considerable amount of cooperation
+     on the part of the C compiler, and implementationally it might be
+     easier for the compiler to treat these as built-in parts of the
+     language.
+
+   In addition to the names documented in this manual, reserved names
+include all external identifiers (global functions and variables) that
+begin with an underscore (`_') and all identifiers regardless of use
+that begin with either two underscores or an underscore followed by a
+capital letter are reserved names.  This is so that the library and
+header files can define functions, variables, and macros for internal
+purposes without risk of conflict with names in user programs.
+
+   Some additional classes of identifier names are reserved for future
+extensions to the C language or the POSIX.1 environment.  While using
+these names for your own purposes right now might not cause a problem,
+they do raise the possibility of conflict with future versions of the C
+or POSIX standards, so you should avoid these names.
+
+   * Names beginning with a capital `E' followed a digit or uppercase
+     letter may be used for additional error code names.  *Note Error
+     Reporting::.
+
+   * Names that begin with either `is' or `to' followed by a lowercase
+     letter may be used for additional character testing and conversion
+     functions.  *Note Character Handling::.
+
+   * Names that begin with `LC_' followed by an uppercase letter may be
+     used for additional macros specifying locale attributes.  *Note
+     Locales::.
+
+   * Names of all existing mathematics functions (*note Mathematics::.)
+     suffixed with `f' or `l' are reserved for corresponding functions
+     that operate on `float' and `long double' arguments, respectively.
+
+   * Names that begin with `SIG' followed by an uppercase letter are
+     reserved for additional signal names.  *Note Standard Signals::.
+
+   * Names that begin with `SIG_' followed by an uppercase letter are
+     reserved for additional signal actions.  *Note Basic Signal
+     Handling::.
+
+   * Names beginning with `str', `mem', or `wcs' followed by a
+     lowercase letter are reserved for additional string and array
+     functions.  *Note String and Array Utilities::.
+
+   * Names that end with `_t' are reserved for additional type names.
+
+   In addition, some individual header files reserve names beyond those
+that they actually define.  You only need to worry about these
+restrictions if your program includes that particular header file.
+
+   * The header file `dirent.h' reserves names prefixed with `d_'.
+
+   * The header file `fcntl.h' reserves names prefixed with `l_', `F_',
+     `O_', and `S_'.
+
+   * The header file `grp.h' reserves names prefixed with `gr_'.
+
+   * The header file `limits.h' reserves names suffixed with `_MAX'.
+
+   * The header file `pwd.h' reserves names prefixed with `pw_'.
+
+   * The header file `signal.h' reserves names prefixed with `sa_' and
+     `SA_'.
+
+   * The header file `sys/stat.h' reserves names prefixed with `st_'
+     and `S_'.
+
+   * The header file `sys/times.h' reserves names prefixed with `tms_'.
+
+   * The header file `termios.h' reserves names prefixed with `c_',
+     `V', `I', `O', and `TC'; and names prefixed with `B' followed by a
+     digit.
+
+
+File: libc.info,  Node: Feature Test Macros,  Prev: Reserved Names,  Up: Using the Library
+
+Feature Test Macros
+-------------------
+
+   The exact set of features available when you compile a source file
+is controlled by which "feature test macros" you define.
+
+   If you compile your programs using `gcc -ansi', you get only the
+ISO C library features, unless you explicitly request additional
+features by defining one or more of the feature macros.  *Note GNU CC
+Command Options: (gcc.info)Invoking GCC, for more information about GCC
+options.
+
+   You should define these macros by using `#define' preprocessor
+directives at the top of your source code files.  These directives
+*must* come before any `#include' of a system header file.  It is best
+to make them the very first thing in the file, preceded only by
+comments.  You could also use the `-D' option to GCC, but it's better
+if you make the source files indicate their own meaning in a
+self-contained way.
+
+ - Macro: _POSIX_SOURCE
+     If you define this macro, then the functionality from the POSIX.1
+     standard (IEEE Standard 1003.1) is available, as well as all of the
+     ISO C facilities.
+
+ - Macro: _POSIX_C_SOURCE
+     If you define this macro with a value of `1', then the
+     functionality from the POSIX.1 standard (IEEE Standard 1003.1) is
+     made available.  If you define this macro with a value of `2',
+     then both the functionality from the POSIX.1 standard and the
+     functionality from the POSIX.2 standard (IEEE Standard 1003.2) are
+     made available.  This is in addition to the ISO C facilities.
+
+ - Macro: _BSD_SOURCE
+     If you define this macro, functionality derived from 4.3 BSD Unix
+     is included as well as the ISO C, POSIX.1, and POSIX.2 material.
+
+     Some of the features derived from 4.3 BSD Unix conflict with the
+     corresponding features specified by the POSIX.1 standard.  If this
+     macro is defined, the 4.3 BSD definitions take precedence over the
+     POSIX definitions.
+
+     Due to the nature of some of the conflicts between 4.3 BSD and
+     POSIX.1, you need to use a special "BSD compatibility library"
+     when linking programs compiled for BSD compatibility.  This is
+     because some functions must be defined in two different ways, one
+     of them in the normal C library, and one of them in the
+     compatibility library.  If your program defines `_BSD_SOURCE', you
+     must give the option `-lbsd-compat' to the compiler or linker when
+     linking the program, to tell it to find functions in this special
+     compatibility library before looking for them in the normal C
+     library.
+
+ - Macro: _SVID_SOURCE
+     If you define this macro, functionality derived from SVID is
+     included as well as the ISO C, POSIX.1, POSIX.2, and X/Open
+     material.
+
+ - Macro: _XOPEN_SOURCE
+     If you define this macro, functionality described in the X/Open
+     Portability Guide is included.  This is a superset of the POSIX.1
+     and POSIX.2 functionality and in fact `_POSIX_SOURCE' and
+     `_POSIX_C_SOURCE' are automatically defined.
+
+     As the unification of all Unices, functionality only available in
+     BSD and SVID is also included.
+
+     If the macro `_XOPEN_SOURCE_EXTENDED' is also defined, even more
+     functionality is available.  The extra functions will make all
+     functions available which are necessary for the X/Open Unix brand.
+
+ - Macro: _GNU_SOURCE
+     If you define this macro, everything is included: ISO C, POSIX.1,
+     POSIX.2, BSD, SVID, X/Open, and GNU extensions.  In the cases where
+     POSIX.1 conflicts with BSD, the POSIX definitions take precedence.
+
+     If you want to get the full effect of `_GNU_SOURCE' but make the
+     BSD definitions take precedence over the POSIX definitions, use
+     this sequence of definitions:
+
+          #define _GNU_SOURCE
+          #define _BSD_SOURCE
+          #define _SVID_SOURCE
+
+     Note that if you do this, you must link your program with the BSD
+     compatibility library by passing the `-lbsd-compat' option to the
+     compiler or linker.  *Note:* If you forget to do this, you may get
+     very strange errors at run time.
+
+ - Macro: _REENTRANT
+ - Macro: _THREAD_SAFE
+     If you define one of these macros, reentrant versions of several
+     functions get declared.  Some of the functions are specified in
+     POSIX.1c but many others are only available on a few other systems
+     or are unique to GNU libc.  The problem is that the
+     standardization of the thread safe C library interface still is
+     behind.
+
+     Unlike on some other systems no special version of the C library
+     must be used for linking.  There is only one version but while
+     compiling this it must have been specified to compile as thread
+     safe.
+
+   We recommend you use `_GNU_SOURCE' in new programs.  If you don't
+specify the `-ansi' option to GCC and don't define any of these macros
+explicitly, the effect is the same as defining `_POSIX_C_SOURCE' to 2
+and `_POSIX_SOURCE', `_SVID_SOURCE', and `_BSD_SOURCE' to 1.
+
+   When you define a feature test macro to request a larger class of
+features, it is harmless to define in addition a feature test macro for
+a subset of those features.  For example, if you define
+`_POSIX_C_SOURCE', then defining `_POSIX_SOURCE' as well has no effect.
+Likewise, if you define `_GNU_SOURCE', then defining either
+`_POSIX_SOURCE' or `_POSIX_C_SOURCE' or `_SVID_SOURCE' as well has no
+effect.
+
+   Note, however, that the features of `_BSD_SOURCE' are not a subset of
+any of the other feature test macros supported.  This is because it
+defines BSD features that take precedence over the POSIX features that
+are requested by the other macros.  For this reason, defining
+`_BSD_SOURCE' in addition to the other feature test macros does have an
+effect: it causes the BSD features to take priority over the conflicting
+POSIX features.
+
+
+File: libc.info,  Node: Roadmap to the Manual,  Prev: Using the Library,  Up: Introduction
+
+Roadmap to the Manual
+=====================
+
+   Here is an overview of the contents of the remaining chapters of
+this manual.
+
+   * *Note Error Reporting::, describes how errors detected by the
+     library are reported.
+
+   * *Note Language Features::, contains information about library
+     support for standard parts of the C language, including things
+     like the `sizeof' operator and the symbolic constant `NULL', how
+     to write functions accepting variable numbers of arguments, and
+     constants describing the ranges and other properties of the
+     numerical types.  There is also a simple debugging mechanism which
+     allows you to put assertions in your code, and have diagnostic
+     messages printed if the tests fail.
+
+   * *Note Memory Allocation::, describes the GNU library's facilities
+     for dynamic allocation of storage.  If you do not know in advance
+     how much storage your program needs, you can allocate it
+     dynamically instead, and manipulate it via pointers.
+
+   * *Note Character Handling::, contains information about character
+     classification functions (such as `isspace') and functions for
+     performing case conversion.
+
+   * *Note String and Array Utilities::, has descriptions of functions
+     for manipulating strings (null-terminated character arrays) and
+     general byte arrays, including operations such as copying and
+     comparison.
+
+   * *Note I/O Overview::, gives an overall look at the input and output
+     facilities in the library, and contains information about basic
+     concepts such as file names.
+
+   * *Note I/O on Streams::, describes I/O operations involving streams
+     (or `FILE *' objects).  These are the normal C library functions
+     from `stdio.h'.
+
+   * *Note Low-Level I/O::, contains information about I/O operations
+     on file descriptors.  File descriptors are a lower-level mechanism
+     specific to the Unix family of operating systems.
+
+   * *Note File System Interface::, has descriptions of operations on
+     entire files, such as functions for deleting and renaming them and
+     for creating new directories.  This chapter also contains
+     information about how you can access the attributes of a file,
+     such as its owner and file protection modes.
+
+   * *Note Pipes and FIFOs::, contains information about simple
+     interprocess communication mechanisms.  Pipes allow communication
+     between two related processes (such as between a parent and
+     child), while FIFOs allow communication between processes sharing
+     a common file system on the same machine.
+
+   * *Note Sockets::, describes a more complicated interprocess
+     communication mechanism that allows processes running on different
+     machines to communicate over a network.  This chapter also
+     contains information about Internet host addressing and how to use
+     the system network databases.
+
+   * *Note Low-Level Terminal Interface::, describes how you can change
+     the attributes of a terminal device.  If you want to disable echo
+     of characters typed by the user, for example, read this chapter.
+
+   * *Note Mathematics::, contains information about the math library
+     functions.  These include things like random-number generators and
+     remainder functions on integers as well as the usual trigonometric
+     and exponential functions on floating-point numbers.
+
+   * *Note Low-Level Arithmetic Functions: Arithmetic, describes
+     functions for simple arithmetic, analysis of floating-point
+     values, and reading numbers from strings.
+
+   * *Note Searching and Sorting::, contains information about functions
+     for searching and sorting arrays.  You can use these functions on
+     any kind of array by providing an appropriate comparison function.
+
+   * *Note Pattern Matching::, presents functions for matching regular
+     expressions and shell file name patterns, and for expanding words
+     as the shell does.
+
+   * *Note Date and Time::, describes functions for measuring both
+     calendar time and CPU time, as well as functions for setting
+     alarms and timers.
+
+   * *Note Extended Characters::, contains information about
+     manipulating characters and strings using character sets larger
+     than will fit in the usual `char' data type.
+
+   * *Note Locales::, describes how selecting a particular country or
+     language affects the behavior of the library.  For example, the
+     locale affects collation sequences for strings and how monetary
+     values are formatted.
+
+   * *Note Non-Local Exits::, contains descriptions of the `setjmp' and
+     `longjmp' functions.  These functions provide a facility for
+     `goto'-like jumps which can jump from one function to another.
+
+   * *Note Signal Handling::, tells you all about signals--what they
+     are, how to establish a handler that is called when a particular
+     kind of signal is delivered, and how to prevent signals from
+     arriving during critical sections of your program.
+
+   * *Note Process Startup::, tells how your programs can access their
+     command-line arguments and environment variables.
+
+   * *Note Processes::, contains information about how to start new
+     processes and run programs.
+
+   * *Note Job Control::, describes functions for manipulating process
+     groups and the controlling terminal.  This material is probably
+     only of interest if you are writing a shell or other program which
+     handles job control specially.
+
+   * *Note Name Service Switch::, describes the services which are
+     available for looking up names in the system databases, how to
+     determine which service is used for which database, and how these
+     services are implemented so that contributors can design their own
+     services.
+
+   * *Note User Database::, and *Note Group Database::, tell you how to
+     access the system user and group databases.
+
+   * *Note System Information::, describes functions for getting
+     information about the hardware and software configuration your
+     program is executing under.
+
+   * *Note System Configuration::, tells you how you can get
+     information about various operating system limits.  Most of these
+     parameters are provided for compatibility with POSIX.
+
+   * *Note Library Summary::, gives a summary of all the functions,
+     variables, and macros in the library, with complete data types and
+     function prototypes, and says what standard or system each is
+     derived from.
+
+   * *Note Maintenance::, explains how to build and install the GNU C
+     library on your system, how to report any bugs you might find, and
+     how to add new functions or port the library to a new system.
+
+   If you already know the name of the facility you are interested in,
+you can look it up in *Note Library Summary::.  This gives you a
+summary of its syntax and a pointer to where you can find a more
+detailed description.  This appendix is particularly useful if you just
+want to verify the order and type of arguments to a function, for
+example.  It also tells you what standard or system each function,
+variable, or macro is derived from.
+
+
+File: libc.info,  Node: Error Reporting,  Next: Memory Allocation,  Prev: Introduction,  Up: Top
+
+Error Reporting
+***************
+
+   Many functions in the GNU C library detect and report error
+conditions, and sometimes your programs need to check for these error
+conditions.  For example, when you open an input file, you should
+verify that the file was actually opened correctly, and print an error
+message or take other appropriate action if the call to the library
+function failed.
+
+   This chapter describes how the error reporting facility works.  Your
+program should include the header file `errno.h' to use this facility.
+
+* Menu:
+
+* Checking for Errors::         How errors are reported by library functions.
+* Error Codes::                 Error code macros; all of these expand
+                                 into integer constant values.
+* Error Messages::              Mapping error codes onto error messages.
+
+
+File: libc.info,  Node: Checking for Errors,  Next: Error Codes,  Up: Error Reporting
+
+Checking for Errors
+===================
+
+   Most library functions return a special value to indicate that they
+have failed.  The special value is typically `-1', a null pointer, or a
+constant such as `EOF' that is defined for that purpose.  But this
+return value tells you only that an error has occurred.  To find out
+what kind of error it was, you need to look at the error code stored in
+the variable `errno'.  This variable is declared in the header file
+`errno.h'.
+
+ - Variable: volatile int errno
+     The variable `errno' contains the system error number.  You can
+     change the value of `errno'.
+
+     Since `errno' is declared `volatile', it might be changed
+     asynchronously by a signal handler; see *Note Defining Handlers::.
+     However, a properly written signal handler saves and restores the
+     value of `errno', so you generally do not need to worry about this
+     possibility except when writing signal handlers.
+
+     The initial value of `errno' at program startup is zero.  Many
+     library functions are guaranteed to set it to certain nonzero
+     values when they encounter certain kinds of errors.  These error
+     conditions are listed for each function.  These functions do not
+     change `errno' when they succeed; thus, the value of `errno' after
+     a successful call is not necessarily zero, and you should not use
+     `errno' to determine *whether* a call failed.  The proper way to
+     do that is documented for each function.  *If* the call the
+     failed, you can examine `errno'.
+
+     Many library functions can set `errno' to a nonzero value as a
+     result of calling other library functions which might fail.  You
+     should assume that any library function might alter `errno' when
+     the function returns an error.
+
+     *Portability Note:* ISO C specifies `errno' as a "modifiable
+     lvalue" rather than as a variable, permitting it to be implemented
+     as a macro.  For example, its expansion might involve a function
+     call, like `*_errno ()'.  In fact, that is what it is on the GNU
+     system itself.  The GNU library, on non-GNU systems, does whatever
+     is right for the particular system.
+
+     There are a few library functions, like `sqrt' and `atan', that
+     return a perfectly legitimate value in case of an error, but also
+     set `errno'.  For these functions, if you want to check to see
+     whether an error occurred, the recommended method is to set `errno'
+     to zero before calling the function, and then check its value
+     afterward.
+
+   All the error codes have symbolic names; they are macros defined in
+`errno.h'.  The names start with `E' and an upper-case letter or digit;
+you should consider names of this form to be reserved names.  *Note
+Reserved Names::.
+
+   The error code values are all positive integers and are all distinct,
+with one exception: `EWOULDBLOCK' and `EAGAIN' are the same.  Since the
+values are distinct, you can use them as labels in a `switch'
+statement; just don't use both `EWOULDBLOCK' and `EAGAIN'.  Your
+program should not make any other assumptions about the specific values
+of these symbolic constants.
+
+   The value of `errno' doesn't necessarily have to correspond to any
+of these macros, since some library functions might return other error
+codes of their own for other situations.  The only values that are
+guaranteed to be meaningful for a particular library function are the
+ones that this manual lists for that function.
+
+   On non-GNU systems, almost any system call can return `EFAULT' if it
+is given an invalid pointer as an argument.  Since this could only
+happen as a result of a bug in your program, and since it will not
+happen on the GNU system, we have saved space by not mentioning
+`EFAULT' in the descriptions of individual functions.
+
+   In some Unix systems, many system calls can also return `EFAULT' if
+given as an argument a pointer into the stack, and the kernel for some
+obscure reason fails in its attempt to extend the stack.  If this ever
+happens, you should probably try using statically or dynamically
+allocated memory instead of stack memory on that system.
+
+
+File: libc.info,  Node: Error Codes,  Next: Error Messages,  Prev: Checking for Errors,  Up: Error Reporting
+
+Error Codes
+===========
+
+   The error code macros are defined in the header file `errno.h'.  All
+of them expand into integer constant values.  Some of these error codes
+can't occur on the GNU system, but they can occur using the GNU library
+on other systems.
+
+ - Macro: int EPERM
+     Operation not permitted; only the owner of the file (or other
+     resource) or processes with special privileges can perform the
+     operation.
+
+ - Macro: int ENOENT
+     No such file or directory.  This is a "file doesn't exist" error
+     for ordinary files that are referenced in contexts where they are
+     expected to already exist.
+
+ - Macro: int ESRCH
+     No process matches the specified process ID.
+
+ - Macro: int EINTR
+     Interrupted function call; an asynchronous signal occurred and
+     prevented completion of the call.  When this happens, you should
+     try the call again.
+
+     You can choose to have functions resume after a signal that is
+     handled, rather than failing with `EINTR'; see *Note Interrupted
+     Primitives::.
+
+ - Macro: int EIO
+     Input/output error; usually used for physical read or write errors.
+
+ - Macro: int ENXIO
+     No such device or address.  The system tried to use the device
+     represented by a file you specified, and it couldn't find the
+     device.  This can mean that the device file was installed
+     incorrectly, or that the physical device is missing or not
+     correctly attached to the computer.
+
+ - Macro: int E2BIG
+     Argument list too long; used when the arguments passed to a new
+     program being executed with one of the `exec' functions (*note
+     Executing a File::.) occupy too much memory space.  This condition
+     never arises in the GNU system.
+
+ - Macro: int ENOEXEC
+     Invalid executable file format.  This condition is detected by the
+     `exec' functions; see *Note Executing a File::.
+
+ - Macro: int EBADF
+     Bad file descriptor; for example, I/O on a descriptor that has been
+     closed or reading from a descriptor open only for writing (or vice
+     versa).
+
+ - Macro: int ECHILD
+     There are no child processes.  This error happens on operations
+     that are supposed to manipulate child processes, when there aren't
+     any processes to manipulate.
+
+ - Macro: int EDEADLK
+     Deadlock avoided; allocating a system resource would have resulted
+     in a deadlock situation.  The system does not guarantee that it
+     will notice all such situations.  This error means you got lucky
+     and the system noticed; it might just hang.  *Note File Locks::,
+     for an example.
+
+ - Macro: int ENOMEM
+     No memory available.  The system cannot allocate more virtual
+     memory because its capacity is full.
+
+ - Macro: int EACCES
+     Permission denied; the file permissions do not allow the attempted
+     operation.
+
+ - Macro: int EFAULT
+     Bad address; an invalid pointer was detected.  In the GNU system,
+     this error never happens; you get a signal instead.
+
+ - Macro: int ENOTBLK
+     A file that isn't a block special file was given in a situation
+     that requires one.  For example, trying to mount an ordinary file
+     as a file system in Unix gives this error.
+
+ - Macro: int EBUSY
+     Resource busy; a system resource that can't be shared is already
+     in use.  For example, if you try to delete a file that is the root
+     of a currently mounted filesystem, you get this error.
+
+ - Macro: int EEXIST
+     File exists; an existing file was specified in a context where it
+     only makes sense to specify a new file.
+
+ - Macro: int EXDEV
+     An attempt to make an improper link across file systems was
+     detected.  This happens not only when you use `link' (*note Hard
+     Links::.) but also when you rename a file with `rename' (*note
+     Renaming Files::.).
+
+ - Macro: int ENODEV
+     The wrong type of device was given to a function that expects a
+     particular sort of device.
+
+ - Macro: int ENOTDIR
+     A file that isn't a directory was specified when a directory is
+     required.
+
+ - Macro: int EISDIR
+     File is a directory; you cannot open a directory for writing, or
+     create or remove hard links to it.
+
+ - Macro: int EINVAL
+     Invalid argument.  This is used to indicate various kinds of
+     problems with passing the wrong argument to a library function.
+
+ - Macro: int EMFILE
+     The current process has too many files open and can't open any
+     more.  Duplicate descriptors do count toward this limit.
+
+     In BSD and GNU, the number of open files is controlled by a
+     resource limit that can usually be increased.  If you get this
+     error, you might want to increase the `RLIMIT_NOFILE' limit or
+     make it unlimited; *note Limits on Resources::..
+
+ - Macro: int ENFILE
+     There are too many distinct file openings in the entire system.
+     Note that any number of linked channels count as just one file
+     opening; see *Note Linked Channels::.  This error never occurs in
+     the GNU system.
+
+ - Macro: int ENOTTY
+     Inappropriate I/O control operation, such as trying to set terminal
+     modes on an ordinary file.
+
+ - Macro: int ETXTBSY
+     An attempt to execute a file that is currently open for writing, or
+     write to a file that is currently being executed.  Often using a
+     debugger to run a program is considered having it open for writing
+     and will cause this error.  (The name stands for "text file
+     busy".)  This is not an error in the GNU system; the text is
+     copied as necessary.
+
+ - Macro: int EFBIG
+     File too big; the size of a file would be larger than allowed by
+     the system.
+
+ - Macro: int ENOSPC
+     No space left on device; write operation on a file failed because
+     the disk is full.
+
+ - Macro: int ESPIPE
+     Invalid seek operation (such as on a pipe).
+
+ - Macro: int EROFS
+     An attempt was made to modify something on a read-only file system.
+
+ - Macro: int EMLINK
+     Too many links; the link count of a single file would become too
+     large.  `rename' can cause this error if the file being renamed
+     already has as many links as it can take (*note Renaming Files::.).
+
+ - Macro: int EPIPE
+     Broken pipe; there is no process reading from the other end of a
+     pipe.  Every library function that returns this error code also
+     generates a `SIGPIPE' signal; this signal terminates the program
+     if not handled or blocked.  Thus, your program will never actually
+     see `EPIPE' unless it has handled or blocked `SIGPIPE'.
+
+ - Macro: int EDOM
+     Domain error; used by mathematical functions when an argument
+     value does not fall into the domain over which the function is
+     defined.
+
+ - Macro: int ERANGE
+     Range error; used by mathematical functions when the result value
+     is not representable because of overflow or underflow.
+
+ - Macro: int EAGAIN
+     Resource temporarily unavailable; the call might work if you try
+     again later.  The macro `EWOULDBLOCK' is another name for `EAGAIN';
+     they are always the same in the GNU C library.
+
+     This error can happen in a few different situations:
+
+        * An operation that would block was attempted on an object that
+          has non-blocking mode selected.  Trying the same operation
+          again will block until some external condition makes it
+          possible to read, write, or connect (whatever the operation).
+          You can use `select' to find out when the operation will be
+          possible; *note Waiting for I/O::..
+
+          *Portability Note:* In older Unix many systems, this condition
+          was indicated by `EWOULDBLOCK', which was a distinct error
+          code different from `EAGAIN'.  To make your program portable,
+          you should check for both codes and treat them the same.
+
+        * A temporary resource shortage made an operation impossible.
+          `fork' can return this error.  It indicates that the shortage
+          is expected to pass, so your program can try the call again
+          later and it may succeed.  It is probably a good idea to
+          delay for a few seconds before trying it again, to allow time
+          for other processes to release scarce resources.  Such
+          shortages are usually fairly serious and affect the whole
+          system, so usually an interactive program should report the
+          error to the user and return to its command loop.
+
+ - Macro: int EWOULDBLOCK
+     In the GNU C library, this is another name for `EAGAIN' (above).
+     The values are always the same, on every operating system.
+
+     C libraries in many older Unix systems have `EWOULDBLOCK' as a
+     separate error code.
+
+ - Macro: int EINPROGRESS
+     An operation that cannot complete immediately was initiated on an
+     object that has non-blocking mode selected.  Some functions that
+     must always block (such as `connect'; *note Connecting::.) never
+     return `EAGAIN'.  Instead, they return `EINPROGRESS' to indicate
+     that the operation has begun and will take some time.  Attempts to
+     manipulate the object before the call completes return `EALREADY'.
+     You can use the `select' function to find out when the pending
+     operation has completed; *note Waiting for I/O::..
+
+ - Macro: int EALREADY
+     An operation is already in progress on an object that has
+     non-blocking mode selected.
+
+ - Macro: int ENOTSOCK
+     A file that isn't a socket was specified when a socket is required.
+
+ - Macro: int EMSGSIZE
+     The size of a message sent on a socket was larger than the
+     supported maximum size.
+
+ - Macro: int EPROTOTYPE
+     The socket type does not support the requested communications
+     protocol.
+
+ - Macro: int ENOPROTOOPT
+     You specified a socket option that doesn't make sense for the
+     particular protocol being used by the socket.  *Note Socket
+     Options::.
+
+ - Macro: int EPROTONOSUPPORT
+     The socket domain does not support the requested communications
+     protocol (perhaps because the requested protocol is completely
+     invalid.) *Note Creating a Socket::.
+
+ - Macro: int ESOCKTNOSUPPORT
+     The socket type is not supported.
+
+ - Macro: int EOPNOTSUPP
+     The operation you requested is not supported.  Some socket
+     functions don't make sense for all types of sockets, and others
+     may not be implemented for all communications protocols.  In the
+     GNU system, this error can happen for many calls when the object
+     does not support the particular operation; it is a generic
+     indication that the server knows nothing to do for that call.
+
+ - Macro: int EPFNOSUPPORT
+     The socket communications protocol family you requested is not
+     supported.
+
+ - Macro: int EAFNOSUPPORT
+     The address family specified for a socket is not supported; it is
+     inconsistent with the protocol being used on the socket.  *Note
+     Sockets::.
+
+ - Macro: int EADDRINUSE
+     The requested socket address is already in use.  *Note Socket
+     Addresses::.
+
+ - Macro: int EADDRNOTAVAIL
+     The requested socket address is not available; for example, you
+     tried to give a socket a name that doesn't match the local host
+     name.  *Note Socket Addresses::.
+
+ - Macro: int ENETDOWN
+     A socket operation failed because the network was down.
+
+ - Macro: int ENETUNREACH
+     A socket operation failed because the subnet containing the remote
+     host was unreachable.
+
+ - Macro: int ENETRESET
+     A network connection was reset because the remote host crashed.
+
+ - Macro: int ECONNABORTED
+     A network connection was aborted locally.
+
+ - Macro: int ECONNRESET
+     A network connection was closed for reasons outside the control of
+     the local host, such as by the remote machine rebooting or an
+     unrecoverable protocol violation.
+
+ - Macro: int ENOBUFS
+     The kernel's buffers for I/O operations are all in use.  In GNU,
+     this error is always synonymous with `ENOMEM'; you may get one or
+     the other from network operations.
+
+ - Macro: int EISCONN
+     You tried to connect a socket that is already connected.  *Note
+     Connecting::.
+
+ - Macro: int ENOTCONN
+     The socket is not connected to anything.  You get this error when
+     you try to transmit data over a socket, without first specifying a
+     destination for the data.  For a connectionless socket (for
+     datagram protocols, such as UDP), you get `EDESTADDRREQ' instead.
+
+ - Macro: int EDESTADDRREQ
+     No default destination address was set for the socket.  You get
+     this error when you try to transmit data over a connectionless
+     socket, without first specifying a destination for the data with
+     `connect'.
+
+ - Macro: int ESHUTDOWN
+     The socket has already been shut down.
+
+ - Macro: int ETOOMANYREFS
+     ???
+
+ - Macro: int ETIMEDOUT
+     A socket operation with a specified timeout received no response
+     during the timeout period.
+
+ - Macro: int ECONNREFUSED
+     A remote host refused to allow the network connection (typically
+     because it is not running the requested service).
+
+ - Macro: int ELOOP
+     Too many levels of symbolic links were encountered in looking up a
+     file name.  This often indicates a cycle of symbolic links.
+
+ - Macro: int ENAMETOOLONG
+     Filename too long (longer than `PATH_MAX'; *note Limits for
+     Files::.) or host name too long (in `gethostname' or
+     `sethostname'; *note Host Identification::.).
+
+ - Macro: int EHOSTDOWN
+     The remote host for a requested network connection is down.
+
+ - Macro: int EHOSTUNREACH
+     The remote host for a requested network connection is not
+     reachable.
+
+ - Macro: int ENOTEMPTY
+     Directory not empty, where an empty directory was expected.
+     Typically, this error occurs when you are trying to delete a
+     directory.
+
+ - Macro: int EPROCLIM
+     This means that the per-user limit on new process would be
+     exceeded by an attempted `fork'.  *Note Limits on Resources::, for
+     details on the `RLIMIT_NPROC' limit.
+
+ - Macro: int EUSERS
+     The file quota system is confused because there are too many users.
+
+ - Macro: int EDQUOT
+     The user's disk quota was exceeded.
+
+ - Macro: int ESTALE
+     Stale NFS file handle.  This indicates an internal confusion in
+     the NFS system which is due to file system rearrangements on the
+     server host.  Repairing this condition usually requires unmounting
+     and remounting the NFS file system on the local host.
+
+ - Macro: int EREMOTE
+     An attempt was made to NFS-mount a remote file system with a file
+     name that already specifies an NFS-mounted file.  (This is an
+     error on some operating systems, but we expect it to work properly
+     on the GNU system, making this error code impossible.)
+
+ - Macro: int EBADRPC
+     ???
+
+ - Macro: int ERPCMISMATCH
+     ???
+
+ - Macro: int EPROGUNAVAIL
+     ???
+
+ - Macro: int EPROGMISMATCH
+     ???
+
+ - Macro: int EPROCUNAVAIL
+     ???
+
+ - Macro: int ENOLCK
+     No locks available.  This is used by the file locking facilities;
+     see *Note File Locks::.  This error is never generated by the GNU
+     system, but it can result from an operation to an NFS server
+     running another operating system.
+
+ - Macro: int EFTYPE
+     Inappropriate file type or format.  The file was the wrong type
+     for the operation, or a data file had the wrong format.
+
+     On some systems `chmod' returns this error if you try to set the
+     sticky bit on a non-directory file; *note Setting Permissions::..
+
+ - Macro: int EAUTH
+     ???
+
+ - Macro: int ENEEDAUTH
+     ???
+
+ - Macro: int ENOSYS
+     Function not implemented.  Some functions have commands or options
+     defined that might not be supported in all implementations, and
+     this is the kind of error you get if you request them and they are
+     not supported.
+
+ - Macro: int EILSEQ
+     While decoding a multibyte character the function came along an
+     invalid or an incomplete sequence of bytes or the given wide
+     character is invalid.
+
+ - Macro: int EBACKGROUND
+     In the GNU system, servers supporting the `term' protocol return
+     this error for certain operations when the caller is not in the
+     foreground process group of the terminal.  Users do not usually
+     see this error because functions such as `read' and `write'
+     translate it into a `SIGTTIN' or `SIGTTOU' signal.  *Note Job
+     Control::, for information on process groups and these signals.
+
+ - Macro: int EDIED
+     In the GNU system, opening a file returns this error when the file
+     is translated by a program and the translator program dies while
+     starting up, before it has connected to the file.
+
+ - Macro: int ED
+     The experienced user will know what is wrong.
+
+ - Macro: int EGREGIOUS
+     You did *what*?
+
+ - Macro: int EIEIO
+     Go home and have a glass of warm, dairy-fresh milk.
+
+ - Macro: int EGRATUITOUS
+     This error code has no purpose.
+
+ - Macro: int EBADMSG
+
+ - Macro: int EIDRM
+
+ - Macro: int EMULTIHOP
+
+ - Macro: int ENODATA
+
+ - Macro: int ENOLINK
+
+ - Macro: int ENOMSG
+
+ - Macro: int ENOSR
+
+ - Macro: int ENOSTR
+
+ - Macro: int EOVERFLOW
+
+ - Macro: int EPROTO
+
+ - Macro: int ETIME
+
+   *The following error codes are defined by the Linux/i386 kernel.
+They are not yet documented.*
+
+ - Macro: int ERESTART
+
+ - Macro: int ECHRNG
+
+ - Macro: int EL2NSYNC
+
+ - Macro: int EL3HLT
+
+ - Macro: int EL3RST
+
+ - Macro: int ELNRNG
+
+ - Macro: int EUNATCH
+
+ - Macro: int ENOCSI
+
+ - Macro: int EL2HLT
+
+ - Macro: int EBADE
+
+ - Macro: int EBADR
+
+ - Macro: int EXFULL
+
+ - Macro: int ENOANO
+
+ - Macro: int EBADRQC
+
+ - Macro: int EBADSLT
+
+ - Macro: int EDEADLOCK
+
+ - Macro: int EBFONT
+
+ - Macro: int ENONET
+
+ - Macro: int ENOPKG
+
+ - Macro: int EADV
+
+ - Macro: int ESRMNT
+
+ - Macro: int ECOMM
+
+ - Macro: int EDOTDOT
+
+ - Macro: int ENOTUNIQ
+
+ - Macro: int EBADFD
+
+ - Macro: int EREMCHG
+
+ - Macro: int ELIBACC
+
+ - Macro: int ELIBBAD
+
+ - Macro: int ELIBSCN
+
+ - Macro: int ELIBMAX
+
+ - Macro: int ELIBEXEC
+
+ - Macro: int ESTRPIPE
+
+ - Macro: int EUCLEAN
+
+ - Macro: int ENOTNAM
+
+ - Macro: int ENAVAIL
+
+ - Macro: int EISNAM
+
+ - Macro: int EREMOTEIO
+

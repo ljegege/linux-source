@@ -1,0 +1,1220 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: Editing Characters,  Next: Signal Characters,  Up: Special Characters
+
+Characters for Input Editing
+............................
+
+   These special characters are active only in canonical input mode.
+*Note Canonical or Not::.
+
+ - Macro: int VEOF
+     This is the subscript for the EOF character in the special control
+     character array.  `TERMIOS.c_cc[VEOF]' holds the character itself.
+
+     The EOF character is recognized only in canonical input mode.  It
+     acts as a line terminator in the same way as a newline character,
+     but if the EOF character is typed at the beginning of a line it
+     causes `read' to return a byte count of zero, indicating
+     end-of-file.  The EOF character itself is discarded.
+
+     Usually, the EOF character is `C-d'.
+
+ - Macro: int VEOL
+     This is the subscript for the EOL character in the special control
+     character array.  `TERMIOS.c_cc[VEOL]' holds the character itself.
+
+     The EOL character is recognized only in canonical input mode.  It
+     acts as a line terminator, just like a newline character.  The EOL
+     character is not discarded; it is read as the last character in
+     the input line.
+
+     You don't need to use the EOL character to make <RET> end a line.
+     Just set the ICRNL flag.  In fact, this is the default state of
+     affairs.
+
+ - Macro: int VEOL2
+     This is the subscript for the EOL2 character in the special control
+     character array.  `TERMIOS.c_cc[VEOL2]' holds the character itself.
+
+     The EOL2 character works just like the EOL character (see above),
+     but it can be a different character.  Thus, you can specify two
+     characters to terminate an input line, by setting EOL to one of
+     them and EOL2 to the other.
+
+     The EOL2 character is a BSD extension; it exists only on BSD
+     systems and the GNU system.
+
+ - Macro: int VERASE
+     This is the subscript for the ERASE character in the special
+     control character array.  `TERMIOS.c_cc[VERASE]' holds the
+     character itself.
+
+     The ERASE character is recognized only in canonical input mode.
+     When the user types the erase character, the previous character
+     typed is discarded.  (If the terminal generates multibyte
+     character sequences, this may cause more than one byte of input to
+     be discarded.)  This cannot be used to erase past the beginning of
+     the current line of text.  The ERASE character itself is discarded.
+
+     Usually, the ERASE character is <DEL>.
+
+ - Macro: int VWERASE
+     This is the subscript for the WERASE character in the special
+     control character array.  `TERMIOS.c_cc[VWERASE]' holds the
+     character itself.
+
+     The WERASE character is recognized only in canonical mode.  It
+     erases an entire word of prior input, and any whitespace after it;
+     whitespace characters before the word are not erased.
+
+     The definition of a "word" depends on the setting of the
+     `ALTWERASE' mode; *note Local Modes::..
+
+     If the `ALTWERASE' mode is not set, a word is defined as a sequence
+     of any characters except space or tab.
+
+     If the `ALTWERASE' mode is set, a word is defined as a sequence of
+     characters containing only letters, numbers, and underscores,
+     optionally followed by one character that is not a letter, number,
+     or underscore.
+
+     The WERASE character is usually `C-w'.
+
+     This is a BSD extension.
+
+ - Macro: int VKILL
+     This is the subscript for the KILL character in the special control
+     character array.  `TERMIOS.c_cc[VKILL]' holds the character itself.
+
+     The KILL character is recognized only in canonical input mode.
+     When the user types the kill character, the entire contents of the
+     current line of input are discarded.  The kill character itself is
+     discarded too.
+
+     The KILL character is usually `C-u'.
+
+ - Macro: int VREPRINT
+     This is the subscript for the REPRINT character in the special
+     control character array.  `TERMIOS.c_cc[VREPRINT]' holds the
+     character itself.
+
+     The REPRINT character is recognized only in canonical mode.  It
+     reprints the current input line.  If some asynchronous output has
+     come while you are typing, this lets you see the line you are
+     typing clearly again.
+
+     The REPRINT character is usually `C-r'.
+
+     This is a BSD extension.
+
+
+File: libc.info,  Node: Signal Characters,  Next: Start/Stop Characters,  Prev: Editing Characters,  Up: Special Characters
+
+Characters that Cause Signals
+.............................
+
+   These special characters may be active in either canonical or
+noncanonical input mode, but only when the `ISIG' flag is set (*note
+Local Modes::.).
+
+ - Macro: int VINTR
+     This is the subscript for the INTR character in the special control
+     character array.  `TERMIOS.c_cc[VINTR]' holds the character itself.
+
+     The INTR (interrupt) character raises a `SIGINT' signal for all
+     processes in the foreground job associated with the terminal.  The
+     INTR character itself is then discarded.  *Note Signal Handling::,
+     for more information about signals.
+
+     Typically, the INTR character is `C-c'.
+
+ - Macro: int VQUIT
+     This is the subscript for the QUIT character in the special control
+     character array.  `TERMIOS.c_cc[VQUIT]' holds the character itself.
+
+     The QUIT character raises a `SIGQUIT' signal for all processes in
+     the foreground job associated with the terminal.  The QUIT
+     character itself is then discarded.  *Note Signal Handling::, for
+     more information about signals.
+
+     Typically, the QUIT character is `C-\'.
+
+ - Macro: int VSUSP
+     This is the subscript for the SUSP character in the special control
+     character array.  `TERMIOS.c_cc[VSUSP]' holds the character itself.
+
+     The SUSP (suspend) character is recognized only if the
+     implementation supports job control (*note Job Control::.).  It
+     causes a `SIGTSTP' signal to be sent to all processes in the
+     foreground job associated with the terminal.  The SUSP character
+     itself is then discarded.  *Note Signal Handling::, for more
+     information about signals.
+
+     Typically, the SUSP character is `C-z'.
+
+   Few applications disable the normal interpretation of the SUSP
+character.  If your program does this, it should provide some other
+mechanism for the user to stop the job.  When the user invokes this
+mechanism, the program should send a `SIGTSTP' signal to the process
+group of the process, not just to the process itself.  *Note Signaling
+Another Process::.
+
+ - Macro: int VDSUSP
+     This is the subscript for the DSUSP character in the special
+     control character array.  `TERMIOS.c_cc[VDSUSP]' holds the
+     character itself.
+
+     The DSUSP (suspend) character is recognized only if the
+     implementation supports job control (*note Job Control::.).  It
+     sends a `SIGTSTP' signal, like the SUSP character, but not right
+     away--only when the program tries to read it as input.  Not all
+     systems with job control support DSUSP; only BSD-compatible
+     systems (including the GNU system).
+
+     *Note Signal Handling::, for more information about signals.
+
+     Typically, the DSUSP character is `C-y'.
+
+
+File: libc.info,  Node: Start/Stop Characters,  Next: Other Special,  Prev: Signal Characters,  Up: Special Characters
+
+Special Characters for Flow Control
+...................................
+
+   These special characters may be active in either canonical or
+noncanonical input mode, but their use is controlled by the flags
+`IXON' and `IXOFF' (*note Input Modes::.).
+
+ - Macro: int VSTART
+     This is the subscript for the START character in the special
+     control character array.  `TERMIOS.c_cc[VSTART]' holds the
+     character itself.
+
+     The START character is used to support the `IXON' and `IXOFF'
+     input modes.  If `IXON' is set, receiving a START character resumes
+     suspended output; the START character itself is discarded.  If
+     `IXANY' is set, receiving any character at all resumes suspended
+     output; the resuming character is not discarded unless it is the
+     START character.  `IXOFF' is set, the system may also transmit
+     START characters to the terminal.
+
+     The usual value for the START character is `C-q'.  You may not be
+     able to change this value--the hardware may insist on using `C-q'
+     regardless of what you specify.
+
+ - Macro: int VSTOP
+     This is the subscript for the STOP character in the special control
+     character array.  `TERMIOS.c_cc[VSTOP]' holds the character itself.
+
+     The STOP character is used to support the `IXON' and `IXOFF' input
+     modes.  If `IXON' is set, receiving a STOP character causes output
+     to be suspended; the STOP character itself is discarded.  If
+     `IXOFF' is set, the system may also transmit STOP characters to the
+     terminal, to prevent the input queue from overflowing.
+
+     The usual value for the STOP character is `C-s'.  You may not be
+     able to change this value--the hardware may insist on using `C-s'
+     regardless of what you specify.
+
+
+File: libc.info,  Node: Other Special,  Prev: Start/Stop Characters,  Up: Special Characters
+
+Other Special Characters
+........................
+
+   These special characters exist only in BSD systems and the GNU
+system.
+
+ - Macro: int VLNEXT
+     This is the subscript for the LNEXT character in the special
+     control character array.  `TERMIOS.c_cc[VLNEXT]' holds the
+     character itself.
+
+     The LNEXT character is recognized only when `IEXTEN' is set, but in
+     both canonical and noncanonical mode.  It disables any special
+     significance of the next character the user types.  Even if the
+     character would normally perform some editing function or generate
+     a signal, it is read as a plain character.  This is the analogue
+     of the `C-q' command in Emacs.  "LNEXT" stands for "literal next."
+
+     The LNEXT character is usually `C-v'.
+
+ - Macro: int VDISCARD
+     This is the subscript for the DISCARD character in the special
+     control character array.  `TERMIOS.c_cc[VDISCARD]' holds the
+     character itself.
+
+     The DISCARD character is recognized only when `IEXTEN' is set, but
+     in both canonical and noncanonical mode.  Its effect is to toggle
+     the discard-output flag.  When this flag is set, all program
+     output is discarded.  Setting the flag also discards all output
+     currently in the output buffer.  Typing any other character resets
+     the flag.
+
+ - Macro: int VSTATUS
+     This is the subscript for the STATUS character in the special
+     control character array.  `TERMIOS.c_cc[VSTATUS]' holds the
+     character itself.
+
+     The STATUS character's effect is to print out a status message
+     about how the current process is running.
+
+     The STATUS character is recognized only in canonical mode, and
+     only if `NOKERNINFO' is not set.
+
+
+File: libc.info,  Node: Noncanonical Input,  Prev: Special Characters,  Up: Terminal Modes
+
+Noncanonical Input
+------------------
+
+   In noncanonical input mode, the special editing characters such as
+ERASE and KILL are ignored.  The system facilities for the user to edit
+input are disabled in noncanonical mode, so that all input characters
+(unless they are special for signal or flow-control purposes) are passed
+to the application program exactly as typed.  It is up to the
+application program to give the user ways to edit the input, if
+appropriate.
+
+   Noncanonical mode offers special parameters called MIN and TIME for
+controlling whether and how long to wait for input to be available.  You
+can even use them to avoid ever waiting--to return immediately with
+whatever input is available, or with no input.
+
+   The MIN and TIME are stored in elements of the `c_cc' array, which
+is a member of the `struct termios' structure.  Each element of this
+array has a particular role, and each element has a symbolic constant
+that stands for the index of that element.  `VMIN' and `VMAX' are the
+names for the indices in the array of the MIN and TIME slots.
+
+ - Macro: int VMIN
+     This is the subscript for the MIN slot in the `c_cc' array.  Thus,
+     `TERMIOS.c_cc[VMIN]' is the value itself.
+
+     The MIN slot is only meaningful in noncanonical input mode; it
+     specifies the minimum number of bytes that must be available in the
+     input queue in order for `read' to return.
+
+ - Macro: int VTIME
+     This is the subscript for the TIME slot in the `c_cc' array.  Thus,
+     `TERMIOS.c_cc[VTIME]' is the value itself.
+
+     The TIME slot is only meaningful in noncanonical input mode; it
+     specifies how long to wait for input before returning, in units of
+     0.1 seconds.
+
+   The MIN and TIME values interact to determine the criterion for when
+`read' should return; their precise meanings depend on which of them
+are nonzero.  There are four possible cases:
+
+   * Both TIME and MIN are nonzero.
+
+     In this case, TIME specifies how long to wait after each input
+     character to see if more input arrives.  After the first character
+     received, `read' keeps waiting until either MIN bytes have arrived
+     in all, or TIME elapses with no further input.
+
+     `read' always blocks until the first character arrives, even if
+     TIME elapses first.  `read' can return more than MIN characters if
+     more than MIN happen to be in the queue.
+
+   * Both MIN and TIME are zero.
+
+     In this case, `read' always returns immediately with as many
+     characters as are available in the queue, up to the number
+     requested.  If no input is immediately available, `read' returns a
+     value of zero.
+
+   * MIN is zero but TIME has a nonzero value.
+
+     In this case, `read' waits for time TIME for input to become
+     available; the availability of a single byte is enough to satisfy
+     the read request and cause `read' to return.  When it returns, it
+     returns as many characters as are available, up to the number
+     requested.  If no input is available before the timer expires,
+     `read' returns a value of zero.
+
+   * TIME is zero but MIN has a nonzero value.
+
+     In this case, `read' waits until at least MIN bytes are available
+     in the queue.  At that time, `read' returns as many characters as
+     are available, up to the number requested.  `read' can return more
+     than MIN characters if more than MIN happen to be in the queue.
+
+   What happens if MIN is 50 and you ask to read just 10 bytes?
+Normally, `read' waits until there are 50 bytes in the buffer (or, more
+generally, the wait condition described above is satisfied), and then
+reads 10 of them, leaving the other 40 buffered in the operating system
+for a subsequent call to `read'.
+
+   *Portability note:* On some systems, the MIN and TIME slots are
+actually the same as the EOF and EOL slots.  This causes no serious
+problem because the MIN and TIME slots are used only in noncanonical
+input and the EOF and EOL slots are used only in canonical input, but it
+isn't very clean.  The GNU library allocates separate slots for these
+uses.
+
+ - Function: int cfmakeraw (struct termios *TERMIOS-P)
+     This function provides an easy way to set up `*TERMIOS-P' for what
+     has traditionally been called "raw mode" in BSD.  This uses
+     noncanonical input, and turns off most processing to give an
+     unmodified channel to the terminal.
+
+     It does exactly this:
+            TERMIOS-P->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP
+                                          |INLCR|IGNCR|ICRNL|IXON);
+            TERMIOS-P->c_oflag &= ~OPOST;
+            TERMIOS-P->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+            TERMIOS-P->c_cflag &= ~(CSIZE|PARENB);
+            TERMIOS-P->c_cflag |= CS8;
+
+
+File: libc.info,  Node: Line Control,  Next: Noncanon Example,  Prev: Terminal Modes,  Up: Low-Level Terminal Interface
+
+Line Control Functions
+======================
+
+   These functions perform miscellaneous control actions on terminal
+devices.  As regards terminal access, they are treated like doing
+output: if any of these functions is used by a background process on its
+controlling terminal, normally all processes in the process group are
+sent a `SIGTTOU' signal.  The exception is if the calling process
+itself is ignoring or blocking `SIGTTOU' signals, in which case the
+operation is performed and no signal is sent.  *Note Job Control::.
+
+ - Function: int tcsendbreak (int FILEDES, int DURATION)
+     This function generates a break condition by transmitting a stream
+     of zero bits on the terminal associated with the file descriptor
+     FILEDES.  The duration of the break is controlled by the DURATION
+     argument.  If zero, the duration is between 0.25 and 0.5 seconds.
+     The meaning of a nonzero value depends on the operating system.
+
+     This function does nothing if the terminal is not an asynchronous
+     serial data port.
+
+     The return value is normally zero.  In the event of an error, a
+     value of `-1' is returned.  The following `errno' error conditions
+     are defined for this function:
+
+    `EBADF'
+          The FILEDES is not a valid file descriptor.
+
+    `ENOTTY'
+          The FILEDES is not associated with a terminal device.
+
+ - Function: int tcdrain (int FILEDES)
+     The `tcdrain' function waits until all queued output to the
+     terminal FILEDES has been transmitted.
+
+     The return value is normally zero.  In the event of an error, a
+     value of `-1' is returned.  The following `errno' error conditions
+     are defined for this function:
+
+    `EBADF'
+          The FILEDES is not a valid file descriptor.
+
+    `ENOTTY'
+          The FILEDES is not associated with a terminal device.
+
+    `EINTR'
+          The operation was interrupted by delivery of a signal.  *Note
+          Interrupted Primitives::.
+
+ - Function: int tcflush (int FILEDES, int QUEUE)
+     The `tcflush' function is used to clear the input and/or output
+     queues associated with the terminal file FILEDES.  The QUEUE
+     argument specifies which queue(s) to clear, and can be one of the
+     following values:
+
+    `TCIFLUSH'
+          Clear any input data received, but not yet read.
+
+    `TCOFLUSH'
+          Clear any output data written, but not yet transmitted.
+
+    `TCIOFLUSH'
+          Clear both queued input and output.
+
+     The return value is normally zero.  In the event of an error, a
+     value of `-1' is returned.  The following `errno' error conditions
+     are defined for this function:
+
+    `EBADF'
+          The FILEDES is not a valid file descriptor.
+
+    `ENOTTY'
+          The FILEDES is not associated with a terminal device.
+
+    `EINVAL'
+          A bad value was supplied as the QUEUE argument.
+
+     It is unfortunate that this function is named `tcflush', because
+     the term "flush" is normally used for quite another
+     operation--waiting until all output is transmitted--and using it
+     for discarding input or output would be confusing.  Unfortunately,
+     the name `tcflush' comes from POSIX and we cannot change it.
+
+ - Function: int tcflow (int FILEDES, int ACTION)
+     The `tcflow' function is used to perform operations relating to
+     XON/XOFF flow control on the terminal file specified by FILEDES.
+
+     The ACTION argument specifies what operation to perform, and can
+     be one of the following values:
+
+    `TCOOFF'
+          Suspend transmission of output.
+
+    `TCOON'
+          Restart transmission of output.
+
+    `TCIOFF'
+          Transmit a STOP character.
+
+    `TCION'
+          Transmit a START character.
+
+     For more information about the STOP and START characters, see
+     *Note Special Characters::.
+
+     The return value is normally zero.  In the event of an error, a
+     value of `-1' is returned.  The following `errno' error conditions
+     are defined for this function:
+
+    `EBADF'
+          The FILEDES is not a valid file descriptor.
+
+    `ENOTTY'
+          The FILEDES is not associated with a terminal device.
+
+    `EINVAL'
+          A bad value was supplied as the ACTION argument.
+
+
+File: libc.info,  Node: Noncanon Example,  Prev: Line Control,  Up: Low-Level Terminal Interface
+
+Noncanonical Mode Example
+=========================
+
+   Here is an example program that shows how you can set up a terminal
+device to read single characters in noncanonical input mode, without
+echo.
+
+     #include <unistd.h>
+     #include <stdio.h>
+     #include <stdlib.h>
+     #include <termios.h>
+     
+     /* Use this variable to remember original terminal attributes. */
+     
+     struct termios saved_attributes;
+     
+     void
+     reset_input_mode (void)
+     {
+       tcsetattr (STDIN_FILENO, TCSANOW, &saved_attributes);
+     }
+     
+     void
+     set_input_mode (void)
+     {
+       struct termios tattr;
+       char *name;
+     
+       /* Make sure stdin is a terminal. */
+       if (!isatty (STDIN_FILENO))
+         {
+           fprintf (stderr, "Not a terminal.\n");
+           exit (EXIT_FAILURE);
+         }
+     
+       /* Save the terminal attributes so we can restore them later. */
+       tcgetattr (STDIN_FILENO, &saved_attributes);
+       atexit (reset_input_mode);
+     /* Set the funny terminal modes. */
+       tcgetattr (STDIN_FILENO, &tattr);
+       tattr.c_lflag &= ~(ICANON|ECHO); /* Clear ICANON and ECHO. */
+       tattr.c_cc[VMIN] = 1;
+       tattr.c_cc[VTIME] = 0;
+       tcsetattr (STDIN_FILENO, TCSAFLUSH, &tattr);
+     }
+     
+     int
+     main (void)
+     {
+       char c;
+     
+       set_input_mode ();
+     
+       while (1)
+         {
+           read (STDIN_FILENO, &c, 1);
+           if (c == '\004')          /* `C-d' */
+             break;
+           else
+             putchar (c);
+         }
+     
+       return EXIT_SUCCESS;
+     }
+
+   This program is careful to restore the original terminal modes before
+exiting or terminating with a signal.  It uses the `atexit' function
+(*note Cleanups on Exit::.) to make sure this is done by `exit'.
+
+   The shell is supposed to take care of resetting the terminal modes
+when a process is stopped or continued; see *Note Job Control::.  But
+some existing shells do not actually do this, so you may wish to
+establish handlers for job control signals that reset terminal modes.
+The above example does so.
+
+
+File: libc.info,  Node: Mathematics,  Next: Arithmetic,  Prev: Low-Level Terminal Interface,  Up: Top
+
+Mathematics
+***********
+
+   This chapter contains information about functions for performing
+mathematical computations, such as trigonometric functions.  Most of
+these functions have prototypes declared in the header file `math.h'.
+
+   All of the functions that operate on floating-point numbers accept
+arguments and return results of type `double'.  In the future, there
+may be additional functions that operate on `float' and `long double'
+values.  For example, `cosf' and `cosl' would be versions of the `cos'
+function that operate on `float' and `long double' arguments,
+respectively.  In the meantime, you should avoid using these names
+yourself.  *Note Reserved Names::.
+
+* Menu:
+
+* Domain and Range Errors::     Detecting overflow conditions and the like.
+* Trig Functions::              Sine, cosine, and tangent.
+* Inverse Trig Functions::      Arc sine, arc cosine, and arc tangent.
+* Exponents and Logarithms::    Also includes square root.
+* Hyperbolic Functions::        Hyperbolic sine and friends.
+* Pseudo-Random Numbers::       Functions for generating pseudo-random
+				 numbers.
+
+
+File: libc.info,  Node: Domain and Range Errors,  Next: Trig Functions,  Up: Mathematics
+
+Domain and Range Errors
+=======================
+
+   Many of the functions listed in this chapter are defined
+mathematically over a domain that is only a subset of real numbers.
+For example, the `acos' function is defined over the domain between
+`-1' and `1'.  If you pass an argument to one of these functions that is
+outside the domain over which it is defined, the function sets `errno'
+to `EDOM' to indicate a "domain error".  On machines that support
+IEEE 754 floating point, functions reporting error `EDOM' also return a
+NaN.
+
+   Some of these functions are defined mathematically to result in a
+complex value over parts of their domains.  The most familiar example of
+this is taking the square root of a negative number.  The functions in
+this chapter take only real arguments and return only real values;
+therefore, if the value ought to be nonreal, this is treated as a domain
+error.
+
+   A related problem is that the mathematical result of a function may
+not be representable as a floating point number.  If magnitude of the
+correct result is too large to be represented, the function sets
+`errno' to `ERANGE' to indicate a "range error", and returns a
+particular very large value (named by the macro `HUGE_VAL') or its
+negation (`- HUGE_VAL').
+
+   If the magnitude of the result is too small, a value of zero is
+returned instead.  In this case, `errno' might or might not be set to
+`ERANGE'.
+
+   The only completely reliable way to check for domain and range
+errors is to set `errno' to `0' before you call the mathematical
+function and test `errno' afterward.  As a consequence of this use of
+`errno', use of the mathematical functions is not reentrant if you
+check for errors.
+
+   None of the mathematical functions ever generates signals as a
+result of domain or range errors.  In particular, this means that you
+won't see `SIGFPE' signals generated within these functions.  (*Note
+Signal Handling::, for more information about signals.)
+
+ - Macro: double HUGE_VAL
+     An expression representing a particular very large number.  On
+     machines that use IEEE 754/IEEE 854 floating point format, the
+     value is "infinity".  On other machines, it's typically the
+     largest positive number that can be represented.
+
+     The value of this macro is used as the return value from various
+     mathematical `double' returning functions in overflow situations.
+
+ - Macro: float HUGE_VALf
+     This macro is similar to the `HUGE_VAL' macro except that it is
+     used by functions returning `float' values.
+
+     This macro is a GNU extension.
+
+ - Macro: long double HUGE_VALl
+     This macro is similar to the `HUGE_VAL' macro except that it is
+     used by functions returning `long double' values.  The value is
+     only different from `HUGE_VAL' if the architecture really supports
+     `long double' values.
+
+     This macro is a GNU extension.
+
+   For more information about floating-point representations and limits,
+see *Note Floating Point Parameters::.  In particular, the macro
+`DBL_MAX' might be more appropriate than `HUGE_VAL' for many uses other
+than testing for an error in a mathematical function.
+
+
+File: libc.info,  Node: Trig Functions,  Next: Inverse Trig Functions,  Prev: Domain and Range Errors,  Up: Mathematics
+
+Trigonometric Functions
+=======================
+
+   These are the familiar `sin', `cos', and `tan' functions.  The
+arguments to all of these functions are in units of radians; recall
+that pi radians equals 180 degrees.
+
+   The math library doesn't define a symbolic constant for pi, but you
+can define your own if you need one:
+
+     #define PI 3.14159265358979323846264338327
+
+You can also compute the value of pi with the expression `acos (-1.0)'.
+
+ - Function: double sin (double X)
+     This function returns the sine of X, where X is given in radians.
+     The return value is in the range `-1' to `1'.
+
+ - Function: double cos (double X)
+     This function returns the cosine of X, where X is given in
+     radians.  The return value is in the range `-1' to `1'.
+
+ - Function: double tan (double X)
+     This function returns the tangent of X, where X is given in
+     radians.
+
+     The following `errno' error conditions are defined for this
+     function:
+
+    `ERANGE'
+          Mathematically, the tangent function has singularities at odd
+          multiples of pi/2.  If the argument X is too close to one of
+          these singularities, `tan' sets `errno' to `ERANGE' and
+          returns either positive or negative `HUGE_VAL'.
+
+
+File: libc.info,  Node: Inverse Trig Functions,  Next: Exponents and Logarithms,  Prev: Trig Functions,  Up: Mathematics
+
+Inverse Trigonometric Functions
+===============================
+
+   These are the usual arc sine, arc cosine and arc tangent functions,
+which are the inverses of the sine, cosine and tangent functions,
+respectively.
+
+ - Function: double asin (double X)
+     This function computes the arc sine of X--that is, the value whose
+     sine is X.  The value is in units of radians.  Mathematically,
+     there are infinitely many such values; the one actually returned
+     is the one between `-pi/2' and `pi/2' (inclusive).
+
+     `asin' fails, and sets `errno' to `EDOM', if X is out of range.
+     The arc sine function is defined mathematically only over the
+     domain `-1' to `1'.
+
+ - Function: double acos (double X)
+     This function computes the arc cosine of X--that is, the value
+     whose cosine is X.  The value is in units of radians.
+     Mathematically, there are infinitely many such values; the one
+     actually returned is the one between `0' and `pi' (inclusive).
+
+     `acos' fails, and sets `errno' to `EDOM', if X is out of range.
+     The arc cosine function is defined mathematically only over the
+     domain `-1' to `1'.
+
+ - Function: double atan (double X)
+     This function computes the arc tangent of X--that is, the value
+     whose tangent is X.  The value is in units of radians.
+     Mathematically, there are infinitely many such values; the one
+     actually returned is the one between `-pi/2' and `pi/2'
+     (inclusive).
+
+ - Function: double atan2 (double Y, double X)
+     This is the two argument arc tangent function.  It is similar to
+     computing the arc tangent of Y/X, except that the signs of both
+     arguments are used to determine the quadrant of the result, and X
+     is permitted to be zero.  The return value is given in radians and
+     is in the range `-pi' to `pi', inclusive.
+
+     If X and Y are coordinates of a point in the plane, `atan2'
+     returns the signed angle between the line from the origin to that
+     point and the x-axis.  Thus, `atan2' is useful for converting
+     Cartesian coordinates to polar coordinates.  (To compute the
+     radial coordinate, use `hypot'; see *Note Exponents and
+     Logarithms::.)
+
+     The function `atan2' sets `errno' to `EDOM' if both X and Y are
+     zero; the return value is not defined in this case.
+
+
+File: libc.info,  Node: Exponents and Logarithms,  Next: Hyperbolic Functions,  Prev: Inverse Trig Functions,  Up: Mathematics
+
+Exponentiation and Logarithms
+=============================
+
+ - Function: double exp (double X)
+     The `exp' function returns the value of e (the base of natural
+     logarithms) raised to power X.
+
+     The function fails, and sets `errno' to `ERANGE', if the magnitude
+     of the result is too large to be representable.
+
+ - Function: double log (double X)
+     This function returns the natural logarithm of X.  `exp (log (X))'
+     equals X, exactly in mathematics and approximately in C.
+
+     The following `errno' error conditions are defined for this
+     function:
+
+    `EDOM'
+          The argument X is negative.  The log function is defined
+          mathematically to return a real result only on positive
+          arguments.
+
+    `ERANGE'
+          The argument is zero.  The log of zero is not defined.
+
+ - Function: double log10 (double X)
+     This function returns the base-10 logarithm of X.  Except for the
+     different base, it is similar to the `log' function.  In fact,
+     `log10 (X)' equals `log (X) / log (10)'.
+
+ - Function: double pow (double BASE, double POWER)
+     This is a general exponentiation function, returning BASE raised
+     to POWER.
+
+     The following `errno' error conditions are defined for this
+     function:
+
+    `EDOM'
+          The argument BASE is negative and POWER is not an integral
+          value.  Mathematically, the result would be a complex number
+          in this case.
+
+    `ERANGE'
+          An underflow or overflow condition was detected in the result.
+
+ - Function: double sqrt (double X)
+     This function returns the nonnegative square root of X.
+
+     The `sqrt' function fails, and sets `errno' to `EDOM', if X is
+     negative.  Mathematically, the square root would be a complex
+     number.
+
+ - Function: double cbrt (double X)
+     This function returns the cube root of X.  This function cannot
+     fail; every representable real value has a representable real cube
+     root.
+
+ - Function: double hypot (double X, double Y)
+     The `hypot' function returns `sqrt (X*X + Y*Y)'.  (This is the
+     length of the hypotenuse of a right triangle with sides of length
+     X and Y, or the distance of the point (X, Y) from the origin.)
+     See also the function `cabs' in *Note Absolute Value::.
+
+ - Function: double expm1 (double X)
+     This function returns a value equivalent to `exp (X) - 1'.  It is
+     computed in a way that is accurate even if the value of X is near
+     zero--a case where `exp (X) - 1' would be inaccurate due to
+     subtraction of two numbers that are nearly equal.
+
+ - Function: double log1p (double X)
+     This function returns a value equivalent to `log (1 + X)'.  It is
+     computed in a way that is accurate even if the value of X is near
+     zero.
+
+
+File: libc.info,  Node: Hyperbolic Functions,  Next: Pseudo-Random Numbers,  Prev: Exponents and Logarithms,  Up: Mathematics
+
+Hyperbolic Functions
+====================
+
+   The functions in this section are related to the exponential
+functions; see *Note Exponents and Logarithms::.
+
+ - Function: double sinh (double X)
+     The `sinh' function returns the hyperbolic sine of X, defined
+     mathematically as `exp (X) - exp (-X) / 2'.  The function fails,
+     and sets `errno' to `ERANGE', if the value of X is too large; that
+     is, if overflow occurs.
+
+ - Function: double cosh (double X)
+     The `cosh' function returns the hyperbolic cosine of X, defined
+     mathematically as `exp (X) + exp (-X) / 2'.  The function fails,
+     and sets `errno' to `ERANGE', if the value of X is too large; that
+     is, if overflow occurs.
+
+ - Function: double tanh (double X)
+     This function returns the hyperbolic tangent of X, whose
+     mathematical definition is `sinh (X) / cosh (X)'.
+
+ - Function: double asinh (double X)
+     This function returns the inverse hyperbolic sine of X--the value
+     whose hyperbolic sine is X.
+
+ - Function: double acosh (double X)
+     This function returns the inverse hyperbolic cosine of X--the
+     value whose hyperbolic cosine is X.  If X is less than `1',
+     `acosh' returns `HUGE_VAL'.
+
+ - Function: double atanh (double X)
+     This function returns the inverse hyperbolic tangent of X--the
+     value whose hyperbolic tangent is X.  If the absolute value of X
+     is greater than or equal to `1', `atanh' returns `HUGE_VAL'.
+
+
+File: libc.info,  Node: Pseudo-Random Numbers,  Prev: Hyperbolic Functions,  Up: Mathematics
+
+Pseudo-Random Numbers
+=====================
+
+   This section describes the GNU facilities for generating a series of
+pseudo-random numbers.  The numbers generated are not truly random;
+typically, they form a sequence that repeats periodically, with a
+period so large that you can ignore it for ordinary purposes.  The
+random number generator works by remembering at all times a "seed"
+value which it uses to compute the next random number and also to
+compute a new seed.
+
+   Although the generated numbers look unpredictable within one run of a
+program, the sequence of numbers is *exactly the same* from one run to
+the next.  This is because the initial seed is always the same.  This
+is convenient when you are debugging a program, but it is unhelpful if
+you want the program to behave unpredictably.  If you want truly random
+numbers, not just pseudo-random, specify a seed based on the current
+time.
+
+   You can get repeatable sequences of numbers on a particular machine
+type by specifying the same initial seed value for the random number
+generator.  There is no standard meaning for a particular seed value;
+the same seed, used in different C libraries or on different CPU types,
+will give you different random numbers.
+
+   The GNU library supports the standard ISO C random number functions
+plus another set derived from BSD.  We recommend you use the standard
+ones, `rand' and `srand'.
+
+* Menu:
+
+* ISO Random::       `rand' and friends.
+* BSD Random::       `random' and friends.
+
+
+File: libc.info,  Node: ISO Random,  Next: BSD Random,  Up: Pseudo-Random Numbers
+
+ISO C Random Number Functions
+-----------------------------
+
+   This section describes the random number functions that are part of
+the ISO C standard.
+
+   To use these facilities, you should include the header file
+`stdlib.h' in your program.
+
+ - Macro: int RAND_MAX
+     The value of this macro is an integer constant expression that
+     represents the maximum possible value returned by the `rand'
+     function.  In the GNU library, it is `037777777', which is the
+     largest signed integer representable in 32 bits.  In other
+     libraries, it may be as low as `32767'.
+
+ - Function: int rand ()
+     The `rand' function returns the next pseudo-random number in the
+     series.  The value is in the range from `0' to `RAND_MAX'.
+
+ - Function: void srand (unsigned int SEED)
+     This function establishes SEED as the seed for a new series of
+     pseudo-random numbers.  If you call `rand' before a seed has been
+     established with `srand', it uses the value `1' as a default seed.
+
+     To produce truly random numbers (not just pseudo-random), do `srand
+     (time (0))'.
+
+
+File: libc.info,  Node: BSD Random,  Prev: ISO Random,  Up: Pseudo-Random Numbers
+
+BSD Random Number Functions
+---------------------------
+
+   This section describes a set of random number generation functions
+that are derived from BSD.  There is no advantage to using these
+functions with the GNU C library; we support them for BSD compatibility
+only.
+
+   The prototypes for these functions are in `stdlib.h'.
+
+ - Function: long int random ()
+     This function returns the next pseudo-random number in the
+     sequence.  The range of values returned is from `0' to `RAND_MAX'.
+
+ - Function: void srandom (unsigned int SEED)
+     The `srandom' function sets the seed for the current random number
+     state based on the integer SEED.  If you supply a SEED value of
+     `1', this will cause `random' to reproduce the default set of
+     random numbers.
+
+     To produce truly random numbers (not just pseudo-random), do
+     `srandom (time (0))'.
+
+ - Function: void * initstate (unsigned int SEED, void *STATE, size_t
+          SIZE)
+     The `initstate' function is used to initialize the random number
+     generator state.  The argument STATE is an array of SIZE bytes,
+     used to hold the state information.  The size must be at least 8
+     bytes, and optimal sizes are 8, 16, 32, 64, 128, and 256.  The
+     bigger the STATE array, the better.
+
+     The return value is the previous value of the state information
+     array.  You can use this value later as an argument to `setstate'
+     to restore that state.
+
+ - Function: void * setstate (void *STATE)
+     The `setstate' function restores the random number state
+     information STATE.  The argument must have been the result of a
+     previous call to INITSTATE or SETSTATE.
+
+     The return value is the previous value of the state information
+     array.  You can use thise value later as an argument to `setstate'
+     to restore that state.
+
+
+File: libc.info,  Node: Arithmetic,  Next: Date and Time,  Prev: Mathematics,  Up: Top
+
+Low-Level Arithmetic Functions
+******************************
+
+   This chapter contains information about functions for doing basic
+arithmetic operations, such as splitting a float into its integer and
+fractional parts.  These functions are declared in the header file
+`math.h'.
+
+* Menu:
+
+* Not a Number::                Making NaNs and testing for NaNs.
+* Predicates on Floats::        Testing for infinity and for NaNs.
+* Absolute Value::              Absolute value functions.
+* Normalization Functions::     Hacks for radix-2 representations.
+* Rounding and Remainders::     Determining the integer and
+			         fractional parts of a float.
+* Integer Division::            Functions for performing integer
+				 division.
+* Parsing of Numbers::          Functions for "reading" numbers
+			         from strings.
+
+
+File: libc.info,  Node: Not a Number,  Next: Predicates on Floats,  Up: Arithmetic
+
+"Not a Number" Values
+=====================
+
+   The IEEE floating point format used by most modern computers supports
+values that are "not a number".  These values are called "NaNs".  "Not
+a number" values result from certain operations which have no
+meaningful numeric result, such as zero divided by zero or infinity
+divided by infinity.
+
+   One noteworthy property of NaNs is that they are not equal to
+themselves.  Thus, `x == x' can be 0 if the value of `x' is a NaN.  You
+can use this to test whether a value is a NaN or not: if it is not
+equal to itself, then it is a NaN.  But the recommended way to test for
+a NaN is with the `isnan' function (*note Predicates on Floats::.).
+
+   Almost any arithmetic operation in which one argument is a NaN
+returns a NaN.
+
+ - Macro: double NAN
+     An expression representing a value which is "not a number".  This
+     macro is a GNU extension, available only on machines that support
+     "not a number" values--that is to say, on all machines that
+     support IEEE floating point.
+
+     You can use `#ifdef NAN' to test whether the machine supports
+     NaNs.  (Of course, you must arrange for GNU extensions to be
+     visible, such as by defining `_GNU_SOURCE', and then you must
+     include `math.h'.)
+
+
+File: libc.info,  Node: Predicates on Floats,  Next: Absolute Value,  Prev: Not a Number,  Up: Arithmetic
+
+Predicates on Floats
+====================
+
+   This section describes some miscellaneous test functions on doubles.
+Prototypes for these functions appear in `math.h'.  These are BSD
+functions, and thus are available if you define `_BSD_SOURCE' or
+`_GNU_SOURCE'.
+
+ - Function: int isinf (double X)
+     This function returns `-1' if X represents negative infinity, `1'
+     if X represents positive infinity, and `0' otherwise.
+
+ - Function: int isnan (double X)
+     This function returns a nonzero value if X is a "not a number"
+     value, and zero otherwise.  (You can just as well use `X != X' to
+     get the same result).
+
+ - Function: int finite (double X)
+     This function returns a nonzero value if X is finite or a "not a
+     number" value, and zero otherwise.
+
+ - Function: double infnan (int ERROR)
+     This function is provided for compatibility with BSD.  The other
+     mathematical functions use `infnan' to decide what to return on
+     occasion of an error.  Its argument is an error code, `EDOM' or
+     `ERANGE'; `infnan' returns a suitable value to indicate this with.
+     `-ERANGE' is also acceptable as an argument, and corresponds to
+     `-HUGE_VAL' as a value.
+
+     In the BSD library, on certain machines, `infnan' raises a fatal
+     signal in all cases.  The GNU library does not do likewise,
+     because that does not fit the ISO C specification.
+
+   *Portability Note:* The functions listed in this section are BSD
+extensions.
+
+
+File: libc.info,  Node: Absolute Value,  Next: Normalization Functions,  Prev: Predicates on Floats,  Up: Arithmetic
+
+Absolute Value
+==============
+
+   These functions are provided for obtaining the "absolute value" (or
+"magnitude") of a number.  The absolute value of a real number X is X
+is X is positive, -X if X is negative.  For a complex number Z, whose
+real part is X and whose imaginary part is Y, the absolute value is
+`sqrt (X*X + Y*Y)'.
+
+   Prototypes for `abs' and `labs' are in `stdlib.h'; `fabs' and `cabs'
+are declared in `math.h'.
+
+ - Function: int abs (int NUMBER)
+     This function returns the absolute value of NUMBER.
+
+     Most computers use a two's complement integer representation, in
+     which the absolute value of `INT_MIN' (the smallest possible `int')
+     cannot be represented; thus, `abs (INT_MIN)' is not defined.
+
+ - Function: long int labs (long int NUMBER)
+     This is similar to `abs', except that both the argument and result
+     are of type `long int' rather than `int'.
+
+ - Function: double fabs (double NUMBER)
+     This function returns the absolute value of the floating-point
+     number NUMBER.
+
+ - Function: double cabs (struct { double real, imag; } Z)
+     The `cabs' function returns the absolute value of the complex
+     number Z, whose real part is `Z.real' and whose imaginary part is
+     `Z.imag'.  (See also the function `hypot' in *Note Exponents and
+     Logarithms::.)  The value is:
+
+          sqrt (Z.real*Z.real + Z.imag*Z.imag)
+
+
+File: libc.info,  Node: Normalization Functions,  Next: Rounding and Remainders,  Prev: Absolute Value,  Up: Arithmetic
+
+Normalization Functions
+=======================
+
+   The functions described in this section are primarily provided as a
+way to efficiently perform certain low-level manipulations on floating
+point numbers that are represented internally using a binary radix; see
+*Note Floating Point Concepts::.  These functions are required to have
+equivalent behavior even if the representation does not use a radix of
+2, but of course they are unlikely to be particularly efficient in
+those cases.
+
+   All these functions are declared in `math.h'.
+
+ - Function: double frexp (double VALUE, int *EXPONENT)
+     The `frexp' function is used to split the number VALUE into a
+     normalized fraction and an exponent.
+
+     If the argument VALUE is not zero, the return value is VALUE times
+     a power of two, and is always in the range 1/2 (inclusive) to 1
+     (exclusive).  The corresponding exponent is stored in `*EXPONENT';
+     the return value multiplied by 2 raised to this exponent equals
+     the original number VALUE.
+
+     For example, `frexp (12.8, &exponent)' returns `0.8' and stores
+     `4' in `exponent'.
+
+     If VALUE is zero, then the return value is zero and zero is stored
+     in `*EXPONENT'.
+
+ - Function: double ldexp (double VALUE, int EXPONENT)
+     This function returns the result of multiplying the floating-point
+     number VALUE by 2 raised to the power EXPONENT.  (It can be used
+     to reassemble floating-point numbers that were taken apart by
+     `frexp'.)
+
+     For example, `ldexp (0.8, 4)' returns `12.8'.
+
+   The following functions which come from BSD provide facilities
+equivalent to those of `ldexp' and `frexp':
+
+ - Function: double scalb (double VALUE, int EXPONENT)
+     The `scalb' function is the BSD name for `ldexp'.
+
+ - Function: double logb (double X)
+     This BSD function returns the integer part of the base-2 logarithm
+     of X, an integer value represented in type `double'.  This is the
+     highest integer power of `2' contained in X.  The sign of X is
+     ignored.  For example, `logb (3.5)' is `1.0' and `logb (4.0)' is
+     `2.0'.
+
+     When `2' raised to this power is divided into X, it gives a
+     quotient between `1' (inclusive) and `2' (exclusive).
+
+     If X is zero, the value is minus infinity (if the machine supports
+     such a value), or else a very small number.  If X is infinity, the
+     value is infinity.
+
+     The value returned by `logb' is one less than the value that
+     `frexp' would store into `*EXPONENT'.
+
+ - Function: double copysign (double VALUE, double SIGN)
+     The `copysign' function returns a value whose absolute value is the
+     same as that of VALUE, and whose sign matches that of SIGN.  This
+     is a BSD function.
+

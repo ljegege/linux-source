@@ -1,0 +1,26 @@
+Name: glibc
+Description: GNU libc
+Group: Development/Libraries/Libc
+Version: @VERSION@
+Release: 1
+Copyright: LGPL, GPL
+Source: glibc-@VERSION@.tar.gz
+
+%prep
+%setup
+
+%build
+configure --prefix=@prefix@
+if test x@prefix@ = x/usr; then
+  cat >configparms <<EOF
+slibdir=/lib
+sysconfdir=/etc
+EOF
+fi
+make
+
+%install
+make install
+
+%files
+%doc FAQ NEWS NOTES README INSTALL

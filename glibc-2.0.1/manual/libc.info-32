@@ -1,0 +1,646 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: Type Index,  Next: Function Index,  Prev: Concept Index,  Up: Top
+
+Type Index
+**********
+
+* Menu:
+
+* cc_t:                                  Mode Data Types.
+* clock_t:                               Basic CPU Time.
+* comparison_fn_t:                       Comparison Functions.
+* cookie_close_function:                 Hook Functions.
+* cookie_io_functions_t:                 Streams and Cookies.
+* cookie_read_function:                  Hook Functions.
+* cookie_seek_function:                  Hook Functions.
+* cookie_write_function:                 Hook Functions.
+* dev_t:                                 Attribute Meanings.
+* DIR:                                   Opening a Directory.
+* div_t:                                 Integer Division.
+* enum mcheck_status:                    Heap Consistency Checking.
+* fd_set:                                Waiting for I/O.
+* FILE:                                  Streams.
+* fpos_t:                                Portable Positioning.
+* gid_t:                                 Reading Persona.
+* glob_t:                                Calling Glob.
+* ino_t:                                 Attribute Meanings.
+* jmp_buf:                               Non-Local Details.
+* ldiv_t:                                Integer Division.
+* mode_t:                                Attribute Meanings.
+* nlink_t:                               Attribute Meanings.
+* off_t:                                 File Position Primitive.
+* pid_t:                                 Process Identification.
+* printf_arginfo_function:               Defining the Output Handler.
+* printf_function:                       Defining the Output Handler.
+* ptrdiff_t:                             Important Data Types.
+* regex_t:                               POSIX Regexp Compilation.
+* regmatch_t:                            Regexp Subexpressions.
+* regoff_t:                              Regexp Subexpressions.
+* sig_atomic_t:                          Atomic Types.
+* sighandler_t:                          Basic Signal Handling.
+* sigjmp_buf:                            Non-Local Exits and Signals.
+* sigset_t:                              Signal Sets.
+* size_t:                                Important Data Types.
+* speed_t:                               Line Speed.
+* ssize_t:                               I/O Primitives.
+* struct dirent:                         Directory Entries.
+* struct flock:                          File Locks.
+* struct group:                          Group Data Structure.
+* struct hostent:                        Host Names.
+* struct in_addr:                        Host Address Data Type.
+* struct itimerval:                      Setting an Alarm.
+* struct lconv:                          Numeric Formatting.
+* struct linger:                         Socket-Level Options.
+* struct mstats:                         Statistics of Malloc.
+* struct netent:                         Networks Database.
+* struct obstack:                        Creating Obstacks.
+* struct option:                         Long Options.
+* struct passwd:                         User Data Structure.
+* struct printf_info:                    Conversion Specifier Options.
+* struct protoent:                       Protocols Database.
+* struct rlimit:                         Limits on Resources.
+* struct rusage:                         Resource Usage.
+* struct servent:                        Services Database.
+* struct sigaction:                      Advanced Signal Handling.
+* struct sigaltstack:                    Signal Stack.
+* struct sigstack:                       Signal Stack.
+* struct sigvec:                         BSD Handler.
+* struct sockaddr:                       Address Formats.
+* struct sockaddr_in:                    Internet Address Format.
+* struct sockaddr_un:                    File Namespace Details.
+* struct stat:                           Attribute Meanings.
+* struct termios:                        Mode Data Types.
+* struct timeval:                        High-Resolution Calendar.
+* struct timezone:                       High-Resolution Calendar.
+* struct tm:                             Broken-down Time.
+* struct tms:                            Detailed CPU Time.
+* struct utimbuf:                        File Times.
+* struct utsname:                        Hardware/Software Type ID.
+* tcflag_t:                              Mode Data Types.
+* time_t:                                Simple Calendar Time.
+* uid_t:                                 Reading Persona.
+* union wait:                            BSD Wait Functions.
+* va_list:                               Argument Macros.
+* wchar_t:                               Wide Char Intro.
+* wordexp_t:                             Calling Wordexp.
+
+
+File: libc.info,  Node: Function Index,  Next: Variable Index,  Prev: Type Index,  Up: Top
+
+Function and Macro Index
+************************
+
+* Menu:
+
+* _exit:                                 Termination Internals.
+* _tolower:                              Case Conversion.
+* _toupper:                              Case Conversion.
+* abort:                                 Aborting a Program.
+* abs:                                   Absolute Value.
+* accept:                                Accepting Connections.
+* access:                                Testing File Access.
+* acos:                                  Inverse Trig Functions.
+* acosh:                                 Hyperbolic Functions.
+* adjtime:                               High-Resolution Calendar.
+* alarm:                                 Setting an Alarm.
+* alloca:                                Variable Size Automatic.
+* asctime:                               Formatting Date and Time.
+* asin:                                  Inverse Trig Functions.
+* asinh:                                 Hyperbolic Functions.
+* asprintf:                              Dynamic Output.
+* assert:                                Consistency Checking.
+* assert_perror:                         Consistency Checking.
+* atan:                                  Inverse Trig Functions.
+* atan2:                                 Inverse Trig Functions.
+* atanh:                                 Hyperbolic Functions.
+* atexit:                                Cleanups on Exit.
+* atof:                                  Parsing of Floats.
+* atoi:                                  Parsing of Integers.
+* atol:                                  Parsing of Integers.
+* bcmp:                                  String/Array Comparison.
+* bcopy:                                 Copying and Concatenation.
+* bind:                                  Setting Address.
+* bsearch:                               Array Search Function.
+* bzero:                                 Copying and Concatenation.
+* cabs:                                  Absolute Value.
+* calloc:                                Allocating Cleared Space.
+* cbrt:                                  Exponents and Logarithms.
+* ceil:                                  Rounding and Remainders.
+* cfgetispeed:                           Line Speed.
+* cfgetospeed:                           Line Speed.
+* cfmakeraw:                             Noncanonical Input.
+* cfree:                                 Freeing after Malloc.
+* cfsetispeed:                           Line Speed.
+* cfsetospeed:                           Line Speed.
+* cfsetspeed:                            Line Speed.
+* chdir:                                 Working Directory.
+* chmod:                                 Setting Permissions.
+* chown:                                 File Owner.
+* clearerr:                              EOF and Errors.
+* clock:                                 Basic CPU Time.
+* close:                                 Opening and Closing Files.
+* closedir:                              Reading/Closing Directory.
+* confstr:                               String Parameters.
+* connect:                               Connecting.
+* copysign:                              Normalization Functions.
+* cos:                                   Trig Functions.
+* cosh:                                  Hyperbolic Functions.
+* creat:                                 Opening and Closing Files.
+* ctermid:                               Identifying the Terminal.
+* ctime:                                 Formatting Date and Time.
+* cuserid:                               Who Logged In.
+* difftime:                              Simple Calendar Time.
+* div:                                   Integer Division.
+* drem:                                  Rounding and Remainders.
+* DTTOIF:                                Directory Entries.
+* dup:                                   Duplicating Descriptors.
+* dup2:                                  Duplicating Descriptors.
+* endgrent:                              Scanning All Groups.
+* endhostent:                            Host Names.
+* endnetent:                             Networks Database.
+* endnetgrent:                           Lookup Netgroup.
+* endprotoent:                           Protocols Database.
+* endpwent:                              Scanning All Users.
+* endservent:                            Services Database.
+* execl:                                 Executing a File.
+* execle:                                Executing a File.
+* execlp:                                Executing a File.
+* execv:                                 Executing a File.
+* execve:                                Executing a File.
+* execvp:                                Executing a File.
+* exit:                                  Normal Termination.
+* exp:                                   Exponents and Logarithms.
+* expm1:                                 Exponents and Logarithms.
+* fabs:                                  Absolute Value.
+* fchmod:                                Setting Permissions.
+* fchown:                                File Owner.
+* fclean:                                Cleaning Streams.
+* fclose:                                Closing Streams.
+* fcloseall:                             Closing Streams.
+* fcntl:                                 Control Operations.
+* FD_CLR:                                Waiting for I/O.
+* FD_ISSET:                              Waiting for I/O.
+* FD_SET:                                Waiting for I/O.
+* FD_ZERO:                               Waiting for I/O.
+* fdopen:                                Descriptors and Streams.
+* feof:                                  EOF and Errors.
+* ferror:                                EOF and Errors.
+* fflush:                                Flushing Buffers.
+* fgetc:                                 Character Input.
+* fgetgrent:                             Scanning All Groups.
+* fgetgrent_r:                           Scanning All Groups.
+* fgetpos:                               Portable Positioning.
+* fgetpwent:                             Scanning All Users.
+* fgetpwent_r:                           Scanning All Users.
+* fgets:                                 Line Input.
+* fileno:                                Descriptors and Streams.
+* finite:                                Predicates on Floats.
+* floor:                                 Rounding and Remainders.
+* fmemopen:                              String Streams.
+* fmod:                                  Rounding and Remainders.
+* fnmatch:                               Wildcard Matching.
+* fopen:                                 Opening Streams.
+* fopencookie:                           Streams and Cookies.
+* fork:                                  Creating a Process.
+* fpathconf:                             Pathconf.
+* fprintf:                               Formatted Output Functions.
+* fputc:                                 Simple Output.
+* fputs:                                 Simple Output.
+* fread:                                 Block Input/Output.
+* free:                                  Freeing after Malloc.
+* freopen:                               Opening Streams.
+* frexp:                                 Normalization Functions.
+* fscanf:                                Formatted Input Functions.
+* fseek:                                 File Positioning.
+* fsetpos:                               Portable Positioning.
+* fstat:                                 Reading Attributes.
+* ftell:                                 File Positioning.
+* fwrite:                                Block Input/Output.
+* getc:                                  Character Input.
+* getchar:                               Character Input.
+* getcwd:                                Working Directory.
+* getdelim:                              Line Input.
+* getegid:                               Reading Persona.
+* getenv:                                Environment Access.
+* geteuid:                               Reading Persona.
+* getgid:                                Reading Persona.
+* getgrent:                              Scanning All Groups.
+* getgrent_r:                            Scanning All Groups.
+* getgrgid:                              Lookup Group.
+* getgrgid_r:                            Lookup Group.
+* getgrnam:                              Lookup Group.
+* getgrnam_r:                            Lookup Group.
+* getgroups:                             Reading Persona.
+* gethostbyaddr:                         Host Names.
+* gethostbyname:                         Host Names.
+* gethostent:                            Host Names.
+* gethostid:                             Host Identification.
+* gethostname:                           Host Identification.
+* getitimer:                             Setting an Alarm.
+* getline:                               Line Input.
+* getlogin:                              Who Logged In.
+* getnetbyaddr:                          Networks Database.
+* getnetbyname:                          Networks Database.
+* getnetent:                             Networks Database.
+* getnetgrent:                           Lookup Netgroup.
+* getnetgrent_r:                         Lookup Netgroup.
+* getopt:                                Parsing Options.
+* getopt_long:                           Long Options.
+* getpeername:                           Who is Connected.
+* getpgrp:                               Process Group Functions.
+* getpid:                                Process Identification.
+* getppid:                               Process Identification.
+* getpriority:                           Priority.
+* getprotobyname:                        Protocols Database.
+* getprotobynumber:                      Protocols Database.
+* getprotoent:                           Protocols Database.
+* getpwent:                              Scanning All Users.
+* getpwent_r:                            Scanning All Users.
+* getpwnam:                              Lookup User.
+* getpwnam_r:                            Lookup User.
+* getpwuid:                              Lookup User.
+* getpwuid_r:                            Lookup User.
+* getrlimit:                             Limits on Resources.
+* getrusage:                             Resource Usage.
+* gets:                                  Line Input.
+* getservbyname:                         Services Database.
+* getservbyport:                         Services Database.
+* getservent:                            Services Database.
+* getsockname:                           Reading Address.
+* getsockopt:                            Socket Option Functions.
+* getsubopt:                             Suboptions.
+* gettimeofday:                          High-Resolution Calendar.
+* getuid:                                Reading Persona.
+* getumask:                              Setting Permissions.
+* getw:                                  Character Input.
+* getwd:                                 Working Directory.
+* glob:                                  Calling Glob.
+* gmtime:                                Broken-down Time.
+* gsignal:                               Signaling Yourself.
+* htonl:                                 Byte Order.
+* htons:                                 Byte Order.
+* hypot:                                 Exponents and Logarithms.
+* IFTODT:                                Directory Entries.
+* index:                                 Search Functions.
+* inet_addr:                             Host Address Functions.
+* inet_aton:                             Host Address Functions.
+* inet_lnaof:                            Host Address Functions.
+* inet_makeaddr:                         Host Address Functions.
+* inet_netof:                            Host Address Functions.
+* inet_network:                          Host Address Functions.
+* inet_ntoa:                             Host Address Functions.
+* infnan:                                Predicates on Floats.
+* initgroups:                            Setting Groups.
+* initstate:                             BSD Random.
+* innetgr:                               Netgroup Membership.
+* isalnum:                               Classification of Characters.
+* isalpha:                               Classification of Characters.
+* isascii:                               Classification of Characters.
+* isatty:                                Is It a Terminal.
+* isblank:                               Classification of Characters.
+* iscntrl:                               Classification of Characters.
+* isdigit:                               Classification of Characters.
+* isgraph:                               Classification of Characters.
+* isinf:                                 Predicates on Floats.
+* islower:                               Classification of Characters.
+* isnan:                                 Predicates on Floats.
+* isprint:                               Classification of Characters.
+* ispunct:                               Classification of Characters.
+* isspace:                               Classification of Characters.
+* isupper:                               Classification of Characters.
+* isxdigit:                              Classification of Characters.
+* ITIMER_PROF:                           Setting an Alarm.
+* ITIMER_REAL:                           Setting an Alarm.
+* ITIMER_VIRTUAL:                        Setting an Alarm.
+* kill:                                  Signaling Another Process.
+* killpg:                                Signaling Another Process.
+* labs:                                  Absolute Value.
+* ldexp:                                 Normalization Functions.
+* ldiv:                                  Integer Division.
+* link:                                  Hard Links.
+* listen:                                Listening.
+* localeconv:                            Numeric Formatting.
+* localtime:                             Broken-down Time.
+* log:                                   Exponents and Logarithms.
+* log10:                                 Exponents and Logarithms.
+* log1p:                                 Exponents and Logarithms.
+* logb:                                  Normalization Functions.
+* longjmp:                               Non-Local Details.
+* lseek:                                 File Position Primitive.
+* lstat:                                 Reading Attributes.
+* main:                                  Program Arguments.
+* malloc:                                Basic Allocation.
+* mblen:                                 Length of Char.
+* mbstowcs:                              Wide String Conversion.
+* mbtowc:                                Converting One Char.
+* mcheck:                                Heap Consistency Checking.
+* memalign:                              Aligned Memory Blocks.
+* memccpy:                               Copying and Concatenation.
+* memchr:                                Search Functions.
+* memcmp:                                String/Array Comparison.
+* memcpy:                                Copying and Concatenation.
+* memmem:                                Search Functions.
+* memmove:                               Copying and Concatenation.
+* memory_warnings:                       Memory Warnings.
+* memset:                                Copying and Concatenation.
+* mkdir:                                 Creating Directories.
+* mkfifo:                                FIFO Special Files.
+* mknod:                                 Making Special Files.
+* mkstemp:                               Temporary Files.
+* mktemp:                                Temporary Files.
+* mktime:                                Broken-down Time.
+* modf:                                  Rounding and Remainders.
+* mprobe:                                Heap Consistency Checking.
+* mstats:                                Statistics of Malloc.
+* nice:                                  Priority.
+* notfound:                              Actions in the NSS configuration.
+* NSS_STATUS_NOTFOUND:                   NSS Modules Interface.
+* NSS_STATUS_SUCCESS:                    NSS Modules Interface.
+* NSS_STATUS_TRYAGAIN:                   NSS Modules Interface.
+* NSS_STATUS_UNAVAIL:                    NSS Modules Interface.
+* ntohl:                                 Byte Order.
+* ntohs:                                 Byte Order.
+* obstack_1grow:                         Growing Objects.
+* obstack_1grow_fast:                    Extra Fast Growing.
+* obstack_alignment_mask:                Obstacks Data Alignment.
+* obstack_alloc:                         Allocation in an Obstack.
+* obstack_base:                          Status of an Obstack.
+* obstack_blank:                         Growing Objects.
+* obstack_blank_fast:                    Extra Fast Growing.
+* obstack_chunk_alloc:                   Preparing for Obstacks.
+* obstack_chunk_free:                    Preparing for Obstacks.
+* obstack_chunk_size:                    Obstack Chunks.
+* obstack_copy:                          Allocation in an Obstack.
+* obstack_copy0:                         Allocation in an Obstack.
+* obstack_finish:                        Growing Objects.
+* obstack_free:                          Freeing Obstack Objects.
+* obstack_grow:                          Growing Objects.
+* obstack_grow0:                         Growing Objects.
+* obstack_init:                          Preparing for Obstacks.
+* obstack_int_grow:                      Growing Objects.
+* obstack_int_grow_fast:                 Extra Fast Growing.
+* obstack_next_free:                     Status of an Obstack.
+* obstack_object_size <1>:               Status of an Obstack.
+* obstack_object_size:                   Growing Objects.
+* obstack_printf:                        Dynamic Output.
+* obstack_ptr_grow:                      Growing Objects.
+* obstack_ptr_grow_fast:                 Extra Fast Growing.
+* obstack_room:                          Extra Fast Growing.
+* obstack_vprintf:                       Variable Arguments Output.
+* offsetof:                              Structure Measurement.
+* on_exit:                               Cleanups on Exit.
+* open:                                  Opening and Closing Files.
+* open_memstream:                        String Streams.
+* open_obstack_stream:                   Obstack Streams.
+* opendir:                               Opening a Directory.
+* parse_printf_format:                   Parsing a Template String.
+* pathconf:                              Pathconf.
+* pause:                                 Using Pause.
+* pclose:                                Pipe to a Subprocess.
+* perror:                                Error Messages.
+* pipe:                                  Creating a Pipe.
+* popen:                                 Pipe to a Subprocess.
+* pow:                                   Exponents and Logarithms.
+* printf:                                Formatted Output Functions.
+* psignal:                               Signal Messages.
+* putc:                                  Simple Output.
+* putchar:                               Simple Output.
+* putenv:                                Environment Access.
+* putpwent:                              Writing a User Entry.
+* puts:                                  Simple Output.
+* putw:                                  Simple Output.
+* qsort:                                 Array Sort Function.
+* r_alloc:                               Using Relocator.
+* r_alloc_free:                          Using Relocator.
+* r_re_alloc:                            Using Relocator.
+* raise:                                 Signaling Yourself.
+* rand:                                  ISO Random.
+* random:                                BSD Random.
+* read:                                  I/O Primitives.
+* readdir:                               Reading/Closing Directory.
+* readdir_r:                             Reading/Closing Directory.
+* readlink:                              Symbolic Links.
+* realloc:                               Changing Block Size.
+* recv:                                  Receiving Data.
+* recvfrom:                              Receiving Datagrams.
+* regcomp:                               POSIX Regexp Compilation.
+* regerror:                              Regexp Cleanup.
+* regexec:                               Matching POSIX Regexps.
+* regfree:                               Regexp Cleanup.
+* register_printf_function:              Registering New Conversions.
+* remove:                                Deleting Files.
+* rename:                                Renaming Files.
+* rewind:                                File Positioning.
+* rewinddir:                             Random Access Directory.
+* rindex:                                Search Functions.
+* rint:                                  Rounding and Remainders.
+* rmdir:                                 Deleting Files.
+* S_ISBLK:                               Testing File Type.
+* S_ISCHR:                               Testing File Type.
+* S_ISDIR:                               Testing File Type.
+* S_ISFIFO:                              Testing File Type.
+* S_ISLNK:                               Testing File Type.
+* S_ISREG:                               Testing File Type.
+* S_ISSOCK:                              Testing File Type.
+* scalb:                                 Normalization Functions.
+* scanf:                                 Formatted Input Functions.
+* seekdir:                               Random Access Directory.
+* select:                                Waiting for I/O.
+* send:                                  Sending Data.
+* sendto:                                Sending Datagrams.
+* setbuf:                                Controlling Buffering.
+* setbuffer:                             Controlling Buffering.
+* setgid:                                Setting Groups.
+* setgrent:                              Scanning All Groups.
+* setgroups:                             Setting Groups.
+* sethostent:                            Host Names.
+* sethostid:                             Host Identification.
+* sethostname:                           Host Identification.
+* setitimer:                             Setting an Alarm.
+* setjmp:                                Non-Local Details.
+* setlinebuf:                            Controlling Buffering.
+* setlocale:                             Setting the Locale.
+* setnetent:                             Networks Database.
+* setnetgrent:                           Lookup Netgroup.
+* setpgid:                               Process Group Functions.
+* setpgrp:                               Process Group Functions.
+* setpriority:                           Priority.
+* setprotoent:                           Protocols Database.
+* setpwent:                              Scanning All Users.
+* setregid:                              Setting Groups.
+* setreuid:                              Setting User ID.
+* setrlimit:                             Limits on Resources.
+* setservent:                            Services Database.
+* setsid:                                Process Group Functions.
+* setsockopt:                            Socket Option Functions.
+* setstate:                              BSD Random.
+* settimeofday:                          High-Resolution Calendar.
+* setuid:                                Setting User ID.
+* setvbuf:                               Controlling Buffering.
+* shutdown:                              Closing a Socket.
+* sigaction:                             Advanced Signal Handling.
+* sigaddset:                             Signal Sets.
+* sigaltstack:                           Signal Stack.
+* sigblock:                              Blocking in BSD.
+* sigdelset:                             Signal Sets.
+* sigemptyset:                           Signal Sets.
+* sigfillset:                            Signal Sets.
+* siginterrupt:                          BSD Handler.
+* sigismember:                           Signal Sets.
+* siglongjmp:                            Non-Local Exits and Signals.
+* sigmask:                               Blocking in BSD.
+* signal:                                Basic Signal Handling.
+* sigpause:                              Blocking in BSD.
+* sigpending:                            Checking for Pending Signals.
+* sigprocmask:                           Process Signal Mask.
+* sigsetjmp:                             Non-Local Exits and Signals.
+* sigsetmask:                            Blocking in BSD.
+* sigstack:                              Signal Stack.
+* sigsuspend:                            Sigsuspend.
+* sigvec:                                BSD Handler.
+* sin:                                   Trig Functions.
+* sinh:                                  Hyperbolic Functions.
+* sleep:                                 Sleeping.
+* snprintf:                              Formatted Output Functions.
+* socket:                                Creating a Socket.
+* socketpair:                            Socket Pairs.
+* sprintf:                               Formatted Output Functions.
+* sqrt:                                  Exponents and Logarithms.
+* srand:                                 ISO Random.
+* srandom:                               BSD Random.
+* sscanf:                                Formatted Input Functions.
+* ssignal:                               Basic Signal Handling.
+* stat:                                  Reading Attributes.
+* stpcpy:                                Copying and Concatenation.
+* stpncpy:                               Copying and Concatenation.
+* strcasecmp:                            String/Array Comparison.
+* strcat:                                Copying and Concatenation.
+* strchr:                                Search Functions.
+* strcmp:                                String/Array Comparison.
+* strcoll:                               Collation Functions.
+* strcpy:                                Copying and Concatenation.
+* strcspn:                               Search Functions.
+* strdup:                                Copying and Concatenation.
+* strdupa:                               Copying and Concatenation.
+* strerror:                              Error Messages.
+* strftime:                              Formatting Date and Time.
+* strlen:                                String Length.
+* strncasecmp:                           String/Array Comparison.
+* strncat:                               Copying and Concatenation.
+* strncmp:                               String/Array Comparison.
+* strncpy:                               Copying and Concatenation.
+* strndup:                               Copying and Concatenation.
+* strndupa:                              Copying and Concatenation.
+* strpbrk:                               Search Functions.
+* strrchr:                               Search Functions.
+* strsep:                                Finding Tokens in a String.
+* strsignal:                             Signal Messages.
+* strspn:                                Search Functions.
+* strstr:                                Search Functions.
+* strtod:                                Parsing of Floats.
+* strtof:                                Parsing of Floats.
+* strtok:                                Finding Tokens in a String.
+* strtok_r:                              Finding Tokens in a String.
+* strtol:                                Parsing of Integers.
+* strtold:                               Parsing of Floats.
+* strtoll:                               Parsing of Integers.
+* strtoq:                                Parsing of Integers.
+* strtoul:                               Parsing of Integers.
+* strtoull:                              Parsing of Integers.
+* strtouq:                               Parsing of Integers.
+* strxfrm:                               Collation Functions.
+* success:                               Actions in the NSS configuration.
+* symlink:                               Symbolic Links.
+* sysconf:                               Sysconf Definition.
+* system:                                Running a Command.
+* tan:                                   Trig Functions.
+* tanh:                                  Hyperbolic Functions.
+* tcdrain:                               Line Control.
+* tcflow:                                Line Control.
+* tcflush:                               Line Control.
+* tcgetattr:                             Mode Functions.
+* tcgetpgrp:                             Terminal Access Functions.
+* tcsendbreak:                           Line Control.
+* tcsetattr:                             Mode Functions.
+* tcsetpgrp:                             Terminal Access Functions.
+* telldir:                               Random Access Directory.
+* TEMP_FAILURE_RETRY:                    Interrupted Primitives.
+* tempnam:                               Temporary Files.
+* time:                                  Simple Calendar Time.
+* times:                                 Detailed CPU Time.
+* tmpfile:                               Temporary Files.
+* tmpnam:                                Temporary Files.
+* tmpnam_r:                              Temporary Files.
+* toascii:                               Case Conversion.
+* tolower:                               Case Conversion.
+* toupper:                               Case Conversion.
+* tryagain:                              Actions in the NSS configuration.
+* ttyname:                               Is It a Terminal.
+* tzset:                                 Time Zone Functions.
+* umask:                                 Setting Permissions.
+* uname:                                 Hardware/Software Type ID.
+* unavail:                               Actions in the NSS configuration.
+* ungetc:                                How Unread.
+* unlink:                                Deleting Files.
+* utime:                                 File Times.
+* utimes:                                File Times.
+* va_alist:                              Old Varargs.
+* va_arg:                                Argument Macros.
+* va_dcl:                                Old Varargs.
+* va_end:                                Argument Macros.
+* va_start <1>:                          Old Varargs.
+* va_start:                              Argument Macros.
+* valloc:                                Aligned Memory Blocks.
+* vasprintf:                             Variable Arguments Output.
+* vfork:                                 Creating a Process.
+* vfprintf:                              Variable Arguments Output.
+* vfscanf:                               Variable Arguments Input.
+* vprintf:                               Variable Arguments Output.
+* vscanf:                                Variable Arguments Input.
+* vsnprintf:                             Variable Arguments Output.
+* vsprintf:                              Variable Arguments Output.
+* vsscanf:                               Variable Arguments Input.
+* wait:                                  Process Completion.
+* wait3:                                 BSD Wait Functions.
+* wait4:                                 Process Completion.
+* waitpid:                               Process Completion.
+* WCOREDUMP:                             Process Completion Status.
+* wcstombs:                              Wide String Conversion.
+* wctomb:                                Converting One Char.
+* WEXITSTATUS:                           Process Completion Status.
+* WIFEXITED:                             Process Completion Status.
+* WIFSIGNALED:                           Process Completion Status.
+* WIFSTOPPED:                            Process Completion Status.
+* wordexp:                               Calling Wordexp.
+* wordfree:                              Calling Wordexp.
+* write:                                 I/O Primitives.
+* WSTOPSIG:                              Process Completion Status.
+* WTERMSIG:                              Process Completion Status.
+

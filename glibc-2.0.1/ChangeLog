@@ -1,0 +1,384 @@
+1997-02-04 02:08  Ulrich Drepper  <drepper@cygnus.com>
+
+	* Version 2.0.1 net release.
+
+1997-02-03 23:34  Stephen L Moshier  <moshier@world.std.com>
+
+	* sysdeps/libm-ieee754/s_tanhl.c: Fix backwards result sign.
+
+1997-02-03 19:59  Ulrich Drepper  <drepper@cygnus.com>
+
+	* stdlib/getsubopt.c: Don't return `=' for suboption which has
+	a parameter.  Reported by Gary L. Hennigan <glhenni@cs.sandia.gov>.
+
+1997-02-03 18:20  Thorsten Kukuk  <kukuk@weber.uni-paderborn.de>
+
+	* nis/rpcsvc/yp_proh.h (ypresp_key_val): Also change order of
+	values as in yp.x and yp.h.
+
+1997-02-03 16:58  Ulrich Drepper  <drepper@cygnus.com>
+
+	* nis/rpcsvc/yp.x (struct ypresp_key_val): Revert patch from
+	1997-02-03 02:17.  Sun's implementation internally corrects
+	this bug but we don't want to hide this from the user.
+	* nis/rpcsvc/yp.h: Likewise.
+
+1997-02-01 18:28  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* sysdeps/unix/sysv/linux/net/ppp_defs.h: Protect against multiple
+	inclusion.
+
+1997-02-02 14:56  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* manual/nss.texi, manual/pattern.texi, manual/string.texi: Doc
+	fixes.
+
+1997-02-02 11:51  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* MakeTAGS (sysdep-sources, sysdep-headers): New variables.
+	(all-sources, all-headers): Use them instead of $(sources) and
+	$(headers) when searching in sysdep directories.
+
+1997-02-02 11:49  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* Makerules (REAL_MAKE_VERSION): Use internal make function
+	instead of shelling out.
+
+1997-02-02 11:47  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* time/Makefile (install-test-data): Remove mkdir command, zic can
+	handle that gracefully.
+
+1997-02-03 14:07  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* sysdeps/m68k/asm-syntax.h: Add back file which got lost sometime
+	somehow.
+
+1997-02-02 07:46  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* sunrpc/Makefile: Check $(cross-compiling) only after including
+	../Makeconfig.
+	($(objpfx)rpcsvc/%.h, $(objpfx)x%.c): Add empty command to force
+	being considered as a rule.
+	(generated): Add stamp files before the inclusion of Makerules to
+	magically mark them as not being intermediate via the `generated'
+	target.
+
+1997-02-03 02:33  Ulrich Drepper  <drepper@cygnus.com>
+
+	* elf/dl-deps.c (_dl_map_object_deps): Handle multiple AUXILIARY
+	entries.  This is still no complete implementation since AUXILIARY
+	entries in other shared objects are not yet handled.
+
+	* libio/libio.h (_IO_cookie_io_functions_t): Move to C++ protected
+	place.
+
+	* po/es.po: Update.
+	* po/fr.po: Update.
+	* po/nl.po: Update.
+
+	* time/Makefile: Better cross-compile support.  Avoid test which
+	cannot be run.
+	(CFLAGS-tzset.c): New variable.  Overwrite TZDEFAULT value from
+	tzfile.h file.
+	* time/tzfile.c (__tzfile_read): Allow TZDEFAULT start with '/' even
+	in SUID programs.
+	* time/tzset.c (__tzset_internal): If TZ envvar is not set use same
+	default values as in tzfile.c.
+
+	* elf/dynamic-link.h (elf_get_dynamic_info): Recognize versioning
+	tags.
+	* elf/link.h: Likewise.
+	* elf/elf.h: Add tag definitions and data structures for versioning.
+
+1997-02-03 02:17  Ulrich Drepper  <drepper@cygnus.com>
+
+	* nis/rpcsvc/yp.x (struct ypresp_key_val): There is not stupid
+	"Sun bug".  This is the order of elements also used by 4.4BSD.
+	* nis/rpcsvc/yp.h: Likewise.
+	Reported by HJ Lu.
+
+1997-02-02 12:13  H.J. Lu  <hjl@gnu.ai.mit.edu>
+
+	* sunrpc/Makefile ($(objpfx)x%.h, $(objpfx)x%.c): Add "@:" as
+	action.
+
+	* Makefile (install): Pass installation directories as arguments
+	to ldconfig.
+
+1997-02-02 23:15  Ulrich Drepper  <drepper@cygnus.com>
+
+	* malloc/malloc.c (__after_morecore_hook): New variable.
+	(malloc_extend_top): Call __after_morecore_hook if set.
+	(main_trim): Likewise.
+	* malloc/malloc.h: Add declaration of __after_morecore_hook.
+	Suggested by Marcus Daniels.
+
+1997-02-02 23:00  Marcus G. Daniels  <marcus@tdb.com>
+
+	* malloc/malloc.c (rEALLOc): Protect tsd_setspecific call by
+	#ifndef NO_THREADS.
+	(mallinfo): Likewise.
+
+	* malloc/malloc.c (__morecore): Make external since it is used in
+	programs.
+
+1997-02-02 15:10  Ulrich Drepper  <drepper@cygnus.com>
+
+	* sysdeps/unix/sysv/linux/statbuf.h (struct stat): Make st_dev field
+	unsigned.
+
+1997-02-01 23:36  Richard Henderson  <rth@tamu.edu>
+
+	* sysdeps/alpha/stxncpy.S ($unaligned) [src % 8 > dst % 8]: Don't
+	use t6 as a temporary; it contains bits we still need in $u_head.
+
+1997-01-31 15:05  John Bowman  <bowman@ipp-garching.mpg.de>
+
+	* sysdeps/i386/fpu/__math.h [__USE_MISC]: Don't declare prototypes
+	using __ prefix.  Add prototype for log1p.
+
+1997-02-02 00:39  Ulrich Drepper  <drepper@cygnus.com>
+
+	* dirent/dirent.h: Add description _DIRENT_HAVE_D_TYPE.
+
+1997-02-01 17:04  Philip Blundell  <pjb27@cam.ac.uk>
+
+	* inet/netinet/ip.h (MAX_IPOPTLEN): Add definition.
+
+1997-02-01 17:00  Ulrich Drepper  <drepper@cygnus.com>
+
+	* sysdeps/unix/sysv/linux/socketbits.h: Add definition of cmsghdr
+	structure plus related macros.
+	* sysdeps/unix/sysv/linux/cmsg_nxthdr.c: New file.
+	* sysdeps/unix/sysv/linux/Makefile [$(subdir)=socket]
+	(sysdep_routines): Add cmsg_nxthdr.
+	* sysdeps/unix/sysv/linux/Dist: Add cmsg_nxthdr.c.
+	Suggested by Philip Blundell <pjb27@cam.ac.uk>.
+
+1997-02-01 12:34  Ulrich Drepper  <drepper@cygnus.com>
+
+	* time/strftime.c: Define _strftime_copytm without protecting arguments
+	which breaks the definition.
+
+1997-02-01 03:31  Thorsten Kukuk  <kukuk@weber.uni-paderborn.de>
+
+	* nis/rpcsvc/yp_prot.h: Move definition of yppushresp_xfr after
+	definition of type for element.
+
+1997-02-01 03:28  Philip Blundell  <pjb27@cam.ac.uk>
+
+	* sydsdeps/unix/sysv/linux/netinet/in.h: Add IPv6 related IPPROTO_*
+	constants.
+
+1997-02-01 03:09  H.J. Lu  <hjl@lucon.org>
+
+	* Makefile: Pass PARALLELMFLAGS to sub-makes.
+	* Makefile.in: Mention PARALLELMFLAGS and pass to main Makefile.
+
+1997-01-31  Paul Eggert  <eggert@twinsun.com>
+
+	* time/mktime.c (HAVE_LIMITS_H, HAVE_LOCALTIME_R, STDC_HEADERS):
+	Define if _LIBC is defined.
+	<limits.h>: Include if HAVE_LIMITS_H instead of if
+	__STDC__ || __GNU_LIBRARY__ || STDC_HEADERS.
+	<stdlib.h>: Similarly, include if STDC_HEADERS.
+	(localtime_r): Redo #ifdef to make it clear that glibc has
+	localtime_r now.
+
+1997-02-29 20:08  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* sunrpc/Makefile ($(objpfx)rpcsvc/%.h, $(objpfx)x%.c): Use stamp
+	file to avoid unnecessary recompilation.
+
+1997-01-29 19:33  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* Makefile: Set install-others, not install_others.
+	(before-compile): Use += to preserve previous value.
+	($(inst_includedir)/gnu/lib-names.h): Remove obsolete comment and
+	fix dependency name.
+	($(objpfx)lib-names.h): Remove rule.
+	* Makeconfig ($(common-objpfx)gnu/lib-names.h): Generate it here,
+	with correct name, using an intermediate stamp file.
+	(common-generated): Add gnu/lib-names.h.
+	(before-compile): Add $(common-objpfx)gnu/lib-names.h.
+
+1997-01-30 18:29  Richard Henderson  <richard@atheist.tamu.edu>
+
+	* malloc/malloc.c (MAGICBYTE): Use cast to size_t instead of unsigned
+	to prevent warnings on 64 bit systems.
+	Reported by Paul Wouters <paul@xtdnet.nl>.
+
+	* sysdeps/alpha/dl-machine.h: Revert check for broken gas.  By default
+	we assume it works.
+
+1997-01-30 03:24  Ulrich Drepper  <drepper@cygnus.com>
+
+	* sysdeps/i386/elf/start.S (_start): Align stack pointer to
+	double word boundary before pushing args for main.  This way we
+	don't get penalties for misaligned memory accesses.  Reported by
+	Edward Seidl <seidl@janed.com>.
+
+	* Makefile: Correct *my* changes of Richards patch of 1997-01-28 10:51.
+	Patch by HJ Lu.
+
+	* misc/bsd-compat.c: Update copyright.
+	* misc/efgcvt.c: Likewise.
+	* misc/efgcvt_r.c: Likewise.
+	* misc/error.c: Likewise.
+	* misc/error.h: Likewise.
+	* misc/fstab.c: Likewise.
+	* misc/init-misc.c: Likewise.
+	* misc/lsearch.c: Likewise.
+	* misc/mntent.c: Likewise.
+	* misc/qefgcvt.c: Likewise.
+	* misc/qefgcvt_r.c: Likewise.
+	* nss/databases.def: Likewise.
+	* nss/db-Makefile: Likewise.
+	* nss/ethers-lookup.c: Likewise.
+	* nss/hosts-lookup.c: Likewise.
+	* nss/netgrp-lookup.c: Likewise.
+	* nss/nsswitch.h: Likewise.
+	* nss/proto-lookup.c: Likewise.
+	* nss/rpc-lookup.c: Likewise.
+	* nss/service-lookup.c: Likewise.
+	* nss/nss_db/db-netgrp.c: Likewise.
+	* nss/nss_files/files-grp.c: Likewise.
+	* nss/nss_files/files-hosts.c: Likewise.
+	* nss/nss_files/files-network.c: Likewise.
+	* nss/nss_files/files-proto.c: Likewise.
+	* nss/nss_files/files-pwd.c: Likewise.
+	* nss/nss_files/files-rpc.c: Likewise.
+	* nss/nss_files/files-service.c: Likewise.
+	* nss/nss_files/files-spwd.c: Likewise.
+	* shadow/fgetspent.c: Likewise.
+	* shadow/fgetspent_r.c: Likewise.
+	* shadow/getspent.c: Likewise.
+	* shadow/getspent_r.c: Likewise.
+	* shadow/getspnam.c: Likewise.
+	* shadow/getspnam_r.c: Likewise.
+	* shadow/putspent.c: Likewise.
+	* shadow/sgetspent.c: Likewise.
+	* shadow/sgetspent_r.c: Likewise.
+	* sysdeps/i386/init-first.c: Likewise.
+	* sysdeps/unix/i386/sysdep.S: Likewise.
+
+	* shadow/shadow.h: Don't use __USE_REENTRENT.  All code must be
+	prepared to be running in a multi-threaded environment.  Change
+	to __USE_MISC unless the function is defined in POSIX.1 (in this
+	case also test for __USE_POSIX).
+	* dirent/dirent.h: Likewise.
+	* grp/grp.h: Likewise.
+	* inet/aliases.h: Likewise.
+	* libio/libio.h: Likewise.
+	* libio/stdio.h: Likewise.
+	* login/utmp.h: Likewise.
+	* math/mathcalls.h: Likewise.
+	* misc/mntent.h: Likewise.
+	* pwd/pwd.h: Likewise.
+	* resolv/netdb.h: Likewise.
+	* stdlib/stdlib.h: Likewise.
+	* string/string.h: Likewise.
+	* sunrpc/rpc/netdb.h: Likewise.
+	* sysdeps/generic/crypt.h: Likewise.
+	* sysdeps/unix/sysv/linux/errnos.h: Likewise.
+	* time/time.h: Likewise.
+
+1997-01-30 00:27  Fila Kolodny  <fila@ibi.com>
+
+	* sunrpc/Makefile (install-others): Add rpcsvc/bootparam_prot.h
+	only if not cross compiling.
+
+1997-01-29 16:16  Fila Kolodny  <fila@ibi.com>
+
+	* sysdeps/posix/sigpause.c: Include <stddef.h> to get definition of
+	NULL.
+	* sysdeps/posix/sigwait.c: Likewise.
+
+1997-01-28 23:42  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* Makeconfig ($(common-objpfx)config.make): Depend on
+	$(..)config.make.in.
+
+1997-01-29 04:30  Ulrich Drepper  <drepper@cygnus.com>
+
+	* sunrpc/Makefile: Don't generate headers derived from .x files when
+	crosscompiling.
+
+1997-01-28 10:51  Richard Henderson  <rth@tamu.edu>
+
+	* Makefile: Generate gnu/lib-names.h in before-compile.
+	* nss/nss.h (NSS_SHLIB_REVISION): Turn it into a const variable.
+	* nss/nssswitch.c (__nss_shlib_revision): New variable.  Initialize
+	to the revision found for LIBNSS_FILES_SO.
+	(nss_initilized): Removed.  It was tested but never set.
+	(nss_lookup_function): Don't treat NSS_SHLIB_REVISION as a literal.
+
+	* shlib-versions: Tag all alpha-linux shlibs with a .1 "minor"
+	not just libc.  Except instead of ld.so.1.1 use ld-linux.so.2.
+
+	* sysdeps/unix/sysv/linux/alpha/ieee_set_fp_control.S: Typo in ldgp.
+
+1997-01-28 12:16  Andreas Jaeger  <aj@arthur.pfalz.de>
+
+	* elf/Makefile (CFLAGS-dl-load.c): Use += to not
+	override the definition.
+
+1997-01-28 20:13  Fila Kolodny  <fila@ibi.com>
+
+	* config.make.in (malloc): Remove.
+
+1997-01-28 04:23  Ulrich Drepper  <drepper@cygnus.com>
+
+	* version.h (VERSION): Bump to 2.0.1.
+
+	* posix/getopt.c: Handle another problem introduced by the
+	nonoption_flags array.  We must be able to work with reordered
+	argv arrays.  Reported by Andreas Schwab.
+
+1997-01-28 02:38  Ulrich Drepper  <drepper@cygnus.com>
+
+	* sysdeps/unix/sysv/linux/i386/clone.S: Correct handling of new
+	stack.
+
+1997-01-27 17:34  Thorsten Kukuk <kukuk@weber.uni-paderborn.de>
+
+	* nis/rpcsvc/yp_prot.h: Correct definitions and types in file so
+	that it works with yp.h.
+
+1997-01-27 13:28  Ulrich Drepper  <drepper@cygnus.com>
+
+	* malloc/malloc.h (__malloc_initialized) [_LIBC]: Define as
+	__libc_malloc_initialized so that this variable is not shared with
+	other users of GNU malloc.
+	Suggested by Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>.
+
+	* mcheck.h: Correct typo.  Use malloc/ instead of new-malloc/.
+
+	* sysdeps/i386/Makefile (CFLAGS-dl-load.c, CFLAGS-dl-reloc.c): New
+	variables to prevent warnings.
+	* sysdeps/i386/dl-machine.h (fixup): Add prototype and declare
+	using attribute regparm.
+	(ELF_MACHINE_RUNTIME_TRAMPOLINE): Rewrite so that no register
+	is changed by the resolver code.
+
+1997-01-14 14:20  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* malloc/malloc.c (weak_variable): Define.
+	(__malloc_initialize_hook, __free_hook, __malloc_hook, __realloc_hook,
+	__memalign_hook): Make them weak definitions.
+
+1997-01-26 11:35  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* sysdeps/unix/sysv/linux/getdents.c: Don't write beyond buffer
+	limits, correctly take structure padding into account, use correct
+	offset when resetting the stream, change heuristic to assume an
+	average name length of 14 characters.
+
+1997-01-25 18:06  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* sysdeps/unix/sysv/linux/alpha/termbits.h: Protect against multiple
+	inclusion.
+
+
+See ChangeLog.6 for earlier changes.

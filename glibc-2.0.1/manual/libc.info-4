@@ -1,0 +1,1213 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: Extra Fast Growing,  Next: Status of an Obstack,  Prev: Growing Objects,  Up: Obstacks
+
+Extra Fast Growing Objects
+--------------------------
+
+   The usual functions for growing objects incur overhead for checking
+whether there is room for the new growth in the current chunk.  If you
+are frequently constructing objects in small steps of growth, this
+overhead can be significant.
+
+   You can reduce the overhead by using special "fast growth" functions
+that grow the object without checking.  In order to have a robust
+program, you must do the checking yourself.  If you do this checking in
+the simplest way each time you are about to add data to the object, you
+have not saved anything, because that is what the ordinary growth
+functions do.  But if you can arrange to check less often, or check
+more efficiently, then you make the program faster.
+
+   The function `obstack_room' returns the amount of room available in
+the current chunk.  It is declared as follows:
+
+ - Function: int obstack_room (struct obstack *OBSTACK-PTR)
+     This returns the number of bytes that can be added safely to the
+     current growing object (or to an object about to be started) in
+     obstack OBSTACK using the fast growth functions.
+
+   While you know there is room, you can use these fast growth functions
+for adding data to a growing object:
+
+ - Function: void obstack_1grow_fast (struct obstack *OBSTACK-PTR, char
+          C)
+     The function `obstack_1grow_fast' adds one byte containing the
+     character C to the growing object in obstack OBSTACK-PTR.
+
+ - Function: void obstack_ptr_grow_fast (struct obstack *OBSTACK-PTR,
+          void *DATA)
+     The function `obstack_ptr_grow_fast' adds `sizeof (void *)' bytes
+     containing the value of DATA to the growing object in obstack
+     OBSTACK-PTR.
+
+ - Function: void obstack_int_grow_fast (struct obstack *OBSTACK-PTR,
+          int DATA)
+     The function `obstack_int_grow_fast' adds `sizeof (int)' bytes
+     containing the value of DATA to the growing object in obstack
+     OBSTACK-PTR.
+
+ - Function: void obstack_blank_fast (struct obstack *OBSTACK-PTR, int
+          SIZE)
+     The function `obstack_blank_fast' adds SIZE bytes to the growing
+     object in obstack OBSTACK-PTR without initializing them.
+
+   When you check for space using `obstack_room' and there is not
+enough room for what you want to add, the fast growth functions are not
+safe.  In this case, simply use the corresponding ordinary growth
+function instead.  Very soon this will copy the object to a new chunk;
+then there will be lots of room available again.
+
+   So, each time you use an ordinary growth function, check afterward
+for sufficient space using `obstack_room'.  Once the object is copied
+to a new chunk, there will be plenty of space again, so the program will
+start using the fast growth functions again.
+
+   Here is an example:
+
+     void
+     add_string (struct obstack *obstack, const char *ptr, int len)
+     {
+       while (len > 0)
+         {
+           int room = obstack_room (obstack);
+           if (room == 0)
+             {
+               /* Not enough room. Add one character slowly,
+                  which may copy to a new chunk and make room.  */
+               obstack_1grow (obstack, *ptr++);
+               len--;
+             }
+           else
+             {
+               if (room > len)
+                 room = len;
+               /* Add fast as much as we have room for. */
+               len -= room;
+               while (room-- > 0)
+                 obstack_1grow_fast (obstack, *ptr++);
+             }
+         }
+     }
+
+
+File: libc.info,  Node: Status of an Obstack,  Next: Obstacks Data Alignment,  Prev: Extra Fast Growing,  Up: Obstacks
+
+Status of an Obstack
+--------------------
+
+   Here are functions that provide information on the current status of
+allocation in an obstack.  You can use them to learn about an object
+while still growing it.
+
+ - Function: void * obstack_base (struct obstack *OBSTACK-PTR)
+     This function returns the tentative address of the beginning of the
+     currently growing object in OBSTACK-PTR.  If you finish the object
+     immediately, it will have that address.  If you make it larger
+     first, it may outgrow the current chunk--then its address will
+     change!
+
+     If no object is growing, this value says where the next object you
+     allocate will start (once again assuming it fits in the current
+     chunk).
+
+ - Function: void * obstack_next_free (struct obstack *OBSTACK-PTR)
+     This function returns the address of the first free byte in the
+     current chunk of obstack OBSTACK-PTR.  This is the end of the
+     currently growing object.  If no object is growing,
+     `obstack_next_free' returns the same value as `obstack_base'.
+
+ - Function: int obstack_object_size (struct obstack *OBSTACK-PTR)
+     This function returns the size in bytes of the currently growing
+     object.  This is equivalent to
+
+          obstack_next_free (OBSTACK-PTR) - obstack_base (OBSTACK-PTR)
+
+
+File: libc.info,  Node: Obstacks Data Alignment,  Next: Obstack Chunks,  Prev: Status of an Obstack,  Up: Obstacks
+
+Alignment of Data in Obstacks
+-----------------------------
+
+   Each obstack has an "alignment boundary"; each object allocated in
+the obstack automatically starts on an address that is a multiple of the
+specified boundary.  By default, this boundary is 4 bytes.
+
+   To access an obstack's alignment boundary, use the macro
+`obstack_alignment_mask', whose function prototype looks like this:
+
+ - Macro: int obstack_alignment_mask (struct obstack *OBSTACK-PTR)
+     The value is a bit mask; a bit that is 1 indicates that the
+     corresponding bit in the address of an object should be 0.  The
+     mask value should be one less than a power of 2; the effect is
+     that all object addresses are multiples of that power of 2.  The
+     default value of the mask is 3, so that addresses are multiples of
+     4.  A mask value of 0 means an object can start on any multiple of
+     1 (that is, no alignment is required).
+
+     The expansion of the macro `obstack_alignment_mask' is an lvalue,
+     so you can alter the mask by assignment.  For example, this
+     statement:
+
+          obstack_alignment_mask (obstack_ptr) = 0;
+
+     has the effect of turning off alignment processing in the
+     specified obstack.
+
+   Note that a change in alignment mask does not take effect until
+*after* the next time an object is allocated or finished in the
+obstack.  If you are not growing an object, you can make the new
+alignment mask take effect immediately by calling `obstack_finish'.
+This will finish a zero-length object and then do proper alignment for
+the next object.
+
+
+File: libc.info,  Node: Obstack Chunks,  Next: Summary of Obstacks,  Prev: Obstacks Data Alignment,  Up: Obstacks
+
+Obstack Chunks
+--------------
+
+   Obstacks work by allocating space for themselves in large chunks, and
+then parceling out space in the chunks to satisfy your requests.  Chunks
+are normally 4096 bytes long unless you specify a different chunk size.
+The chunk size includes 8 bytes of overhead that are not actually used
+for storing objects.  Regardless of the specified size, longer chunks
+will be allocated when necessary for long objects.
+
+   The obstack library allocates chunks by calling the function
+`obstack_chunk_alloc', which you must define.  When a chunk is no
+longer needed because you have freed all the objects in it, the obstack
+library frees the chunk by calling `obstack_chunk_free', which you must
+also define.
+
+   These two must be defined (as macros) or declared (as functions) in
+each source file that uses `obstack_init' (*note Creating Obstacks::.).
+Most often they are defined as macros like this:
+
+     #define obstack_chunk_alloc xmalloc
+     #define obstack_chunk_free free
+
+   Note that these are simple macros (no arguments).  Macro definitions
+with arguments will not work!  It is necessary that
+`obstack_chunk_alloc' or `obstack_chunk_free', alone, expand into a
+function name if it is not itself a function name.
+
+   If you allocate chunks with `malloc', the chunk size should be a
+power of 2.  The default chunk size, 4096, was chosen because it is long
+enough to satisfy many typical requests on the obstack yet short enough
+not to waste too much memory in the portion of the last chunk not yet
+used.
+
+ - Macro: int obstack_chunk_size (struct obstack *OBSTACK-PTR)
+     This returns the chunk size of the given obstack.
+
+   Since this macro expands to an lvalue, you can specify a new chunk
+size by assigning it a new value.  Doing so does not affect the chunks
+already allocated, but will change the size of chunks allocated for
+that particular obstack in the future.  It is unlikely to be useful to
+make the chunk size smaller, but making it larger might improve
+efficiency if you are allocating many objects whose size is comparable
+to the chunk size.  Here is how to do so cleanly:
+
+     if (obstack_chunk_size (obstack_ptr) < NEW-CHUNK-SIZE)
+       obstack_chunk_size (obstack_ptr) = NEW-CHUNK-SIZE;
+
+
+File: libc.info,  Node: Summary of Obstacks,  Prev: Obstack Chunks,  Up: Obstacks
+
+Summary of Obstack Functions
+----------------------------
+
+   Here is a summary of all the functions associated with obstacks.
+Each takes the address of an obstack (`struct obstack *') as its first
+argument.
+
+`void obstack_init (struct obstack *OBSTACK-PTR)'
+     Initialize use of an obstack.  *Note Creating Obstacks::.
+
+`void *obstack_alloc (struct obstack *OBSTACK-PTR, int SIZE)'
+     Allocate an object of SIZE uninitialized bytes.  *Note Allocation
+     in an Obstack::.
+
+`void *obstack_copy (struct obstack *OBSTACK-PTR, void *ADDRESS, int SIZE)'
+     Allocate an object of SIZE bytes, with contents copied from
+     ADDRESS.  *Note Allocation in an Obstack::.
+
+`void *obstack_copy0 (struct obstack *OBSTACK-PTR, void *ADDRESS, int SIZE)'
+     Allocate an object of SIZE+1 bytes, with SIZE of them copied from
+     ADDRESS, followed by a null character at the end.  *Note
+     Allocation in an Obstack::.
+
+`void obstack_free (struct obstack *OBSTACK-PTR, void *OBJECT)'
+     Free OBJECT (and everything allocated in the specified obstack
+     more recently than OBJECT).  *Note Freeing Obstack Objects::.
+
+`void obstack_blank (struct obstack *OBSTACK-PTR, int SIZE)'
+     Add SIZE uninitialized bytes to a growing object.  *Note Growing
+     Objects::.
+
+`void obstack_grow (struct obstack *OBSTACK-PTR, void *ADDRESS, int SIZE)'
+     Add SIZE bytes, copied from ADDRESS, to a growing object.  *Note
+     Growing Objects::.
+
+`void obstack_grow0 (struct obstack *OBSTACK-PTR, void *ADDRESS, int SIZE)'
+     Add SIZE bytes, copied from ADDRESS, to a growing object, and then
+     add another byte containing a null character.  *Note Growing
+     Objects::.
+
+`void obstack_1grow (struct obstack *OBSTACK-PTR, char DATA-CHAR)'
+     Add one byte containing DATA-CHAR to a growing object.  *Note
+     Growing Objects::.
+
+`void *obstack_finish (struct obstack *OBSTACK-PTR)'
+     Finalize the object that is growing and return its permanent
+     address.  *Note Growing Objects::.
+
+`int obstack_object_size (struct obstack *OBSTACK-PTR)'
+     Get the current size of the currently growing object.  *Note
+     Growing Objects::.
+
+`void obstack_blank_fast (struct obstack *OBSTACK-PTR, int SIZE)'
+     Add SIZE uninitialized bytes to a growing object without checking
+     that there is enough room.  *Note Extra Fast Growing::.
+
+`void obstack_1grow_fast (struct obstack *OBSTACK-PTR, char DATA-CHAR)'
+     Add one byte containing DATA-CHAR to a growing object without
+     checking that there is enough room.  *Note Extra Fast Growing::.
+
+`int obstack_room (struct obstack *OBSTACK-PTR)'
+     Get the amount of room now available for growing the current
+     object.  *Note Extra Fast Growing::.
+
+`int obstack_alignment_mask (struct obstack *OBSTACK-PTR)'
+     The mask used for aligning the beginning of an object.  This is an
+     lvalue.  *Note Obstacks Data Alignment::.
+
+`int obstack_chunk_size (struct obstack *OBSTACK-PTR)'
+     The size for allocating chunks.  This is an lvalue.  *Note Obstack
+     Chunks::.
+
+`void *obstack_base (struct obstack *OBSTACK-PTR)'
+     Tentative starting address of the currently growing object.  *Note
+     Status of an Obstack::.
+
+`void *obstack_next_free (struct obstack *OBSTACK-PTR)'
+     Address just after the end of the currently growing object.  *Note
+     Status of an Obstack::.
+
+
+File: libc.info,  Node: Variable Size Automatic,  Next: Relocating Allocator,  Prev: Obstacks,  Up: Memory Allocation
+
+Automatic Storage with Variable Size
+====================================
+
+   The function `alloca' supports a kind of half-dynamic allocation in
+which blocks are allocated dynamically but freed automatically.
+
+   Allocating a block with `alloca' is an explicit action; you can
+allocate as many blocks as you wish, and compute the size at run time.
+But all the blocks are freed when you exit the function that `alloca'
+was called from, just as if they were automatic variables declared in
+that function.  There is no way to free the space explicitly.
+
+   The prototype for `alloca' is in `stdlib.h'.  This function is a BSD
+extension.
+
+ - Function: void * alloca (size_t SIZE);
+     The return value of `alloca' is the address of a block of SIZE
+     bytes of storage, allocated in the stack frame of the calling
+     function.
+
+   Do not use `alloca' inside the arguments of a function call--you
+will get unpredictable results, because the stack space for the
+`alloca' would appear on the stack in the middle of the space for the
+function arguments.  An example of what to avoid is `foo (x, alloca
+(4), y)'.
+
+* Menu:
+
+* Alloca Example::              Example of using `alloca'.
+* Advantages of Alloca::        Reasons to use `alloca'.
+* Disadvantages of Alloca::     Reasons to avoid `alloca'.
+* GNU C Variable-Size Arrays::  Only in GNU C, here is an alternative
+				 method of allocating dynamically and
+				 freeing automatically.
+
+
+File: libc.info,  Node: Alloca Example,  Next: Advantages of Alloca,  Up: Variable Size Automatic
+
+`alloca' Example
+----------------
+
+   As an example of use of `alloca', here is a function that opens a
+file name made from concatenating two argument strings, and returns a
+file descriptor or minus one signifying failure:
+
+     int
+     open2 (char *str1, char *str2, int flags, int mode)
+     {
+       char *name = (char *) alloca (strlen (str1) + strlen (str2) + 1);
+       stpcpy (stpcpy (name, str1), str2);
+       return open (name, flags, mode);
+     }
+
+Here is how you would get the same results with `malloc' and `free':
+
+     int
+     open2 (char *str1, char *str2, int flags, int mode)
+     {
+       char *name = (char *) malloc (strlen (str1) + strlen (str2) + 1);
+       int desc;
+       if (name == 0)
+         fatal ("virtual memory exceeded");
+       stpcpy (stpcpy (name, str1), str2);
+       desc = open (name, flags, mode);
+       free (name);
+       return desc;
+     }
+
+   As you can see, it is simpler with `alloca'.  But `alloca' has
+other, more important advantages, and some disadvantages.
+
+
+File: libc.info,  Node: Advantages of Alloca,  Next: Disadvantages of Alloca,  Prev: Alloca Example,  Up: Variable Size Automatic
+
+Advantages of `alloca'
+----------------------
+
+   Here are the reasons why `alloca' may be preferable to `malloc':
+
+   * Using `alloca' wastes very little space and is very fast.  (It is
+     open-coded by the GNU C compiler.)
+
+   * Since `alloca' does not have separate pools for different sizes of
+     block, space used for any size block can be reused for any other
+     size.  `alloca' does not cause storage fragmentation.
+
+   * Nonlocal exits done with `longjmp' (*note Non-Local Exits::.)
+     automatically free the space allocated with `alloca' when they exit
+     through the function that called `alloca'.  This is the most
+     important reason to use `alloca'.
+
+     To illustrate this, suppose you have a function
+     `open_or_report_error' which returns a descriptor, like `open', if
+     it succeeds, but does not return to its caller if it fails.  If
+     the file cannot be opened, it prints an error message and jumps
+     out to the command level of your program using `longjmp'.  Let's
+     change `open2' (*note Alloca Example::.) to use this subroutine:
+
+          int
+          open2 (char *str1, char *str2, int flags, int mode)
+          {
+            char *name = (char *) alloca (strlen (str1) + strlen (str2) + 1);
+            stpcpy (stpcpy (name, str1), str2);
+            return open_or_report_error (name, flags, mode);
+          }
+
+     Because of the way `alloca' works, the storage it allocates is
+     freed even when an error occurs, with no special effort required.
+
+     By contrast, the previous definition of `open2' (which uses
+     `malloc' and `free') would develop a storage leak if it were
+     changed in this way.  Even if you are willing to make more changes
+     to fix it, there is no easy way to do so.
+
+
+File: libc.info,  Node: Disadvantages of Alloca,  Next: GNU C Variable-Size Arrays,  Prev: Advantages of Alloca,  Up: Variable Size Automatic
+
+Disadvantages of `alloca'
+-------------------------
+
+   These are the disadvantages of `alloca' in comparison with `malloc':
+
+   * If you try to allocate more storage than the machine can provide,
+     you don't get a clean error message.  Instead you get a fatal
+     signal like the one you would get from an infinite recursion;
+     probably a segmentation violation (*note Program Error Signals::.).
+
+   * Some non-GNU systems fail to support `alloca', so it is less
+     portable.  However, a slower emulation of `alloca' written in C is
+     available for use on systems with this deficiency.
+
+
+File: libc.info,  Node: GNU C Variable-Size Arrays,  Prev: Disadvantages of Alloca,  Up: Variable Size Automatic
+
+GNU C Variable-Size Arrays
+--------------------------
+
+   In GNU C, you can replace most uses of `alloca' with an array of
+variable size.  Here is how `open2' would look then:
+
+     int open2 (char *str1, char *str2, int flags, int mode)
+     {
+       char name[strlen (str1) + strlen (str2) + 1];
+       stpcpy (stpcpy (name, str1), str2);
+       return open (name, flags, mode);
+     }
+
+   But `alloca' is not always equivalent to a variable-sized array, for
+several reasons:
+
+   * A variable size array's space is freed at the end of the scope of
+     the name of the array.  The space allocated with `alloca' remains
+     until the end of the function.
+
+   * It is possible to use `alloca' within a loop, allocating an
+     additional block on each iteration.  This is impossible with
+     variable-sized arrays.
+
+   *Note:* If you mix use of `alloca' and variable-sized arrays within
+one function, exiting a scope in which a variable-sized array was
+declared frees all blocks allocated with `alloca' during the execution
+of that scope.
+
+
+File: libc.info,  Node: Relocating Allocator,  Next: Memory Warnings,  Prev: Variable Size Automatic,  Up: Memory Allocation
+
+Relocating Allocator
+====================
+
+   Any system of dynamic memory allocation has overhead: the amount of
+space it uses is more than the amount the program asks for.  The
+"relocating memory allocator" achieves very low overhead by moving
+blocks in memory as necessary, on its own initiative.
+
+* Menu:
+
+* Relocator Concepts::		How to understand relocating allocation.
+* Using Relocator::		Functions for relocating allocation.
+
+
+File: libc.info,  Node: Relocator Concepts,  Next: Using Relocator,  Up: Relocating Allocator
+
+Concepts of Relocating Allocation
+---------------------------------
+
+   The "relocating memory allocator" achieves very low overhead by
+moving blocks in memory as necessary, on its own initiative.
+
+   When you allocate a block with `malloc', the address of the block
+never changes unless you use `realloc' to change its size.  Thus, you
+can safely store the address in various places, temporarily or
+permanently, as you like.  This is not safe when you use the relocating
+memory allocator, because any and all relocatable blocks can move
+whenever you allocate memory in any fashion.  Even calling `malloc' or
+`realloc' can move the relocatable blocks.
+
+   For each relocatable block, you must make a "handle"--a pointer
+object in memory, designated to store the address of that block.  The
+relocating allocator knows where each block's handle is, and updates the
+address stored there whenever it moves the block, so that the handle
+always points to the block.  Each time you access the contents of the
+block, you should fetch its address anew from the handle.
+
+   To call any of the relocating allocator functions from a signal
+handler is almost certainly incorrect, because the signal could happen
+at any time and relocate all the blocks.  The only way to make this
+safe is to block the signal around any access to the contents of any
+relocatable block--not a convenient mode of operation.  *Note
+Nonreentrancy::.
+
+
+File: libc.info,  Node: Using Relocator,  Prev: Relocator Concepts,  Up: Relocating Allocator
+
+Allocating and Freeing Relocatable Blocks
+-----------------------------------------
+
+   In the descriptions below, HANDLEPTR designates the address of the
+handle.  All the functions are declared in `malloc.h'; all are GNU
+extensions.
+
+ - Function: void * r_alloc (void **HANDLEPTR, size_t SIZE)
+     This function allocates a relocatable block of size SIZE.  It
+     stores the block's address in `*HANDLEPTR' and returns a non-null
+     pointer to indicate success.
+
+     If `r_alloc' can't get the space needed, it stores a null pointer
+     in `*HANDLEPTR', and returns a null pointer.
+
+ - Function: void r_alloc_free (void **HANDLEPTR)
+     This function is the way to free a relocatable block.  It frees the
+     block that `*HANDLEPTR' points to, and stores a null pointer in
+     `*HANDLEPTR' to show it doesn't point to an allocated block any
+     more.
+
+ - Function: void * r_re_alloc (void **HANDLEPTR, size_t SIZE)
+     The function `r_re_alloc' adjusts the size of the block that
+     `*HANDLEPTR' points to, making it SIZE bytes long.  It stores the
+     address of the resized block in `*HANDLEPTR' and returns a
+     non-null pointer to indicate success.
+
+     If enough memory is not available, this function returns a null
+     pointer and does not modify `*HANDLEPTR'.
+
+
+File: libc.info,  Node: Memory Warnings,  Prev: Relocating Allocator,  Up: Memory Allocation
+
+Memory Usage Warnings
+=====================
+
+   You can ask for warnings as the program approaches running out of
+memory space, by calling `memory_warnings'.  This tells `malloc' to
+check memory usage every time it asks for more memory from the operating
+system.  This is a GNU extension declared in `malloc.h'.
+
+ - Function: void memory_warnings (void *START, void (*WARN-FUNC)
+          (const char *))
+     Call this function to request warnings for nearing exhaustion of
+     virtual memory.
+
+     The argument START says where data space begins, in memory.  The
+     allocator compares this against the last address used and against
+     the limit of data space, to determine the fraction of available
+     memory in use.  If you supply zero for START, then a default value
+     is used which is right in most circumstances.
+
+     For WARN-FUNC, supply a function that `malloc' can call to warn
+     you.  It is called with a string (a warning message) as argument.
+     Normally it ought to display the string for the user to read.
+
+   The warnings come when memory becomes 75% full, when it becomes 85%
+full, and when it becomes 95% full.  Above 95% you get another warning
+each time memory usage increases.
+
+
+File: libc.info,  Node: Character Handling,  Next: String and Array Utilities,  Prev: Memory Allocation,  Up: Top
+
+Character Handling
+******************
+
+   Programs that work with characters and strings often need to
+classify a character--is it alphabetic, is it a digit, is it
+whitespace, and so on--and perform case conversion operations on
+characters.  The functions in the header file `ctype.h' are provided
+for this purpose.
+
+   Since the choice of locale and character set can alter the
+classifications of particular character codes, all of these functions
+are affected by the current locale.  (More precisely, they are affected
+by the locale currently selected for character classification--the
+`LC_CTYPE' category; see *Note Locale Categories::.)
+
+* Menu:
+
+* Classification of Characters::   Testing whether characters are
+			            letters, digits, punctuation, etc.
+
+* Case Conversion::                Case mapping, and the like.
+
+
+File: libc.info,  Node: Classification of Characters,  Next: Case Conversion,  Up: Character Handling
+
+Classification of Characters
+============================
+
+   This section explains the library functions for classifying
+characters.  For example, `isalpha' is the function to test for an
+alphabetic character.  It takes one argument, the character to test,
+and returns a nonzero integer if the character is alphabetic, and zero
+otherwise.  You would use it like this:
+
+     if (isalpha (c))
+       printf ("The character `%c' is alphabetic.\n", c);
+
+   Each of the functions in this section tests for membership in a
+particular class of characters; each has a name starting with `is'.
+Each of them takes one argument, which is a character to test, and
+returns an `int' which is treated as a boolean value.  The character
+argument is passed as an `int', and it may be the constant value `EOF'
+instead of a real character.
+
+   The attributes of any given character can vary between locales.
+*Note Locales::, for more information on locales.
+
+   These functions are declared in the header file `ctype.h'.
+
+ - Function: int islower (int C)
+     Returns true if C is a lower-case letter.
+
+ - Function: int isupper (int C)
+     Returns true if C is an upper-case letter.
+
+ - Function: int isalpha (int C)
+     Returns true if C is an alphabetic character (a letter).  If
+     `islower' or `isupper' is true of a character, then `isalpha' is
+     also true.
+
+     In some locales, there may be additional characters for which
+     `isalpha' is true-letters which are neither upper case nor lower
+     case.  But in the standard `"C"' locale, there are no such
+     additional characters.
+
+ - Function: int isdigit (int C)
+     Returns true if C is a decimal digit (`0' through `9').
+
+ - Function: int isalnum (int C)
+     Returns true if C is an alphanumeric character (a letter or
+     number); in other words, if either `isalpha' or `isdigit' is true
+     of a character, then `isalnum' is also true.
+
+ - Function: int isxdigit (int C)
+     Returns true if C is a hexadecimal digit.  Hexadecimal digits
+     include the normal decimal digits `0' through `9' and the letters
+     `A' through `F' and `a' through `f'.
+
+ - Function: int ispunct (int C)
+     Returns true if C is a punctuation character.  This means any
+     printing character that is not alphanumeric or a space character.
+
+ - Function: int isspace (int C)
+     Returns true if C is a "whitespace" character.  In the standard
+     `"C"' locale, `isspace' returns true for only the standard
+     whitespace characters:
+
+    `' ''
+          space
+
+    `'\f''
+          formfeed
+
+    `'\n''
+          newline
+
+    `'\r''
+          carriage return
+
+    `'\t''
+          horizontal tab
+
+    `'\v''
+          vertical tab
+
+ - Function: int isblank (int C)
+     Returns true if C is a blank character; that is, a space or a tab.
+     This function is a GNU extension.
+
+ - Function: int isgraph (int C)
+     Returns true if C is a graphic character; that is, a character
+     that has a glyph associated with it.  The whitespace characters
+     are not considered graphic.
+
+ - Function: int isprint (int C)
+     Returns true if C is a printing character.  Printing characters
+     include all the graphic characters, plus the space (` ') character.
+
+ - Function: int iscntrl (int C)
+     Returns true if C is a control character (that is, a character that
+     is not a printing character).
+
+ - Function: int isascii (int C)
+     Returns true if C is a 7-bit `unsigned char' value that fits into
+     the US/UK ASCII character set.  This function is a BSD extension
+     and is also an SVID extension.
+
+
+File: libc.info,  Node: Case Conversion,  Prev: Classification of Characters,  Up: Character Handling
+
+Case Conversion
+===============
+
+   This section explains the library functions for performing
+conversions such as case mappings on characters.  For example, `toupper'
+converts any character to upper case if possible.  If the character
+can't be converted, `toupper' returns it unchanged.
+
+   These functions take one argument of type `int', which is the
+character to convert, and return the converted character as an `int'.
+If the conversion is not applicable to the argument given, the argument
+is returned unchanged.
+
+   *Compatibility Note:* In pre-ISO C dialects, instead of returning
+the argument unchanged, these functions may fail when the argument is
+not suitable for the conversion.  Thus for portability, you may need to
+write `islower(c) ? toupper(c) : c' rather than just `toupper(c)'.
+
+   These functions are declared in the header file `ctype.h'.
+
+ - Function: int tolower (int C)
+     If C is an upper-case letter, `tolower' returns the corresponding
+     lower-case letter.  If C is not an upper-case letter, C is
+     returned unchanged.
+
+ - Function: int toupper (int C)
+     If C is a lower-case letter, `tolower' returns the corresponding
+     upper-case letter.  Otherwise C is returned unchanged.
+
+ - Function: int toascii (int C)
+     This function converts C to a 7-bit `unsigned char' value that
+     fits into the US/UK ASCII character set, by clearing the high-order
+     bits.  This function is a BSD extension and is also an SVID
+     extension.
+
+ - Function: int _tolower (int C)
+     This is identical to `tolower', and is provided for compatibility
+     with the SVID.  *Note SVID::.
+
+ - Function: int _toupper (int C)
+     This is identical to `toupper', and is provided for compatibility
+     with the SVID.
+
+
+File: libc.info,  Node: String and Array Utilities,  Next: Extended Characters,  Prev: Character Handling,  Up: Top
+
+String and Array Utilities
+**************************
+
+   Operations on strings (or arrays of characters) are an important
+part of many programs.  The GNU C library provides an extensive set of
+string utility functions, including functions for copying,
+concatenating, comparing, and searching strings.  Many of these
+functions can also operate on arbitrary regions of storage; for
+example, the `memcpy' function can be used to copy the contents of any
+kind of array.
+
+   It's fairly common for beginning C programmers to "reinvent the
+wheel" by duplicating this functionality in their own code, but it pays
+to become familiar with the library functions and to make use of them,
+since this offers benefits in maintenance, efficiency, and portability.
+
+   For instance, you could easily compare one string to another in two
+lines of C code, but if you use the built-in `strcmp' function, you're
+less likely to make a mistake.  And, since these library functions are
+typically highly optimized, your program may run faster too.
+
+* Menu:
+
+* Representation of Strings::   Introduction to basic concepts.
+* String/Array Conventions::    Whether to use a string function or an
+				 arbitrary array function.
+* String Length::               Determining the length of a string.
+* Copying and Concatenation::   Functions to copy the contents of strings
+				 and arrays.
+* String/Array Comparison::     Functions for byte-wise and character-wise
+				 comparison.
+* Collation Functions::         Functions for collating strings.
+* Search Functions::            Searching for a specific element or substring.
+* Finding Tokens in a String::  Splitting a string into tokens by looking
+				 for delimiters.
+
+
+File: libc.info,  Node: Representation of Strings,  Next: String/Array Conventions,  Up: String and Array Utilities
+
+Representation of Strings
+=========================
+
+   This section is a quick summary of string concepts for beginning C
+programmers.  It describes how character strings are represented in C
+and some common pitfalls.  If you are already familiar with this
+material, you can skip this section.
+
+   A "string" is an array of `char' objects.  But string-valued
+variables are usually declared to be pointers of type `char *'.  Such
+variables do not include space for the text of a string; that has to be
+stored somewhere else--in an array variable, a string constant, or
+dynamically allocated memory (*note Memory Allocation::.).  It's up to
+you to store the address of the chosen memory space into the pointer
+variable.  Alternatively you can store a "null pointer" in the pointer
+variable.  The null pointer does not point anywhere, so attempting to
+reference the string it points to gets an error.
+
+   By convention, a "null character", `'\0'', marks the end of a
+string.  For example, in testing to see whether the `char *' variable P
+points to a null character marking the end of a string, you can write
+`!*P' or `*P == '\0''.
+
+   A null character is quite different conceptually from a null pointer,
+although both are represented by the integer `0'.
+
+   "String literals" appear in C program source as strings of
+characters between double-quote characters (`"').  In ISO C, string
+literals can also be formed by "string concatenation": `"a" "b"' is the
+same as `"ab"'.  Modification of string literals is not allowed by the
+GNU C compiler, because literals are placed in read-only storage.
+
+   Character arrays that are declared `const' cannot be modified
+either.  It's generally good style to declare non-modifiable string
+pointers to be of type `const char *', since this often allows the C
+compiler to detect accidental modifications as well as providing some
+amount of documentation about what your program intends to do with the
+string.
+
+   The amount of memory allocated for the character array may extend
+past the null character that normally marks the end of the string.  In
+this document, the term "allocation size" is always used to refer to the
+total amount of memory allocated for the string, while the term
+"length" refers to the number of characters up to (but not including)
+the terminating null character.
+
+   A notorious source of program bugs is trying to put more characters
+in a string than fit in its allocated size.  When writing code that
+extends strings or moves characters into a pre-allocated array, you
+should be very careful to keep track of the length of the text and make
+explicit checks for overflowing the array.  Many of the library
+functions *do not* do this for you!  Remember also that you need to
+allocate an extra byte to hold the null character that marks the end of
+the string.
+
+
+File: libc.info,  Node: String/Array Conventions,  Next: String Length,  Prev: Representation of Strings,  Up: String and Array Utilities
+
+String and Array Conventions
+============================
+
+   This chapter describes both functions that work on arbitrary arrays
+or blocks of memory, and functions that are specific to null-terminated
+arrays of characters.
+
+   Functions that operate on arbitrary blocks of memory have names
+beginning with `mem' (such as `memcpy') and invariably take an argument
+which specifies the size (in bytes) of the block of memory to operate
+on.  The array arguments and return values for these functions have
+type `void *', and as a matter of style, the elements of these arrays
+are referred to as "bytes".  You can pass any kind of pointer to these
+functions, and the `sizeof' operator is useful in computing the value
+for the size argument.
+
+   In contrast, functions that operate specifically on strings have
+names beginning with `str' (such as `strcpy') and look for a null
+character to terminate the string instead of requiring an explicit size
+argument to be passed.  (Some of these functions accept a specified
+maximum length, but they also check for premature termination with a
+null character.)  The array arguments and return values for these
+functions have type `char *', and the array elements are referred to as
+"characters".
+
+   In many cases, there are both `mem' and `str' versions of a
+function.  The one that is more appropriate to use depends on the exact
+situation.  When your program is manipulating arbitrary arrays or
+blocks of storage, then you should always use the `mem' functions.  On
+the other hand, when you are manipulating null-terminated strings it is
+usually more convenient to use the `str' functions, unless you already
+know the length of the string in advance.
+
+
+File: libc.info,  Node: String Length,  Next: Copying and Concatenation,  Prev: String/Array Conventions,  Up: String and Array Utilities
+
+String Length
+=============
+
+   You can get the length of a string using the `strlen' function.
+This function is declared in the header file `string.h'.
+
+ - Function: size_t strlen (const char *S)
+     The `strlen' function returns the length of the null-terminated
+     string S.  (In other words, it returns the offset of the
+     terminating null character within the array.)
+
+     For example,
+          strlen ("hello, world")
+              => 12
+
+     When applied to a character array, the `strlen' function returns
+     the length of the string stored there, not its allocation size.
+     You can get the allocation size of the character array that holds
+     a string using the `sizeof' operator:
+
+          char string[32] = "hello, world";
+          sizeof (string)
+              => 32
+          strlen (string)
+              => 12
+
+
+File: libc.info,  Node: Copying and Concatenation,  Next: String/Array Comparison,  Prev: String Length,  Up: String and Array Utilities
+
+Copying and Concatenation
+=========================
+
+   You can use the functions described in this section to copy the
+contents of strings and arrays, or to append the contents of one string
+to another.  These functions are declared in the header file `string.h'.
+
+   A helpful way to remember the ordering of the arguments to the
+functions in this section is that it corresponds to an assignment
+expression, with the destination array specified to the left of the
+source array.  All of these functions return the address of the
+destination array.
+
+   Most of these functions do not work properly if the source and
+destination arrays overlap.  For example, if the beginning of the
+destination array overlaps the end of the source array, the original
+contents of that part of the source array may get overwritten before it
+is copied.  Even worse, in the case of the string functions, the null
+character marking the end of the string may be lost, and the copy
+function might get stuck in a loop trashing all the memory allocated to
+your program.
+
+   All functions that have problems copying between overlapping arrays
+are explicitly identified in this manual.  In addition to functions in
+this section, there are a few others like `sprintf' (*note Formatted
+Output Functions::.) and `scanf' (*note Formatted Input Functions::.).
+
+ - Function: void * memcpy (void *TO, const void *FROM, size_t SIZE)
+     The `memcpy' function copies SIZE bytes from the object beginning
+     at FROM into the object beginning at TO.  The behavior of this
+     function is undefined if the two arrays TO and FROM overlap; use
+     `memmove' instead if overlapping is possible.
+
+     The value returned by `memcpy' is the value of TO.
+
+     Here is an example of how you might use `memcpy' to copy the
+     contents of an array:
+
+          struct foo *oldarray, *newarray;
+          int arraysize;
+          ...
+          memcpy (new, old, arraysize * sizeof (struct foo));
+
+ - Function: void * memmove (void *TO, const void *FROM, size_t SIZE)
+     `memmove' copies the SIZE bytes at FROM into the SIZE bytes at TO,
+     even if those two blocks of space overlap.  In the case of
+     overlap, `memmove' is careful to copy the original values of the
+     bytes in the block at FROM, including those bytes which also
+     belong to the block at TO.
+
+ - Function: void * memccpy (void *TO, const void *FROM, int C, size_t
+          SIZE)
+     This function copies no more than SIZE bytes from FROM to TO,
+     stopping if a byte matching C is found.  The return value is a
+     pointer into TO one byte past where C was copied, or a null
+     pointer if no byte matching C appeared in the first SIZE bytes of
+     FROM.
+
+ - Function: void * memset (void *BLOCK, int C, size_t SIZE)
+     This function copies the value of C (converted to an `unsigned
+     char') into each of the first SIZE bytes of the object beginning
+     at BLOCK.  It returns the value of BLOCK.
+
+ - Function: char * strcpy (char *TO, const char *FROM)
+     This copies characters from the string FROM (up to and including
+     the terminating null character) into the string TO.  Like
+     `memcpy', this function has undefined results if the strings
+     overlap.  The return value is the value of TO.
+
+ - Function: char * strncpy (char *TO, const char *FROM, size_t SIZE)
+     This function is similar to `strcpy' but always copies exactly
+     SIZE characters into TO.
+
+     If the length of FROM is more than SIZE, then `strncpy' copies
+     just the first SIZE characters.  Note that in this case there is
+     no null terminator written into TO.
+
+     If the length of FROM is less than SIZE, then `strncpy' copies all
+     of FROM, followed by enough null characters to add up to SIZE
+     characters in all.  This behavior is rarely useful, but it is
+     specified by the ISO C standard.
+
+     The behavior of `strncpy' is undefined if the strings overlap.
+
+     Using `strncpy' as opposed to `strcpy' is a way to avoid bugs
+     relating to writing past the end of the allocated space for TO.
+     However, it can also make your program much slower in one common
+     case: copying a string which is probably small into a potentially
+     large buffer.  In this case, SIZE may be large, and when it is,
+     `strncpy' will waste a considerable amount of time copying null
+     characters.
+
+ - Function: char * strdup (const char *S)
+     This function copies the null-terminated string S into a newly
+     allocated string.  The string is allocated using `malloc'; see
+     *Note Unconstrained Allocation::.  If `malloc' cannot allocate
+     space for the new string, `strdup' returns a null pointer.
+     Otherwise it returns a pointer to the new string.
+
+ - Function: char * strndup (const char *S, size_t SIZE)
+     This function is similar to `strdup' but always copies at most
+     SIZE characters into the newly allocated string.
+
+     If the length of S is more than SIZE, then `strndup' copies just
+     the first SIZE characters and adds a closing null terminator.
+     Otherwise all characters are copied and the string is terminated.
+
+     This function is different to `strncpy' in that it always
+     terminates the destination string.
+
+ - Function: char * stpcpy (char *TO, const char *FROM)
+     This function is like `strcpy', except that it returns a pointer to
+     the end of the string TO (that is, the address of the terminating
+     null character) rather than the beginning.
+
+     For example, this program uses `stpcpy' to concatenate `foo' and
+     `bar' to produce `foobar', which it then prints.
+
+          #include <string.h>
+          #include <stdio.h>
+          
+          int
+          main (void)
+          {
+            char buffer[10];
+            char *to = buffer;
+            to = stpcpy (to, "foo");
+            to = stpcpy (to, "bar");
+            puts (buffer);
+            return 0;
+          }
+
+     This function is not part of the ISO or POSIX standards, and is not
+     customary on Unix systems, but we did not invent it either.
+     Perhaps it comes from MS-DOG.
+
+     Its behavior is undefined if the strings overlap.
+
+ - Function: char * stpncpy (char *TO, const char *FROM, size_t SIZE)
+     This function is similar to `stpcpy' but copies always exactly
+     SIZE characters into TO.
+
+     If the length of FROM is more then SIZE, then `stpncpy' copies
+     just the first SIZE characters and returns a pointer to the
+     character directly following the one which was copied last.  Note
+     that in this case there is no null terminator written into TO.
+
+     If the length of FROM is less than SIZE, then `stpncpy' copies all
+     of FROM, followed by enough null characters to add up to SIZE
+     characters in all.  This behaviour is rarely useful, but it is
+     implemented to be useful in contexts where this behaviour of the
+     `strncpy' is used.  `stpncpy' returns a pointer to the *first*
+     written null character.
+
+     This function is not part of ISO or POSIX but was found useful
+     while developing GNU C Library itself.
+
+     Its behaviour is undefined if the strings overlap.
+
+ - Function: char * strdupa (const char *S)
+     This function is similar to `strdup' but allocates the new string
+     using `alloca' instead of `malloc' *note Variable Size
+     Automatic::..  This means of course the returned string has the
+     same limitations as any block of memory allocated using `alloca'.
+
+     For obvious reasons `strdupa' is implemented only as a macro.
+     I.e., you cannot get the address of this function.  Despite this
+     limitations it is a useful function.  The following code shows a
+     situation where using `malloc' would be a lot more expensive.
+
+          #include <paths.h>
+          #include <string.h>
+          #include <stdio.h>
+          
+          const char path[] = _PATH_STDPATH;
+          
+          int
+          main (void)
+          {
+            char *wr_path = strdupa (path);
+            char *cp = strtok (wr_path, ":");
+          
+            while (cp != NULL)
+              {
+                puts (cp);
+                cp = strtok (NULL, ":");
+              }
+            return 0;
+          }
+
+     Please note that calling `strtok' using PATH directly is illegal.
+
+     This function is only available if GNU CC is used.
+
+ - Function: char * strndupa (const char *S, size_t SIZE)
+     This function is similar to `strndup' but like `strdupa' it
+     allocates the new string using `alloca' *note Variable Size
+     Automatic::..  The same advantages and limitations of `strdupa'
+     are valid for `strndupa', too.
+
+     This function is implemented only as a macro which means one cannot
+     get the address of it.
+
+     `strndupa' is only available if GNU CC is used.
+
+ - Function: char * strcat (char *TO, const char *FROM)
+     The `strcat' function is similar to `strcpy', except that the
+     characters from FROM are concatenated or appended to the end of
+     TO, instead of overwriting it.  That is, the first character from
+     FROM overwrites the null character marking the end of TO.
+
+     An equivalent definition for `strcat' would be:
+
+          char *
+          strcat (char *to, const char *from)
+          {
+            strcpy (to + strlen (to), from);
+            return to;
+          }
+
+     This function has undefined results if the strings overlap.
+
+ - Function: char * strncat (char *TO, const char *FROM, size_t SIZE)
+     This function is like `strcat' except that not more than SIZE
+     characters from FROM are appended to the end of TO.  A single null
+     character is also always appended to TO, so the total allocated
+     size of TO must be at least `SIZE + 1' bytes longer than its
+     initial length.
+
+     The `strncat' function could be implemented like this:
+
+          char *
+          strncat (char *to, const char *from, size_t size)
+          {
+            strncpy (to + strlen (to), from, size);
+            return to;
+          }
+
+     The behavior of `strncat' is undefined if the strings overlap.
+
+   Here is an example showing the use of `strncpy' and `strncat'.
+Notice how, in the call to `strncat', the SIZE parameter is computed to
+avoid overflowing the character array `buffer'.
+
+     #include <string.h>
+     #include <stdio.h>
+     
+     #define SIZE 10
+     
+     static char buffer[SIZE];
+     
+     main ()
+     {
+       strncpy (buffer, "hello", SIZE);
+       puts (buffer);
+       strncat (buffer, ", world", SIZE - strlen (buffer) - 1);
+       puts (buffer);
+     }
+
+The output produced by this program looks like:
+
+     hello
+     hello, wo
+
+ - Function: void * bcopy (void *FROM, const void *TO, size_t SIZE)
+     This is a partially obsolete alternative for `memmove', derived
+     from BSD.  Note that it is not quite equivalent to `memmove',
+     because the arguments are not in the same order.
+
+ - Function: void * bzero (void *BLOCK, size_t SIZE)
+     This is a partially obsolete alternative for `memset', derived from
+     BSD.  Note that it is not as general as `memset', because the only
+     value it can store is zero.
+

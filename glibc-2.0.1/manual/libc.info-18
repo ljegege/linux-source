@@ -1,0 +1,1165 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: TZ Variable,  Next: Time Zone Functions,  Prev: Formatting Date and Time,  Up: Calendar Time
+
+Specifying the Time Zone with `TZ'
+----------------------------------
+
+   In POSIX systems, a user can specify the time zone by means of the
+`TZ' environment variable.  For information about how to set
+environment variables, see *Note Environment Variables::.  The functions
+for accessing the time zone are declared in `time.h'.
+
+   You should not normally need to set `TZ'.  If the system is
+configured properly, the default time zone will be correct.  You might
+set `TZ' if you are using a computer over the network from a different
+time zone, and would like times reported to you in the time zone that
+local for you, rather than what is local for the computer.
+
+   In POSIX.1 systems the value of the `TZ' variable can be of one of
+three formats.  With the GNU C library, the most common format is the
+last one, which can specify a selection from a large database of time
+zone information for many regions of the world.  The first two formats
+are used to describe the time zone information directly, which is both
+more cumbersome and less precise.  But the POSIX.1 standard only
+specifies the details of the first two formats, so it is good to be
+familiar with them in case you come across a POSIX.1 system that doesn't
+support a time zone information database.
+
+   The first format is used when there is no Daylight Saving Time (or
+summer time) in the local time zone:
+
+     STD OFFSET
+
+   The STD string specifies the name of the time zone.  It must be
+three or more characters long and must not contain a leading colon or
+embedded digits, commas, or plus or minus signs.  There is no space
+character separating the time zone name from the OFFSET, so these
+restrictions are necessary to parse the specification correctly.
+
+   The OFFSET specifies the time value one must add to the local time
+to get a Coordinated Universal Time value.  It has syntax like
+[`+'|`-']HH[`:'MM[`:'SS]].  This is positive if the local time zone is
+west of the Prime Meridian and negative if it is east.  The hour must
+be between `0' and `23', and the minute and seconds between `0' and
+`59'.
+
+   For example, here is how we would specify Eastern Standard Time, but
+without any daylight saving time alternative:
+
+     EST+5
+
+   The second format is used when there is Daylight Saving Time:
+
+     STD OFFSET DST [OFFSET]`,'START[`/'TIME]`,'END[`/'TIME]
+
+   The initial STD and OFFSET specify the standard time zone, as
+described above.  The DST string and OFFSET specify the name and offset
+for the corresponding daylight saving time time zone; if the OFFSET is
+omitted, it defaults to one hour ahead of standard time.
+
+   The remainder of the specification describes when daylight saving
+time is in effect.  The START field is when daylight saving time goes
+into effect and the END field is when the change is made back to
+standard time.  The following formats are recognized for these fields:
+
+`JN'
+     This specifies the Julian day, with N between `1' and `365'.
+     February 29 is never counted, even in leap years.
+
+`N'
+     This specifies the Julian day, with N between `0' and `365'.
+     February 29 is counted in leap years.
+
+`MM.W.D'
+     This specifies day D of week W of month M.  The day D must be
+     between `0' (Sunday) and `6'.  The week W must be between `1' and
+     `5'; week `1' is the first week in which day D occurs, and week
+     `5' specifies the *last* D day in the month.  The month M should be
+     between `1' and `12'.
+
+   The TIME fields specify when, in the local time currently in effect,
+the change to the other time occurs.  If omitted, the default is
+`02:00:00'.
+
+   For example, here is how one would specify the Eastern time zone in
+the United States, including the appropriate daylight saving time and
+its dates of applicability.  The normal offset from UTC is 5 hours;
+since this is west of the prime meridian, the sign is positive.  Summer
+time begins on the first Sunday in April at 2:00am, and ends on the
+last Sunday in October at 2:00am.
+
+     EST+5EDT,M4.1.0/2,M10.5.0/2
+
+   The schedule of daylight saving time in any particular jurisdiction
+has changed over the years.  To be strictly correct, the conversion of
+dates and times in the past should be based on the schedule that was in
+effect then.  However, this format has no facilities to let you specify
+how the schedule has changed from year to year.  The most you can do is
+specify one particular schedule--usually the present day schedule--and
+this is used to convert any date, no matter when.  For precise time zone
+specifications, it is best to use the time zone information database
+(see below).
+
+   The third format looks like this:
+
+     :CHARACTERS
+
+   Each operating system interprets this format differently; in the GNU
+C library, CHARACTERS is the name of a file which describes the time
+zone.
+
+   If the `TZ' environment variable does not have a value, the
+operation chooses a time zone by default.  In the GNU C library, the
+default time zone is like the specification `TZ=:/etc/localtime' (or
+`TZ=:/usr/local/etc/localtime', depending on how GNU C library was
+configured; *note Installation::.).  Other C libraries use their own
+rule for choosing the default time zone, so there is little we can say
+about them.
+
+   If CHARACTERS begins with a slash, it is an absolute file name;
+otherwise the library looks for the file
+`/share/lib/zoneinfo/CHARACTERS'.  The `zoneinfo' directory contains
+data files describing local time zones in many different parts of the
+world.  The names represent major cities, with subdirectories for
+geographical areas; for example, `America/New_York', `Europe/London',
+`Asia/Hong_Kong'.  These data files are installed by the system
+administrator, who also sets `/etc/localtime' to point to the data file
+for the local time zone.  The GNU C library comes with a large database
+of time zone information for most regions of the world, which is
+maintained by a community of volunteers and put in the public domain.
+
+
+File: libc.info,  Node: Time Zone Functions,  Next: Time Functions Example,  Prev: TZ Variable,  Up: Calendar Time
+
+Functions and Variables for Time Zones
+--------------------------------------
+
+ - Variable: char * tzname
+     The array `tzname' contains two strings, which are the standard
+     names of the pair of time zones (standard and daylight saving)
+     that the user has selected.  `tzname[0]' is the name of the
+     standard time zone (for example, `"EST"'), and `tzname[1]' is the
+     name for the time zone when daylight saving time is in use (for
+     example, `"EDT"').  These correspond to the STD and DST strings
+     (respectively) from the `TZ' environment variable.  If daylight
+     saving time is never used, `tzname[1]' is the empty string.
+
+     The `tzname' array is initialized from the `TZ' environment
+     variable whenever `tzset', `ctime', `strftime', `mktime', or
+     `localtime' is called.  If multiple abbreviations have been used
+     (e.g. `"EWT"' and `"EDT"' for U.S. Eastern War Time and Eastern
+     Daylight Time), the array contains the most recent abbreviation.
+
+     The `tzname' array is required for POSIX.1 compatibility, but in
+     GNU programs it is better to use the `tm_zone' member of the
+     broken-down time structure, since `tm_zone' reports the correct
+     abbreviation even when it is not the latest one.
+
+
+ - Function: void tzset (void)
+     The `tzset' function initializes the `tzname' variable from the
+     value of the `TZ' environment variable.  It is not usually
+     necessary for your program to call this function, because it is
+     called automatically when you use the other time conversion
+     functions that depend on the time zone.
+
+   The following variables are defined for compatibility with System V
+Unix.  Like `tzname', these variables are set by calling `tzset' or the
+other time conversion functions.
+
+ - Variable: long int timezone
+     This contains the difference between UTC and the latest local
+     standard time, in seconds west of UTC.  For example, in the U.S.
+     Eastern time zone, the value is `5*60*60'.  Unlike the `tm_gmtoff'
+     member of the broken-down time structure, this value is not
+     adjusted for daylight saving, and its sign is reversed.  In GNU
+     programs it is better to use `tm_gmtoff', since it contains the
+     correct offset even when it is not the latest one.
+
+ - Variable: int daylight
+     This variable has a nonzero value if daylight savings time rules
+     apply.  A nonzero value does not necessarily mean that daylight
+     savings time is now in effect; it means only that daylight savings
+     time is sometimes in effect.
+
+
+File: libc.info,  Node: Time Functions Example,  Prev: Time Zone Functions,  Up: Calendar Time
+
+Time Functions Example
+----------------------
+
+   Here is an example program showing the use of some of the local time
+and calendar time functions.
+
+     #include <time.h>
+     #include <stdio.h>
+     
+     #define SIZE 256
+     
+     int
+     main (void)
+     {
+       char buffer[SIZE];
+       time_t curtime;
+       struct tm *loctime;
+     
+       /* Get the current time. */
+       curtime = time (NULL);
+     
+       /* Convert it to local time representation. */
+       loctime = localtime (&curtime);
+     
+       /* Print out the date and time in the standard format. */
+       fputs (asctime (loctime), stdout);
+     /* Print it out in a nice format. */
+       strftime (buffer, SIZE, "Today is %A, %B %d.\n", loctime);
+       fputs (buffer, stdout);
+       strftime (buffer, SIZE, "The time is %I:%M %p.\n", loctime);
+       fputs (buffer, stdout);
+     
+       return 0;
+     }
+
+   It produces output like this:
+
+     Wed Jul 31 13:02:36 1991
+     Today is Wednesday, July 31.
+     The time is 01:02 PM.
+
+
+File: libc.info,  Node: Setting an Alarm,  Next: Sleeping,  Prev: Calendar Time,  Up: Date and Time
+
+Setting an Alarm
+================
+
+   The `alarm' and `setitimer' functions provide a mechanism for a
+process to interrupt itself at some future time.  They do this by
+setting a timer; when the timer expires, the process receives a signal.
+
+   Each process has three independent interval timers available:
+
+   * A real-time timer that counts clock time.  This timer sends a
+     `SIGALRM' signal to the process when it expires.
+
+   * A virtual timer that counts CPU time used by the process.  This
+     timer sends a `SIGVTALRM' signal to the process when it expires.
+
+   * A profiling timer that counts both CPU time used by the process,
+     and CPU time spent in system calls on behalf of the process.  This
+     timer sends a `SIGPROF' signal to the process when it expires.
+
+     This timer is useful for profiling in interpreters.  The interval
+     timer mechanism does not have the fine granularity necessary for
+     profiling native code.
+
+   You can only have one timer of each kind set at any given time.  If
+you set a timer that has not yet expired, that timer is simply reset to
+the new value.
+
+   You should establish a handler for the appropriate alarm signal using
+`signal' or `sigaction' before issuing a call to `setitimer' or
+`alarm'.  Otherwise, an unusual chain of events could cause the timer
+to expire before your program establishes the handler, and in that case
+it would be terminated, since that is the default action for the alarm
+signals.  *Note Signal Handling::.
+
+   The `setitimer' function is the primary means for setting an alarm.
+This facility is declared in the header file `sys/time.h'.  The `alarm'
+function, declared in `unistd.h', provides a somewhat simpler interface
+for setting the real-time timer.
+
+ - Data Type: struct itimerval
+     This structure is used to specify when a timer should expire.  It
+     contains the following members:
+    `struct timeval it_interval'
+          This is the interval between successive timer interrupts.  If
+          zero, the alarm will only be sent once.
+
+    `struct timeval it_value'
+          This is the interval to the first timer interrupt.  If zero,
+          the alarm is disabled.
+
+     The `struct timeval' data type is described in *Note
+     High-Resolution Calendar::.
+
+ - Function: int setitimer (int WHICH, struct itimerval *NEW, struct
+          itimerval *OLD)
+     The `setitimer' function sets the timer specified by WHICH
+     according to NEW.  The WHICH argument can have a value of
+     `ITIMER_REAL', `ITIMER_VIRTUAL', or `ITIMER_PROF'.
+
+     If OLD is not a null pointer, `setitimer' returns information
+     about any previous unexpired timer of the same kind in the
+     structure it points to.
+
+     The return value is `0' on success and `-1' on failure.  The
+     following `errno' error conditions are defined for this function:
+
+    `EINVAL'
+          The timer interval was too large.
+
+ - Function: int getitimer (int WHICH, struct itimerval *OLD)
+     The `getitimer' function stores information about the timer
+     specified by WHICH in the structure pointed at by OLD.
+
+     The return value and error conditions are the same as for
+     `setitimer'.
+
+`ITIMER_REAL'
+     This constant can be used as the WHICH argument to the `setitimer'
+     and `getitimer' functions to specify the real-time timer.
+
+`ITIMER_VIRTUAL'
+     This constant can be used as the WHICH argument to the `setitimer'
+     and `getitimer' functions to specify the virtual timer.
+
+`ITIMER_PROF'
+     This constant can be used as the WHICH argument to the `setitimer'
+     and `getitimer' functions to specify the profiling timer.
+
+ - Function: unsigned int alarm (unsigned int SECONDS)
+     The `alarm' function sets the real-time timer to expire in SECONDS
+     seconds.  If you want to cancel any existing alarm, you can do
+     this by calling `alarm' with a SECONDS argument of zero.
+
+     The return value indicates how many seconds remain before the
+     previous alarm would have been sent.  If there is no previous
+     alarm, `alarm' returns zero.
+
+   The `alarm' function could be defined in terms of `setitimer' like
+this:
+
+     unsigned int
+     alarm (unsigned int seconds)
+     {
+       struct itimerval old, new;
+       new.it_interval.tv_usec = 0;
+       new.it_interval.tv_sec = 0;
+       new.it_value.tv_usec = 0;
+       new.it_value.tv_sec = (long int) seconds;
+       if (setitimer (ITIMER_REAL, &new, &old) < 0)
+         return 0;
+       else
+         return old.it_value.tv_sec;
+     }
+
+   There is an example showing the use of the `alarm' function in *Note
+Handler Returns::.
+
+   If you simply want your process to wait for a given number of
+seconds, you should use the `sleep' function.  *Note Sleeping::.
+
+   You shouldn't count on the signal arriving precisely when the timer
+expires.  In a multiprocessing environment there is typically some
+amount of delay involved.
+
+   *Portability Note:* The `setitimer' and `getitimer' functions are
+derived from BSD Unix, while the `alarm' function is specified by the
+POSIX.1 standard.  `setitimer' is more powerful than `alarm', but
+`alarm' is more widely used.
+
+
+File: libc.info,  Node: Sleeping,  Next: Resource Usage,  Prev: Setting an Alarm,  Up: Date and Time
+
+Sleeping
+========
+
+   The function `sleep' gives a simple way to make the program wait for
+short periods of time.  If your program doesn't use signals (except to
+terminate), then you can expect `sleep' to wait reliably for the
+specified amount of time.  Otherwise, `sleep' can return sooner if a
+signal arrives; if you want to wait for a given period regardless of
+signals, use `select' (*note Waiting for I/O::.) and don't specify any
+descriptors to wait for.
+
+ - Function: unsigned int sleep (unsigned int SECONDS)
+     The `sleep' function waits for SECONDS or until a signal is
+     delivered, whichever happens first.
+
+     If `sleep' function returns because the requested time has
+     elapsed, it returns a value of zero.  If it returns because of
+     delivery of a signal, its return value is the remaining time in
+     the sleep period.
+
+     The `sleep' function is declared in `unistd.h'.
+
+   Resist the temptation to implement a sleep for a fixed amount of
+time by using the return value of `sleep', when nonzero, to call
+`sleep' again.  This will work with a certain amount of accuracy as
+long as signals arrive infrequently.  But each signal can cause the
+eventual wakeup time to be off by an additional second or so.  Suppose a
+few signals happen to arrive in rapid succession by bad luck--there is
+no limit on how much this could shorten or lengthen the wait.
+
+   Instead, compute the time at which the program should stop waiting,
+and keep trying to wait until that time.  This won't be off by more
+than a second.  With just a little more work, you can use `select' and
+make the waiting period quite accurate.  (Of course, heavy system load
+can cause unavoidable additional delays--unless the machine is
+dedicated to one application, there is no way you can avoid this.)
+
+   On some systems, `sleep' can do strange things if your program uses
+`SIGALRM' explicitly.  Even if `SIGALRM' signals are being ignored or
+blocked when `sleep' is called, `sleep' might return prematurely on
+delivery of a `SIGALRM' signal.  If you have established a handler for
+`SIGALRM' signals and a `SIGALRM' signal is delivered while the process
+is sleeping, the action taken might be just to cause `sleep' to return
+instead of invoking your handler.  And, if `sleep' is interrupted by
+delivery of a signal whose handler requests an alarm or alters the
+handling of `SIGALRM', this handler and `sleep' will interfere.
+
+   On the GNU system, it is safe to use `sleep' and `SIGALRM' in the
+same program, because `sleep' does not work by means of `SIGALRM'.
+
+
+File: libc.info,  Node: Resource Usage,  Next: Limits on Resources,  Prev: Sleeping,  Up: Date and Time
+
+Resource Usage
+==============
+
+   The function `getrusage' and the data type `struct rusage' are used
+for examining the usage figures of a process.  They are declared in
+`sys/resource.h'.
+
+ - Function: int getrusage (int PROCESSES, struct rusage *RUSAGE)
+     This function reports the usage totals for processes specified by
+     PROCESSES, storing the information in `*RUSAGE'.
+
+     In most systems, PROCESSES has only two valid values:
+
+    `RUSAGE_SELF'
+          Just the current process.
+
+    `RUSAGE_CHILDREN'
+          All child processes (direct and indirect) that have
+          terminated already.
+
+     In the GNU system, you can also inquire about a particular child
+     process by specifying its process ID.
+
+     The return value of `getrusage' is zero for success, and `-1' for
+     failure.
+
+    `EINVAL'
+          The argument PROCESSES is not valid.
+
+   One way of getting usage figures for a particular child process is
+with the function `wait4', which returns totals for a child when it
+terminates.  *Note BSD Wait Functions::.
+
+ - Data Type: struct rusage
+     This data type records a collection usage amounts for various
+     sorts of resources.  It has the following members, and possibly
+     others:
+
+    `struct timeval ru_utime'
+          Time spent executing user instructions.
+
+    `struct timeval ru_stime'
+          Time spent in operating system code on behalf of PROCESSES.
+
+    `long int ru_maxrss'
+          The maximum resident set size used, in kilobytes.  That is,
+          the maximum number of kilobytes that PROCESSES used in real
+          memory simultaneously.
+
+    `long int ru_ixrss'
+          An integral value expressed in kilobytes times ticks of
+          execution, which indicates the amount of memory used by text
+          that was shared with other processes.
+
+    `long int ru_idrss'
+          An integral value expressed the same way, which is the amount
+          of unshared memory used in data.
+
+    `long int ru_isrss'
+          An integral value expressed the same way, which is the amount
+          of unshared memory used in stack space.
+
+    `long int ru_minflt'
+          The number of page faults which were serviced without
+          requiring any I/O.
+
+    `long int ru_majflt'
+          The number of page faults which were serviced by doing I/O.
+
+    `long int ru_nswap'
+          The number of times PROCESSES was swapped entirely out of
+          main memory.
+
+    `long int ru_inblock'
+          The number of times the file system had to read from the disk
+          on behalf of PROCESSES.
+
+    `long int ru_oublock'
+          The number of times the file system had to write to the disk
+          on behalf of PROCESSES.
+
+    `long int ru_msgsnd'
+          Number of IPC messages sent.
+
+    `long ru_msgrcv'
+          Number of IPC messages received.
+
+    `long int ru_nsignals'
+          Number of signals received.
+
+    `long int ru_nvcsw'
+          The number of times PROCESSES voluntarily invoked a context
+          switch (usually to wait for some service).
+
+    `long int ru_nivcsw'
+          The number of times an involuntary context switch took place
+          (because the time slice expired, or another process of higher
+          priority became runnable).
+
+   An additional historical function for examining usage figures,
+`vtimes', is supported but not documented here.  It is declared in
+`sys/vtimes.h'.
+
+
+File: libc.info,  Node: Limits on Resources,  Next: Priority,  Prev: Resource Usage,  Up: Date and Time
+
+Limiting Resource Usage
+=======================
+
+   You can specify limits for the resource usage of a process.  When the
+process tries to exceed a limit, it may get a signal, or the system call
+by which it tried to do so may fail, depending on the limit.  Each
+process initially inherits its limit values from its parent, but it can
+subsequently change them.
+
+   The symbols in this section are defined in `sys/resource.h'.
+
+ - Function: int getrlimit (int RESOURCE, struct rlimit *RLP)
+     Read the current value and the maximum value of resource RESOURCE
+     and store them in `*RLP'.
+
+     The return value is `0' on success and `-1' on failure.  The only
+     possible `errno' error condition is `EFAULT'.
+
+ - Function: int setrlimit (int RESOURCE, struct rlimit *RLP)
+     Store the current value and the maximum value of resource RESOURCE
+     in `*RLP'.
+
+     The return value is `0' on success and `-1' on failure.  The
+     following `errno' error condition is possible:
+
+    `EPERM'
+          You tried to change the maximum permissible limit value, but
+          you don't have privileges to do so.
+
+ - Data Type: struct rlimit
+     This structure is used with `getrlimit' to receive limit values,
+     and with `setrlimit' to specify limit values.  It has two fields:
+
+    `rlim_cur'
+          The current value of the limit in question.  This is also
+          called the "soft limit".
+
+    `rlim_max'
+          The maximum permissible value of the limit in question.  You
+          cannot set the current value of the limit to a larger number
+          than this maximum.  Only the super user can change the
+          maximum permissible value.  This is also called the "hard
+          limit".
+
+     In `getrlimit', the structure is an output; it receives the current
+     values.  In `setrlimit', it specifies the new values.
+
+   Here is a list of resources that you can specify a limit for.  Those
+that are sizes are measured in bytes.
+
+`RLIMIT_CPU'
+     The maximum amount of cpu time the process can use.  If it runs for
+     longer than this, it gets a signal: `SIGXCPU'.  The value is
+     measured in seconds.  *Note Operation Error Signals::.
+
+`RLIMIT_FSIZE'
+     The maximum size of file the process can create.  Trying to write a
+     larger file causes a signal: `SIGXFSZ'.  *Note Operation Error
+     Signals::.
+
+`RLIMIT_DATA'
+     The maximum size of data memory for the process.  If the process
+     tries to allocate data memory beyond this amount, the allocation
+     function fails.
+
+`RLIMIT_STACK'
+     The maximum stack size for the process.  If the process tries to
+     extend its stack past this size, it gets a `SIGSEGV' signal.
+     *Note Program Error Signals::.
+
+`RLIMIT_CORE'
+     The maximum size core file that this process can create.  If the
+     process terminates and would dump a core file larger than this
+     maximum size, then no core file is created.  So setting this limit
+     to zero prevents core files from ever being created.
+
+`RLIMIT_RSS'
+     The maximum amount of physical memory that this process should get.
+     This parameter is a guide for the system's scheduler and memory
+     allocator; the system may give the process more memory when there
+     is a surplus.
+
+`RLIMIT_MEMLOCK'
+     The maximum amount of memory that can be locked into physical
+     memory (so it will never be paged out).
+
+`RLIMIT_NPROC'
+     The maximum number of processes that can be created with the same
+     user ID.  If you have reached the limit for your user ID, `fork'
+     will fail with `EAGAIN'.  *Note Creating a Process::.
+
+`RLIMIT_NOFILE'
+`RLIMIT_OFILE'
+     The maximum number of files that the process can open.  If it
+     tries to open more files than this, it gets error code `EMFILE'.
+     *Note Error Codes::.  Not all systems support this limit; GNU
+     does, and 4.4 BSD does.
+
+`RLIM_NLIMITS'
+     The number of different resource limits.  Any valid RESOURCE
+     operand must be less than `RLIM_NLIMITS'.
+
+ - Constant: int
+     This constant stands for a value of "infinity" when supplied as
+     the limit value in `setrlimit'.
+
+   Two historical functions for setting resource limits, `ulimit' and
+`vlimit', are not documented here.  The latter is declared in
+`sys/vlimit.h' and comes from BSD.
+
+
+File: libc.info,  Node: Priority,  Prev: Limits on Resources,  Up: Date and Time
+
+Process Priority
+================
+
+   When several processes try to run, their respective priorities
+determine what share of the CPU each process gets.  This section
+describes how you can read and set the priority of a process.  All
+these functions and macros are declared in `sys/resource.h'.
+
+   The range of valid priority values depends on the operating system,
+but typically it runs from `-20' to `20'.  A lower priority value means
+the process runs more often.  These constants describe the range of
+priority values:
+
+`PRIO_MIN'
+     The smallest valid priority value.
+
+`PRIO_MAX'
+     The smallest valid priority value.
+
+ - Function: int getpriority (int CLASS, int ID)
+     Read the priority of a class of processes; CLASS and ID specify
+     which ones (see below).  If the processes specified do not all
+     have the same priority, this returns the smallest value that any
+     of them has.
+
+     The return value is the priority value on success, and `-1' on
+     failure.  The following `errno' error condition are possible for
+     this function:
+
+    `ESRCH'
+          The combination of CLASS and ID does not match any existing
+          process.
+
+    `EINVAL'
+          The value of CLASS is not valid.
+
+     When the return value is `-1', it could indicate failure, or it
+     could be the priority value.  The only way to make certain is to
+     set `errno = 0' before calling `getpriority', then use `errno !=
+     0' afterward as the criterion for failure.
+
+ - Function: int setpriority (int CLASS, int ID, int PRIORITY)
+     Set the priority of a class of processes to PRIORITY; CLASS and ID
+     specify which ones (see below).
+
+     The return value is `0' on success and `-1' on failure.  The
+     following `errno' error condition are defined for this function:
+
+    `ESRCH'
+          The combination of CLASS and ID does not match any existing
+          process.
+
+    `EINVAL'
+          The value of CLASS is not valid.
+
+    `EPERM'
+          You tried to set the priority of some other user's process,
+          and you don't have privileges for that.
+
+    `EACCES'
+          You tried to lower the priority of a process, and you don't
+          have privileges for that.
+
+   The arguments CLASS and ID together specify a set of processes you
+are interested in.  These are the possible values for CLASS:
+
+`PRIO_PROCESS'
+     Read or set the priority of one process.  The argument ID is a
+     process ID.
+
+`PRIO_PGRP'
+     Read or set the priority of one process group.  The argument ID is
+     a process group ID.
+
+`PRIO_USER'
+     Read or set the priority of one user's processes.  The argument ID
+     is a user ID.
+
+   If the argument ID is 0, it stands for the current process, current
+process group, or the current user, according to CLASS.
+
+ - Function: int nice (int INCREMENT)
+     Increment the priority of the current process by INCREMENT.  The
+     return value is the same as for `setpriority'.
+
+     Here is an equivalent definition for `nice':
+
+          int
+          nice (int increment)
+          {
+            int old = getpriority (PRIO_PROCESS, 0);
+            return setpriority (PRIO_PROCESS, 0, old + increment);
+          }
+
+
+File: libc.info,  Node: Extended Characters,  Next: Locales,  Prev: String and Array Utilities,  Up: Top
+
+Extended Characters
+*******************
+
+   A number of languages use character sets that are larger than the
+range of values of type `char'.  Japanese and Chinese are probably the
+most familiar examples.
+
+   The GNU C library includes support for two mechanisms for dealing
+with extended character sets: multibyte characters and wide characters.
+This chapter describes how to use these mechanisms, and the functions
+for converting between them.
+
+   The behavior of the functions in this chapter is affected by the
+current locale for character classification--the `LC_CTYPE' category;
+see *Note Locale Categories::.  This choice of locale selects which
+multibyte code is used, and also controls the meanings and
+characteristics of wide character codes.
+
+* Menu:
+
+* Extended Char Intro::         Multibyte codes versus wide characters.
+* Locales and Extended Chars::  The locale selects the character codes.
+* Multibyte Char Intro::        How multibyte codes are represented.
+* Wide Char Intro::             How wide characters are represented.
+* Wide String Conversion::      Converting wide strings to multibyte code
+                                 and vice versa.
+* Length of Char::              how many bytes make up one multibyte char.
+* Converting One Char::         Converting a string character by character.
+* Example of Conversion::       Example showing why converting
+				 one character at a time may be useful.
+* Shift State::                 Multibyte codes with "shift characters".
+
+
+File: libc.info,  Node: Extended Char Intro,  Next: Locales and Extended Chars,  Up: Extended Characters
+
+Introduction to Extended Characters
+===================================
+
+   You can represent extended characters in either of two ways:
+
+   * As "multibyte characters" which can be embedded in an ordinary
+     string, an array of `char' objects.  Their advantage is that many
+     programs and operating systems can handle occasional multibyte
+     characters scattered among ordinary ASCII characters, without any
+     change.
+
+   * As "wide characters", which are like ordinary characters except
+     that they occupy more bits.  The wide character data type,
+     `wchar_t', has a range large enough to hold extended character
+     codes as well as old-fashioned ASCII codes.
+
+     An advantage of wide characters is that each character is a single
+     data object, just like ordinary ASCII characters.  There are a few
+     disadvantages:
+
+        * Each existing program must be modified and recompiled to make
+          it use wide characters.
+
+        * Files of wide characters cannot be read by programs that
+          expect ordinary characters.
+
+   Typically, you use the multibyte character representation as part of
+the external program interface, such as reading or writing text to
+files.  However, it's usually easier to perform internal manipulations
+on strings containing extended characters on arrays of `wchar_t'
+objects, since the uniform representation makes most editing operations
+easier.  If you do use multibyte characters for files and wide
+characters for internal operations, you need to convert between them
+when you read and write data.
+
+   If your system supports extended characters, then it supports them
+both as multibyte characters and as wide characters.  The library
+includes functions you can use to convert between the two
+representations.  These functions are described in this chapter.
+
+
+File: libc.info,  Node: Locales and Extended Chars,  Next: Multibyte Char Intro,  Prev: Extended Char Intro,  Up: Extended Characters
+
+Locales and Extended Characters
+===============================
+
+   A computer system can support more than one multibyte character code,
+and more than one wide character code.  The user controls the choice of
+codes through the current locale for character classification (*note
+Locales::.).  Each locale specifies a particular multibyte character
+code and a particular wide character code.  The choice of locale
+influences the behavior of the conversion functions in the library.
+
+   Some locales support neither wide characters nor nontrivial multibyte
+characters.  In these locales, the library conversion functions still
+work, even though what they do is basically trivial.
+
+   If you select a new locale for character classification, the internal
+shift state maintained by these functions can become confused, so it's
+not a good idea to change the locale while you are in the middle of
+processing a string.
+
+
+File: libc.info,  Node: Multibyte Char Intro,  Next: Wide Char Intro,  Prev: Locales and Extended Chars,  Up: Extended Characters
+
+Multibyte Characters
+====================
+
+   In the ordinary ASCII code, a sequence of characters is a sequence of
+bytes, and each character is one byte.  This is very simple, but allows
+for only 256 distinct characters.
+
+   In a "multibyte character code", a sequence of characters is a
+sequence of bytes, but each character may occupy one or more consecutive
+bytes of the sequence.
+
+   There are many different ways of designing a multibyte character
+code; different systems use different codes.  To specify a particular
+code means designating the "basic" byte sequences--those which represent
+a single character--and what characters they stand for.  A code that a
+computer can actually use must have a finite number of these basic
+sequences, and typically none of them is more than a few characters
+long.
+
+   These sequences need not all have the same length.  In fact, many of
+them are just one byte long.  Because the basic ASCII characters in the
+range from `0' to `0177' are so important, they stand for themselves in
+all multibyte character codes.  That is to say, a byte whose value is
+`0' through `0177' is always a character in itself.  The characters
+which are more than one byte must always start with a byte in the range
+from `0200' through `0377'.
+
+   The byte value `0' can be used to terminate a string, just as it is
+often used in a string of ASCII characters.
+
+   Specifying the basic byte sequences that represent single characters
+automatically gives meanings to many longer byte sequences, as more than
+one character.  For example, if the two byte sequence `0205 049' stands
+for the Greek letter alpha, then `0205 049 065' must stand for an alpha
+followed by an `A' (ASCII code 065), and `0205 049 0205 049' must stand
+for two alphas in a row.
+
+   If any byte sequence can have more than one meaning as a sequence of
+characters, then the multibyte code is ambiguous--and no good.  The
+codes that systems actually use are all unambiguous.
+
+   In most codes, there are certain sequences of bytes that have no
+meaning as a character or characters.  These are called "invalid".
+
+   The simplest possible multibyte code is a trivial one:
+
+     The basic sequences consist of single bytes.
+
+   This particular code is equivalent to not using multibyte characters
+at all.  It has no invalid sequences.  But it can handle only 256
+different characters.
+
+   Here is another possible code which can handle 9376 different
+characters:
+
+     The basic sequences consist of
+
+        * single bytes with values in the range `0' through `0237'.
+
+        * two-byte sequences, in which both of the bytes have values in
+          the range from `0240' through `0377'.
+
+This code or a similar one is used on some systems to represent Japanese
+characters.  The invalid sequences are those which consist of an odd
+number of consecutive bytes in the range from `0240' through `0377'.
+
+   Here is another multibyte code which can handle more distinct
+extended characters--in fact, almost thirty million:
+
+     The basic sequences consist of
+
+        * single bytes with values in the range `0' through `0177'.
+
+        * sequences of up to four bytes in which the first byte is in
+          the range from `0200' through `0237', and the remaining bytes
+          are in the range from `0240' through `0377'.
+
+In this code, any sequence that starts with a byte in the range from
+`0240' through `0377' is invalid.
+
+   And here is another variant which has the advantage that removing the
+last byte or bytes from a valid character can never produce another
+valid character.  (This property is convenient when you want to search
+strings for particular characters.)
+
+     The basic sequences consist of
+
+        * single bytes with values in the range `0' through `0177'.
+
+        * two-byte sequences in which the first byte is in the range
+          from `0200' through `0207', and the second byte is in the
+          range from `0240' through `0377'.
+
+        * three-byte sequences in which the first byte is in the range
+          from `0210' through `0217', and the other bytes are in the
+          range from `0240' through `0377'.
+
+        * four-byte sequences in which the first byte is in the range
+          from `0220' through `0227', and the other bytes are in the
+          range from `0240' through `0377'.
+
+The list of invalid sequences for this code is long and not worth
+stating in full; examples of invalid sequences include `0240' and `0220
+0300 065'.
+
+   The number of *possible* multibyte codes is astronomical.  But a
+given computer system will support at most a few different codes.  (One
+of these codes may allow for thousands of different characters.)
+Another computer system may support a completely different code.  The
+library facilities described in this chapter are helpful because they
+package up the knowledge of the details of a particular computer
+system's multibyte code, so your programs need not know them.
+
+   You can use special standard macros to find out the maximum possible
+number of bytes in a character in the currently selected multibyte code
+with `MB_CUR_MAX', and the maximum for *any* multibyte code supported
+on your computer with `MB_LEN_MAX'.
+
+ - Macro: int MB_LEN_MAX
+     This is the maximum length of a multibyte character for any
+     supported locale.  It is defined in `limits.h'.
+
+ - Macro: int MB_CUR_MAX
+     This macro expands into a (possibly non-constant) positive integer
+     expression that is the maximum number of bytes in a multibyte
+     character in the current locale.  The value is never greater than
+     `MB_LEN_MAX'.
+
+     `MB_CUR_MAX' is defined in `stdlib.h'.
+
+   Normally, each basic sequence in a particular character code stands
+for one character, the same character regardless of context.  Some
+multibyte character codes have a concept of "shift state"; certain
+codes, called "shift sequences", change to a different shift state, and
+the meaning of some or all basic sequences varies according to the
+current shift state.  In fact, the set of basic sequences might even be
+different depending on the current shift state.  *Note Shift State::,
+for more information on handling this sort of code.
+
+   What happens if you try to pass a string containing multibyte
+characters to a function that doesn't know about them?  Normally, such
+a function treats a string as a sequence of bytes, and interprets
+certain byte values specially; all other byte values are "ordinary".
+As long as a multibyte character doesn't contain any of the special
+byte values, the function should pass it through as if it were several
+ordinary characters.
+
+   For example, let's figure out what happens if you use multibyte
+characters in a file name.  The functions such as `open' and `unlink'
+that operate on file names treat the name as a sequence of byte values,
+with `/' as the only special value.  Any other byte values are copied,
+or compared, in sequence, and all byte values are treated alike.  Thus,
+you may think of the file name as a sequence of bytes or as a string
+containing multibyte characters; the same behavior makes sense equally
+either way, provided no multibyte character contains a `/'.
+
+
+File: libc.info,  Node: Wide Char Intro,  Next: Wide String Conversion,  Prev: Multibyte Char Intro,  Up: Extended Characters
+
+Wide Character Introduction
+===========================
+
+   "Wide characters" are much simpler than multibyte characters.  They
+are simply characters with more than eight bits, so that they have room
+for more than 256 distinct codes.  The wide character data type,
+`wchar_t', has a range large enough to hold extended character codes as
+well as old-fashioned ASCII codes.
+
+   An advantage of wide characters is that each character is a single
+data object, just like ordinary ASCII characters.  Wide characters also
+have some disadvantages:
+
+   * A program must be modified and recompiled in order to use wide
+     characters at all.
+
+   * Files of wide characters cannot be read by programs that expect
+     ordinary characters.
+
+   Wide character values `0' through `0177' are always identical in
+meaning to the ASCII character codes.  The wide character value zero is
+often used to terminate a string of wide characters, just as a single
+byte with value zero often terminates a string of ordinary characters.
+
+ - Data Type: wchar_t
+     This is the "wide character" type, an integer type whose range is
+     large enough to represent all distinct values in any extended
+     character set in the supported locales.  *Note Locales::, for more
+     information about locales.  This type is defined in the header
+     file `stddef.h'.
+
+   If your system supports extended characters, then each extended
+character has both a wide character code and a corresponding multibyte
+basic sequence.
+
+   In this chapter, the term "code" is used to refer to a single
+extended character object to emphasize the distinction from the `char'
+data type.
+
+
+File: libc.info,  Node: Wide String Conversion,  Next: Length of Char,  Prev: Wide Char Intro,  Up: Extended Characters
+
+Conversion of Extended Strings
+==============================
+
+   The `mbstowcs' function converts a string of multibyte characters to
+a wide character array.  The `wcstombs' function does the reverse.
+These functions are declared in the header file `stdlib.h'.
+
+   In most programs, these functions are the only ones you need for
+conversion between wide strings and multibyte character strings.  But
+they have limitations.  If your data is not null-terminated or is not
+all in core at once, you probably need to use the low-level conversion
+functions to convert one character at a time.  *Note Converting One
+Char::.
+
+ - Function: size_t mbstowcs (wchar_t *WSTRING, const char *STRING,
+          size_t SIZE)
+     The `mbstowcs' ("multibyte string to wide character string")
+     function converts the null-terminated string of multibyte
+     characters STRING to an array of wide character codes, storing not
+     more than SIZE wide characters into the array beginning at WSTRING.
+     The terminating null character counts towards the size, so if SIZE
+     is less than the actual number of wide characters resulting from
+     STRING, no terminating null character is stored.
+
+     The conversion of characters from STRING begins in the initial
+     shift state.
+
+     If an invalid multibyte character sequence is found, this function
+     returns a value of `-1'.  Otherwise, it returns the number of wide
+     characters stored in the array WSTRING.  This number does not
+     include the terminating null character, which is present if the
+     number is less than SIZE.
+
+     Here is an example showing how to convert a string of multibyte
+     characters, allocating enough space for the result.
+
+          wchar_t *
+          mbstowcs_alloc (const char *string)
+          {
+            size_t size = strlen (string) + 1;
+            wchar_t *buf = xmalloc (size * sizeof (wchar_t));
+          
+            size = mbstowcs (buf, string, size);
+            if (size == (size_t) -1)
+              return NULL;
+            buf = xrealloc (buf, (size + 1) * sizeof (wchar_t));
+            return buf;
+          }
+
+
+ - Function: size_t wcstombs (char *STRING, const wchar_t WSTRING,
+          size_t SIZE)
+     The `wcstombs' ("wide character string to multibyte string")
+     function converts the null-terminated wide character array WSTRING
+     into a string containing multibyte characters, storing not more
+     than SIZE bytes starting at STRING, followed by a terminating null
+     character if there is room.  The conversion of characters begins in
+     the initial shift state.
+
+     The terminating null character counts towards the size, so if SIZE
+     is less than or equal to the number of bytes needed in WSTRING, no
+     terminating null character is stored.
+
+     If a code that does not correspond to a valid multibyte character
+     is found, this function returns a value of `-1'.  Otherwise, the
+     return value is the number of bytes stored in the array STRING.
+     This number does not include the terminating null character, which
+     is present if the number is less than SIZE.
+
+
+File: libc.info,  Node: Length of Char,  Next: Converting One Char,  Prev: Wide String Conversion,  Up: Extended Characters
+
+Multibyte Character Length
+==========================
+
+   This section describes how to scan a string containing multibyte
+characters, one character at a time.  The difficulty in doing this is
+to know how many bytes each character contains.  Your program can use
+`mblen' to find this out.
+
+ - Function: int mblen (const char *STRING, size_t SIZE)
+     The `mblen' function with a non-null STRING argument returns the
+     number of bytes that make up the multibyte character beginning at
+     STRING, never examining more than SIZE bytes.  (The idea is to
+     supply for SIZE the number of bytes of data you have in hand.)
+
+     The return value of `mblen' distinguishes three possibilities: the
+     first SIZE bytes at STRING start with valid multibyte character,
+     they start with an invalid byte sequence or just part of a
+     character, or STRING points to an empty string (a null character).
+
+     For a valid multibyte character, `mblen' returns the number of
+     bytes in that character (always at least `1', and never more than
+     SIZE).  For an invalid byte sequence, `mblen' returns `-1'.  For
+     an empty string, it returns `0'.
+
+     If the multibyte character code uses shift characters, then `mblen'
+     maintains and updates a shift state as it scans.  If you call
+     `mblen' with a null pointer for STRING, that initializes the shift
+     state to its standard initial value.  It also returns nonzero if
+     the multibyte character code in use actually has a shift state.
+     *Note Shift State::.
+
+     The function `mblen' is declared in `stdlib.h'.
+

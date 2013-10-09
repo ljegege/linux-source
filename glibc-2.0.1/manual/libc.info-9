@@ -1,0 +1,1169 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: I/O Primitives,  Next: File Position Primitive,  Prev: Opening and Closing Files,  Up: Low-Level I/O
+
+Input and Output Primitives
+===========================
+
+   This section describes the functions for performing primitive input
+and output operations on file descriptors: `read', `write', and
+`lseek'.  These functions are declared in the header file `unistd.h'.
+
+ - Data Type: ssize_t
+     This data type is used to represent the sizes of blocks that can be
+     read or written in a single operation.  It is similar to `size_t',
+     but must be a signed type.
+
+ - Function: ssize_t read (int FILEDES, void *BUFFER, size_t SIZE)
+     The `read' function reads up to SIZE bytes from the file with
+     descriptor FILEDES, storing the results in the BUFFER.  (This is
+     not necessarily a character string and there is no terminating
+     null character added.)
+
+     The return value is the number of bytes actually read.  This might
+     be less than SIZE; for example, if there aren't that many bytes
+     left in the file or if there aren't that many bytes immediately
+     available.  The exact behavior depends on what kind of file it is.
+     Note that reading less than SIZE bytes is not an error.
+
+     A value of zero indicates end-of-file (except if the value of the
+     SIZE argument is also zero).  This is not considered an error.  If
+     you keep calling `read' while at end-of-file, it will keep
+     returning zero and doing nothing else.
+
+     If `read' returns at least one character, there is no way you can
+     tell whether end-of-file was reached.  But if you did reach the
+     end, the next read will return zero.
+
+     In case of an error, `read' returns `-1'.  The following `errno'
+     error conditions are defined for this function:
+
+    `EAGAIN'
+          Normally, when no input is immediately available, `read'
+          waits for some input.  But if the `O_NONBLOCK' flag is set
+          for the file (*note File Status Flags::.), `read' returns
+          immediately without reading any data, and reports this error.
+
+          *Compatibility Note:* Most versions of BSD Unix use a
+          different error code for this: `EWOULDBLOCK'.  In the GNU
+          library, `EWOULDBLOCK' is an alias for `EAGAIN', so it
+          doesn't matter which name you use.
+
+          On some systems, reading a large amount of data from a
+          character special file can also fail with `EAGAIN' if the
+          kernel cannot find enough physical memory to lock down the
+          user's pages.  This is limited to devices that transfer with
+          direct memory access into the user's memory, which means it
+          does not include terminals, since they always use separate
+          buffers inside the kernel.  This problem never happens in the
+          GNU system.
+
+          Any condition that could result in `EAGAIN' can instead
+          result in a successful `read' which returns fewer bytes than
+          requested.  Calling `read' again immediately would result in
+          `EAGAIN'.
+
+    `EBADF'
+          The FILEDES argument is not a valid file descriptor, or is
+          not open for reading.
+
+    `EINTR'
+          `read' was interrupted by a signal while it was waiting for
+          input.  *Note Interrupted Primitives::.  A signal will not
+          necessary cause `read' to return `EINTR'; it may instead
+          result in a successful `read' which returns fewer bytes than
+          requested.
+
+    `EIO'
+          For many devices, and for disk files, this error code
+          indicates a hardware error.
+
+          `EIO' also occurs when a background process tries to read
+          from the controlling terminal, and the normal action of
+          stopping the process by sending it a `SIGTTIN' signal isn't
+          working.  This might happen if signal is being blocked or
+          ignored, or because the process group is orphaned.  *Note Job
+          Control::, for more information about job control, and *Note
+          Signal Handling::, for information about signals.
+
+     The `read' function is the underlying primitive for all of the
+     functions that read from streams, such as `fgetc'.
+
+ - Function: ssize_t write (int FILEDES, const void *BUFFER, size_t
+          SIZE)
+     The `write' function writes up to SIZE bytes from BUFFER to the
+     file with descriptor FILEDES.  The data in BUFFER is not
+     necessarily a character string and a null character is output like
+     any other character.
+
+     The return value is the number of bytes actually written.  This
+     may be SIZE, but can always be smaller.  Your program should
+     always call `write' in a loop, iterating until all the data is
+     written.
+
+     Once `write' returns, the data is enqueued to be written and can be
+     read back right away, but it is not necessarily written out to
+     permanent storage immediately.  You can use `fsync' when you need
+     to be sure your data has been permanently stored before
+     continuing.  (It is more efficient for the system to batch up
+     consecutive writes and do them all at once when convenient.
+     Normally they will always be written to disk within a minute or
+     less.) You can use the `O_FSYNC' open mode to make `write' always
+     store the data to disk before returning; *note Operating Modes::..
+
+     In the case of an error, `write' returns `-1'.  The following
+     `errno' error conditions are defined for this function:
+
+    `EAGAIN'
+          Normally, `write' blocks until the write operation is
+          complete.  But if the `O_NONBLOCK' flag is set for the file
+          (*note Control Operations::.), it returns immediately without
+          writing any data, and reports this error.  An example of a
+          situation that might cause the process to block on output is
+          writing to a terminal device that supports flow control,
+          where output has been suspended by receipt of a STOP
+          character.
+
+          *Compatibility Note:* Most versions of BSD Unix use a
+          different error code for this: `EWOULDBLOCK'.  In the GNU
+          library, `EWOULDBLOCK' is an alias for `EAGAIN', so it
+          doesn't matter which name you use.
+
+          On some systems, writing a large amount of data from a
+          character special file can also fail with `EAGAIN' if the
+          kernel cannot find enough physical memory to lock down the
+          user's pages.  This is limited to devices that transfer with
+          direct memory access into the user's memory, which means it
+          does not include terminals, since they always use separate
+          buffers inside the kernel.  This problem does not arise in the
+          GNU system.
+
+    `EBADF'
+          The FILEDES argument is not a valid file descriptor, or is
+          not open for writing.
+
+    `EFBIG'
+          The size of the file would become larger than the
+          implementation can support.
+
+    `EINTR'
+          The `write' operation was interrupted by a signal while it was
+          blocked waiting for completion.  A signal will not necessary
+          cause `write' to return `EINTR'; it may instead result in a
+          successful `write' which writes fewer bytes than requested.
+          *Note Interrupted Primitives::.
+
+    `EIO'
+          For many devices, and for disk files, this error code
+          indicates a hardware error.
+
+    `ENOSPC'
+          The device containing the file is full.
+
+    `EPIPE'
+          This error is returned when you try to write to a pipe or
+          FIFO that isn't open for reading by any process.  When this
+          happens, a `SIGPIPE' signal is also sent to the process; see
+          *Note Signal Handling::.
+
+     Unless you have arranged to prevent `EINTR' failures, you should
+     check `errno' after each failing call to `write', and if the error
+     was `EINTR', you should simply repeat the call.  *Note Interrupted
+     Primitives::.  The easy way to do this is with the macro
+     `TEMP_FAILURE_RETRY', as follows:
+
+          nbytes = TEMP_FAILURE_RETRY (write (desc, buffer, count));
+
+     The `write' function is the underlying primitive for all of the
+     functions that write to streams, such as `fputc'.
+
+
+File: libc.info,  Node: File Position Primitive,  Next: Descriptors and Streams,  Prev: I/O Primitives,  Up: Low-Level I/O
+
+Setting the File Position of a Descriptor
+=========================================
+
+   Just as you can set the file position of a stream with `fseek', you
+can set the file position of a descriptor with `lseek'.  This specifies
+the position in the file for the next `read' or `write' operation.
+*Note File Positioning::, for more information on the file position and
+what it means.
+
+   To read the current file position value from a descriptor, use
+`lseek (DESC, 0, SEEK_CUR)'.
+
+ - Function: off_t lseek (int FILEDES, off_t OFFSET, int WHENCE)
+     The `lseek' function is used to change the file position of the
+     file with descriptor FILEDES.
+
+     The WHENCE argument specifies how the OFFSET should be interpreted
+     in the same way as for the `fseek' function, and must be one of
+     the symbolic constants `SEEK_SET', `SEEK_CUR', or `SEEK_END'.
+
+    `SEEK_SET'
+          Specifies that WHENCE is a count of characters from the
+          beginning of the file.
+
+    `SEEK_CUR'
+          Specifies that WHENCE is a count of characters from the
+          current file position.  This count may be positive or
+          negative.
+
+    `SEEK_END'
+          Specifies that WHENCE is a count of characters from the end of
+          the file.  A negative count specifies a position within the
+          current extent of the file; a positive count specifies a
+          position past the current end.  If you set the position past
+          the current end, and actually write data, you will extend the
+          file with zeros up to that position.  The return value from
+     `lseek' is normally the resulting file position, measured in bytes
+     from the beginning of the file.  You can use this feature together
+     with `SEEK_CUR' to read the current file position.
+
+     If you want to append to the file, setting the file position to the
+     current end of file with `SEEK_END' is not sufficient.  Another
+     process may write more data after you seek but before you write,
+     extending the file so the position you write onto clobbers their
+     data.  Instead, use the `O_APPEND' operating mode; *note Operating
+     Modes::..
+
+     You can set the file position past the current end of the file.
+     This does not by itself make the file longer; `lseek' never
+     changes the file.  But subsequent output at that position will
+     extend the file.  Characters between the previous end of file and
+     the new position are filled with zeros.  Extending the file in
+     this way can create a "hole": the blocks of zeros are not actually
+     allocated on disk, so the file takes up less space than it appears
+     so; it is then called a "sparse file".
+
+     If the file position cannot be changed, or the operation is in
+     some way invalid, `lseek' returns a value of `-1'.  The following
+     `errno' error conditions are defined for this function:
+
+    `EBADF'
+          The FILEDES is not a valid file descriptor.
+
+    `EINVAL'
+          The WHENCE argument value is not valid, or the resulting file
+          offset is not valid.  A file offset is invalid.
+
+    `ESPIPE'
+          The FILEDES corresponds to an object that cannot be
+          positioned, such as a pipe, FIFO or terminal device.
+          (POSIX.1 specifies this error only for pipes and FIFOs, but
+          in the GNU system, you always get `ESPIPE' if the object is
+          not seekable.)
+
+     The `lseek' function is the underlying primitive for the `fseek',
+     `ftell' and `rewind' functions, which operate on streams instead
+     of file descriptors.
+
+   You can have multiple descriptors for the same file if you open the
+file more than once, or if you duplicate a descriptor with `dup'.
+Descriptors that come from separate calls to `open' have independent
+file positions; using `lseek' on one descriptor has no effect on the
+other.  For example,
+
+     {
+       int d1, d2;
+       char buf[4];
+       d1 = open ("foo", O_RDONLY);
+       d2 = open ("foo", O_RDONLY);
+       lseek (d1, 1024, SEEK_SET);
+       read (d2, buf, 4);
+     }
+
+will read the first four characters of the file `foo'.  (The
+error-checking code necessary for a real program has been omitted here
+for brevity.)
+
+   By contrast, descriptors made by duplication share a common file
+position with the original descriptor that was duplicated.  Anything
+which alters the file position of one of the duplicates, including
+reading or writing data, affects all of them alike.  Thus, for example,
+
+     {
+       int d1, d2, d3;
+       char buf1[4], buf2[4];
+       d1 = open ("foo", O_RDONLY);
+       d2 = dup (d1);
+       d3 = dup (d2);
+       lseek (d3, 1024, SEEK_SET);
+       read (d1, buf1, 4);
+       read (d2, buf2, 4);
+     }
+
+will read four characters starting with the 1024'th character of `foo',
+and then four more characters starting with the 1028'th character.
+
+ - Data Type: off_t
+     This is an arithmetic data type used to represent file sizes.  In
+     the GNU system, this is equivalent to `fpos_t' or `long int'.
+
+   These aliases for the `SEEK_...' constants exist for the sake of
+compatibility with older BSD systems.  They are defined in two
+different header files: `fcntl.h' and `sys/file.h'.
+
+`L_SET'
+     An alias for `SEEK_SET'.
+
+`L_INCR'
+     An alias for `SEEK_CUR'.
+
+`L_XTND'
+     An alias for `SEEK_END'.
+
+
+File: libc.info,  Node: Descriptors and Streams,  Next: Stream/Descriptor Precautions,  Prev: File Position Primitive,  Up: Low-Level I/O
+
+Descriptors and Streams
+=======================
+
+   Given an open file descriptor, you can create a stream for it with
+the `fdopen' function.  You can get the underlying file descriptor for
+an existing stream with the `fileno' function.  These functions are
+declared in the header file `stdio.h'.
+
+ - Function: FILE * fdopen (int FILEDES, const char *OPENTYPE)
+     The `fdopen' function returns a new stream for the file descriptor
+     FILEDES.
+
+     The OPENTYPE argument is interpreted in the same way as for the
+     `fopen' function (*note Opening Streams::.), except that the `b'
+     option is not permitted; this is because GNU makes no distinction
+     between text and binary files.  Also, `"w"' and `"w+"' do not
+     cause truncation of the file; these have affect only when opening
+     a file, and in this case the file has already been opened.  You
+     must make sure that the OPENTYPE argument matches the actual mode
+     of the open file descriptor.
+
+     The return value is the new stream.  If the stream cannot be
+     created (for example, if the modes for the file indicated by the
+     file descriptor do not permit the access specified by the OPENTYPE
+     argument), a null pointer is returned instead.
+
+     In some other systems, `fdopen' may fail to detect that the modes
+     for file descriptor do not permit the access specified by
+     `opentype'.  The GNU C library always checks for this.
+
+   For an example showing the use of the `fdopen' function, see *Note
+Creating a Pipe::.
+
+ - Function: int fileno (FILE *STREAM)
+     This function returns the file descriptor associated with the
+     stream STREAM.  If an error is detected (for example, if the STREAM
+     is not valid) or if STREAM does not do I/O to a file, `fileno'
+     returns `-1'.
+
+   There are also symbolic constants defined in `unistd.h' for the file
+descriptors belonging to the standard streams `stdin', `stdout', and
+`stderr'; see *Note Standard Streams::.
+
+`STDIN_FILENO'
+     This macro has value `0', which is the file descriptor for
+     standard input.
+
+`STDOUT_FILENO'
+     This macro has value `1', which is the file descriptor for
+     standard output.
+
+`STDERR_FILENO'
+     This macro has value `2', which is the file descriptor for
+     standard error output.
+
+
+File: libc.info,  Node: Stream/Descriptor Precautions,  Next: Waiting for I/O,  Prev: Descriptors and Streams,  Up: Low-Level I/O
+
+Dangers of Mixing Streams and Descriptors
+=========================================
+
+   You can have multiple file descriptors and streams (let's call both
+streams and descriptors "channels" for short) connected to the same
+file, but you must take care to avoid confusion between channels.  There
+are two cases to consider: "linked" channels that share a single file
+position value, and "independent" channels that have their own file
+positions.
+
+   It's best to use just one channel in your program for actual data
+transfer to any given file, except when all the access is for input.
+For example, if you open a pipe (something you can only do at the file
+descriptor level), either do all I/O with the descriptor, or construct a
+stream from the descriptor with `fdopen' and then do all I/O with the
+stream.
+
+* Menu:
+
+* Linked Channels::	   Dealing with channels sharing a file position.
+* Independent Channels::   Dealing with separately opened, unlinked channels.
+* Cleaning Streams::	   Cleaning a stream makes it safe to use
+                            another channel.
+
+
+File: libc.info,  Node: Linked Channels,  Next: Independent Channels,  Up: Stream/Descriptor Precautions
+
+Linked Channels
+---------------
+
+   Channels that come from a single opening share the same file
+position; we call them "linked" channels.  Linked channels result when
+you make a stream from a descriptor using `fdopen', when you get a
+descriptor from a stream with `fileno', when you copy a descriptor with
+`dup' or `dup2', and when descriptors are inherited during `fork'.  For
+files that don't support random access, such as terminals and pipes,
+*all* channels are effectively linked.  On random-access files, all
+append-type output streams are effectively linked to each other.
+
+   If you have been using a stream for I/O, and you want to do I/O using
+another channel (either a stream or a descriptor) that is linked to it,
+you must first "clean up" the stream that you have been using.  *Note
+Cleaning Streams::.
+
+   Terminating a process, or executing a new program in the process,
+destroys all the streams in the process.  If descriptors linked to these
+streams persist in other processes, their file positions become
+undefined as a result.  To prevent this, you must clean up the streams
+before destroying them.
+
+
+File: libc.info,  Node: Independent Channels,  Next: Cleaning Streams,  Prev: Linked Channels,  Up: Stream/Descriptor Precautions
+
+Independent Channels
+--------------------
+
+   When you open channels (streams or descriptors) separately on a
+seekable file, each channel has its own file position.  These are called
+"independent channels".
+
+   The system handles each channel independently.  Most of the time,
+this is quite predictable and natural (especially for input): each
+channel can read or write sequentially at its own place in the file.
+However, if some of the channels are streams, you must take these
+precautions:
+
+   * You should clean an output stream after use, before doing anything
+     else that might read or write from the same part of the file.
+
+   * You should clean an input stream before reading data that may have
+     been modified using an independent channel.  Otherwise, you might
+     read obsolete data that had been in the stream's buffer.
+
+   If you do output to one channel at the end of the file, this will
+certainly leave the other independent channels positioned somewhere
+before the new end.  You cannot reliably set their file positions to the
+new end of file before writing, because the file can always be extended
+by another process between when you set the file position and when you
+write the data.  Instead, use an append-type descriptor or stream; they
+always output at the current end of the file.  In order to make the
+end-of-file position accurate, you must clean the output channel you
+were using, if it is a stream.
+
+   It's impossible for two channels to have separate file pointers for a
+file that doesn't support random access.  Thus, channels for reading or
+writing such files are always linked, never independent.  Append-type
+channels are also always linked.  For these channels, follow the rules
+for linked channels; see *Note Linked Channels::.
+
+
+File: libc.info,  Node: Cleaning Streams,  Prev: Independent Channels,  Up: Stream/Descriptor Precautions
+
+Cleaning Streams
+----------------
+
+   On the GNU system, you can clean up any stream with `fclean':
+
+ - Function: int fclean (FILE *STREAM)
+     Clean up the stream STREAM so that its buffer is empty.  If STREAM
+     is doing output, force it out.  If STREAM is doing input, give the
+     data in the buffer back to the system, arranging to reread it.
+
+   On other systems, you can use `fflush' to clean a stream in most
+cases.
+
+   You can skip the `fclean' or `fflush' if you know the stream is
+already clean.  A stream is clean whenever its buffer is empty.  For
+example, an unbuffered stream is always clean.  An input stream that is
+at end-of-file is clean.  A line-buffered stream is clean when the last
+character output was a newline.
+
+   There is one case in which cleaning a stream is impossible on most
+systems.  This is when the stream is doing input from a file that is not
+random-access.  Such streams typically read ahead, and when the file is
+not random access, there is no way to give back the excess data already
+read.  When an input stream reads from a random-access file, `fflush'
+does clean the stream, but leaves the file pointer at an unpredictable
+place; you must set the file pointer before doing any further I/O.  On
+the GNU system, using `fclean' avoids both of these problems.
+
+   Closing an output-only stream also does `fflush', so this is a valid
+way of cleaning an output stream.  On the GNU system, closing an input
+stream does `fclean'.
+
+   You need not clean a stream before using its descriptor for control
+operations such as setting terminal modes; these operations don't affect
+the file position and are not affected by it.  You can use any
+descriptor for these operations, and all channels are affected
+simultaneously.  However, text already "output" to a stream but still
+buffered by the stream will be subject to the new terminal modes when
+subsequently flushed.  To make sure "past" output is covered by the
+terminal settings that were in effect at the time, flush the output
+streams for that terminal before setting the modes.  *Note Terminal
+Modes::.
+
+
+File: libc.info,  Node: Waiting for I/O,  Next: Control Operations,  Prev: Stream/Descriptor Precautions,  Up: Low-Level I/O
+
+Waiting for Input or Output
+===========================
+
+   Sometimes a program needs to accept input on multiple input channels
+whenever input arrives.  For example, some workstations may have devices
+such as a digitizing tablet, function button box, or dial box that are
+connected via normal asynchronous serial interfaces; good user interface
+style requires responding immediately to input on any device.  Another
+example is a program that acts as a server to several other processes
+via pipes or sockets.
+
+   You cannot normally use `read' for this purpose, because this blocks
+the program until input is available on one particular file descriptor;
+input on other channels won't wake it up.  You could set nonblocking
+mode and poll each file descriptor in turn, but this is very
+inefficient.
+
+   A better solution is to use the `select' function.  This blocks the
+program until input or output is ready on a specified set of file
+descriptors, or until a timer expires, whichever comes first.  This
+facility is declared in the header file `sys/types.h'.
+
+   In the case of a server socket (*note Listening::.), we say that
+"input" is available when there are pending connections that could be
+accepted (*note Accepting Connections::.).  `accept' for server sockets
+blocks and interacts with `select' just as `read' does for normal input.
+
+   The file descriptor sets for the `select' function are specified as
+`fd_set' objects.  Here is the description of the data type and some
+macros for manipulating these objects.
+
+ - Data Type: fd_set
+     The `fd_set' data type represents file descriptor sets for the
+     `select' function.  It is actually a bit array.
+
+ - Macro: int FD_SETSIZE
+     The value of this macro is the maximum number of file descriptors
+     that a `fd_set' object can hold information about.  On systems
+     with a fixed maximum number, `FD_SETSIZE' is at least that number.
+     On some systems, including GNU, there is no absolute limit on the
+     number of descriptors open, but this macro still has a constant
+     value which controls the number of bits in an `fd_set'; if you get
+     a file descriptor with a value as high as `FD_SETSIZE', you cannot
+     put that descriptor into an `fd_set'.
+
+ - Macro: void FD_ZERO (fd_set *SET)
+     This macro initializes the file descriptor set SET to be the empty
+     set.
+
+ - Macro: void FD_SET (int FILEDES, fd_set *SET)
+     This macro adds FILEDES to the file descriptor set SET.
+
+ - Macro: void FD_CLR (int FILEDES, fd_set *SET)
+     This macro removes FILEDES from the file descriptor set SET.
+
+ - Macro: int FD_ISSET (int FILEDES, fd_set *SET)
+     This macro returns a nonzero value (true) if FILEDES is a member
+     of the the file descriptor set SET, and zero (false) otherwise.
+
+   Next, here is the description of the `select' function itself.
+
+ - Function: int select (int NFDS, fd_set *READ-FDS, fd_set *WRITE-FDS,
+          fd_set *EXCEPT-FDS, struct timeval *TIMEOUT)
+     The `select' function blocks the calling process until there is
+     activity on any of the specified sets of file descriptors, or
+     until the timeout period has expired.
+
+     The file descriptors specified by the READ-FDS argument are
+     checked to see if they are ready for reading; the WRITE-FDS file
+     descriptors are checked to see if they are ready for writing; and
+     the EXCEPT-FDS file descriptors are checked for exceptional
+     conditions.  You can pass a null pointer for any of these
+     arguments if you are not interested in checking for that kind of
+     condition.
+
+     A file descriptor is considered ready for reading if it is at end
+     of file.  A server socket is considered ready for reading if there
+     is a pending connection which can be accepted with `accept'; *note
+     Accepting Connections::..  A client socket is ready for writing
+     when its connection is fully established; *note Connecting::..
+
+     "Exceptional conditions" does not mean errors--errors are reported
+     immediately when an erroneous system call is executed, and do not
+     constitute a state of the descriptor.  Rather, they include
+     conditions such as the presence of an urgent message on a socket.
+     (*Note Sockets::, for information on urgent messages.)
+
+     The `select' function checks only the first NFDS file descriptors.
+     The usual thing is to pass `FD_SETSIZE' as the value of this
+     argument.
+
+     The TIMEOUT specifies the maximum time to wait.  If you pass a
+     null pointer for this argument, it means to block indefinitely
+     until one of the file descriptors is ready.  Otherwise, you should
+     provide the time in `struct timeval' format; see *Note
+     High-Resolution Calendar::.  Specify zero as the time (a `struct
+     timeval' containing all zeros) if you want to find out which
+     descriptors are ready without waiting if none are ready.
+
+     The normal return value from `select' is the total number of ready
+     file descriptors in all of the sets.  Each of the argument sets is
+     overwritten with information about the descriptors that are ready
+     for the corresponding operation.  Thus, to see if a particular
+     descriptor DESC has input, use `FD_ISSET (DESC, READ-FDS)' after
+     `select' returns.
+
+     If `select' returns because the timeout period expires, it returns
+     a value of zero.
+
+     Any signal will cause `select' to return immediately.  So if your
+     program uses signals, you can't rely on `select' to keep waiting
+     for the full time specified.  If you want to be sure of waiting
+     for a particular amount of time, you must check for `EINTR' and
+     repeat the `select' with a newly calculated timeout based on the
+     current time.  See the example below.  See also *Note Interrupted
+     Primitives::.
+
+     If an error occurs, `select' returns `-1' and does not modify the
+     argument file descriptor sets.  The following `errno' error
+     conditions are defined for this function:
+
+    `EBADF'
+          One of the file descriptor sets specified an invalid file
+          descriptor.
+
+    `EINTR'
+          The operation was interrupted by a signal.  *Note Interrupted
+          Primitives::.
+
+    `EINVAL'
+          The TIMEOUT argument is invalid; one of the components is
+          negative or too large.
+
+   *Portability Note:*  The `select' function is a BSD Unix feature.
+
+   Here is an example showing how you can use `select' to establish a
+timeout period for reading from a file descriptor.  The `input_timeout'
+function blocks the calling process until input is available on the
+file descriptor, or until the timeout period expires.
+
+     #include <stdio.h>
+     #include <unistd.h>
+     #include <sys/types.h>
+     #include <sys/time.h>
+
+     int
+     input_timeout (int filedes, unsigned int seconds)
+     {
+       fd_set set;
+       struct timeval timeout;
+     
+       /* Initialize the file descriptor set. */
+       FD_ZERO (&set);
+       FD_SET (filedes, &set);
+     
+       /* Initialize the timeout data structure. */
+       timeout.tv_sec = seconds;
+       timeout.tv_usec = 0;
+     /* `select' returns 0 if timeout, 1 if input available, -1 if error. */
+       return TEMP_FAILURE_RETRY (select (FD_SETSIZE,
+                                          &set, NULL, NULL,
+                                          &timeout));
+     }
+
+     int
+     main (void)
+     {
+       fprintf (stderr, "select returned %d.\n",
+                input_timeout (STDIN_FILENO, 5));
+       return 0;
+     }
+
+   There is another example showing the use of `select' to multiplex
+input from multiple sockets in *Note Server Example::.
+
+
+File: libc.info,  Node: Control Operations,  Next: Duplicating Descriptors,  Prev: Waiting for I/O,  Up: Low-Level I/O
+
+Control Operations on Files
+===========================
+
+   This section describes how you can perform various other operations
+on file descriptors, such as inquiring about or setting flags describing
+the status of the file descriptor, manipulating record locks, and the
+like.  All of these operations are performed by the function `fcntl'.
+
+   The second argument to the `fcntl' function is a command that
+specifies which operation to perform.  The function and macros that name
+various flags that are used with it are declared in the header file
+`fcntl.h'.  Many of these flags are also used by the `open' function;
+see *Note Opening and Closing Files::.
+
+ - Function: int fcntl (int FILEDES, int COMMAND, ...)
+     The `fcntl' function performs the operation specified by COMMAND
+     on the file descriptor FILEDES.  Some commands require additional
+     arguments to be supplied.  These additional arguments and the
+     return value and error conditions are given in the detailed
+     descriptions of the individual commands.
+
+     Briefly, here is a list of what the various commands are.
+
+    `F_DUPFD'
+          Duplicate the file descriptor (return another file descriptor
+          pointing to the same open file).  *Note Duplicating
+          Descriptors::.
+
+    `F_GETFD'
+          Get flags associated with the file descriptor.  *Note
+          Descriptor Flags::.
+
+    `F_SETFD'
+          Set flags associated with the file descriptor.  *Note
+          Descriptor Flags::.
+
+    `F_GETFL'
+          Get flags associated with the open file.  *Note File Status
+          Flags::.
+
+    `F_SETFL'
+          Set flags associated with the open file.  *Note File Status
+          Flags::.
+
+    `F_GETLK'
+          Get a file lock.  *Note File Locks::.
+
+    `F_SETLK'
+          Set or clear a file lock.  *Note File Locks::.
+
+    `F_SETLKW'
+          Like `F_SETLK', but wait for completion.  *Note File Locks::.
+
+    `F_GETOWN'
+          Get process or process group ID to receive `SIGIO' signals.
+          *Note Interrupt Input::.
+
+    `F_SETOWN'
+          Set process or process group ID to receive `SIGIO' signals.
+          *Note Interrupt Input::.
+
+
+File: libc.info,  Node: Duplicating Descriptors,  Next: Descriptor Flags,  Prev: Control Operations,  Up: Low-Level I/O
+
+Duplicating Descriptors
+=======================
+
+   You can "duplicate" a file descriptor, or allocate another file
+descriptor that refers to the same open file as the original.  Duplicate
+descriptors share one file position and one set of file status flags
+(*note File Status Flags::.), but each has its own set of file
+descriptor flags (*note Descriptor Flags::.).
+
+   The major use of duplicating a file descriptor is to implement
+"redirection" of input or output:  that is, to change the file or pipe
+that a particular file descriptor corresponds to.
+
+   You can perform this operation using the `fcntl' function with the
+`F_DUPFD' command, but there are also convenient functions `dup' and
+`dup2' for duplicating descriptors.
+
+   The `fcntl' function and flags are declared in `fcntl.h', while
+prototypes for `dup' and `dup2' are in the header file `unistd.h'.
+
+ - Function: int dup (int OLD)
+     This function copies descriptor OLD to the first available
+     descriptor number (the first number not currently open).  It is
+     equivalent to `fcntl (OLD, F_DUPFD, 0)'.
+
+ - Function: int dup2 (int OLD, int NEW)
+     This function copies the descriptor OLD to descriptor number NEW.
+
+     If OLD is an invalid descriptor, then `dup2' does nothing; it does
+     not close NEW.  Otherwise, the new duplicate of OLD replaces any
+     previous meaning of descriptor NEW, as if NEW were closed first.
+
+     If OLD and NEW are different numbers, and OLD is a valid
+     descriptor number, then `dup2' is equivalent to:
+
+          close (NEW);
+          fcntl (OLD, F_DUPFD, NEW)
+
+     However, `dup2' does this atomically; there is no instant in the
+     middle of calling `dup2' at which NEW is closed and not yet a
+     duplicate of OLD.
+
+ - Macro: int F_DUPFD
+     This macro is used as the COMMAND argument to `fcntl', to copy the
+     file descriptor given as the first argument.
+
+     The form of the call in this case is:
+
+          fcntl (OLD, F_DUPFD, NEXT-FILEDES)
+
+     The NEXT-FILEDES argument is of type `int' and specifies that the
+     file descriptor returned should be the next available one greater
+     than or equal to this value.
+
+     The return value from `fcntl' with this command is normally the
+     value of the new file descriptor.  A return value of `-1'
+     indicates an error.  The following `errno' error conditions are
+     defined for this command:
+
+    `EBADF'
+          The OLD argument is invalid.
+
+    `EINVAL'
+          The NEXT-FILEDES argument is invalid.
+
+    `EMFILE'
+          There are no more file descriptors available--your program is
+          already using the maximum.  In BSD and GNU, the maximum is
+          controlled by a resource limit that can be changed; *note
+          Limits on Resources::., for more information about the
+          `RLIMIT_NOFILE' limit.
+
+     `ENFILE' is not a possible error code for `dup2' because `dup2'
+     does not create a new opening of a file; duplicate descriptors do
+     not count toward the limit which `ENFILE' indicates.  `EMFILE' is
+     possible because it refers to the limit on distinct descriptor
+     numbers in use in one process.
+
+   Here is an example showing how to use `dup2' to do redirection.
+Typically, redirection of the standard streams (like `stdin') is done
+by a shell or shell-like program before calling one of the `exec'
+functions (*note Executing a File::.) to execute a new program in a
+child process.  When the new program is executed, it creates and
+initializes the standard streams to point to the corresponding file
+descriptors, before its `main' function is invoked.
+
+   So, to redirect standard input to a file, the shell could do
+something like:
+
+     pid = fork ();
+     if (pid == 0)
+       {
+         char *filename;
+         char *program;
+         int file;
+         ...
+         file = TEMP_FAILURE_RETRY (open (filename, O_RDONLY));
+         dup2 (file, STDIN_FILENO);
+         TEMP_FAILURE_RETRY (close (file));
+         execv (program, NULL);
+       }
+
+   There is also a more detailed example showing how to implement
+redirection in the context of a pipeline of processes in *Note
+Launching Jobs::.
+
+
+File: libc.info,  Node: Descriptor Flags,  Next: File Status Flags,  Prev: Duplicating Descriptors,  Up: Low-Level I/O
+
+File Descriptor Flags
+=====================
+
+   "File descriptor flags" are miscellaneous attributes of a file
+descriptor.  These flags are associated with particular file
+descriptors, so that if you have created duplicate file descriptors
+from a single opening of a file, each descriptor has its own set of
+flags.
+
+   Currently there is just one file descriptor flag: `FD_CLOEXEC',
+which causes the descriptor to be closed if you use any of the
+`exec...' functions (*note Executing a File::.).
+
+   The symbols in this section are defined in the header file `fcntl.h'.
+
+ - Macro: int F_GETFD
+     This macro is used as the COMMAND argument to `fcntl', to specify
+     that it should return the file descriptor flags associated with
+     the FILEDES argument.
+
+     The normal return value from `fcntl' with this command is a
+     nonnegative number which can be interpreted as the bitwise OR of
+     the individual flags (except that currently there is only one flag
+     to use).
+
+     In case of an error, `fcntl' returns `-1'.  The following `errno'
+     error conditions are defined for this command:
+
+    `EBADF'
+          The FILEDES argument is invalid.
+
+ - Macro: int F_SETFD
+     This macro is used as the COMMAND argument to `fcntl', to specify
+     that it should set the file descriptor flags associated with the
+     FILEDES argument.  This requires a third `int' argument to specify
+     the new flags, so the form of the call is:
+
+          fcntl (FILEDES, F_SETFD, NEW-FLAGS)
+
+     The normal return value from `fcntl' with this command is an
+     unspecified value other than `-1', which indicates an error.  The
+     flags and error conditions are the same as for the `F_GETFD'
+     command.
+
+   The following macro is defined for use as a file descriptor flag with
+the `fcntl' function.  The value is an integer constant usable as a bit
+mask value.
+
+ - Macro: int FD_CLOEXEC
+     This flag specifies that the file descriptor should be closed when
+     an `exec' function is invoked; see *Note Executing a File::.  When
+     a file descriptor is allocated (as with `open' or `dup'), this bit
+     is initially cleared on the new file descriptor, meaning that
+     descriptor will survive into the new program after `exec'.
+
+   If you want to modify the file descriptor flags, you should get the
+current flags with `F_GETFD' and modify the value.  Don't assume that
+the flags listed here are the only ones that are implemented; your
+program may be run years from now and more flags may exist then.  For
+example, here is a function to set or clear the flag `FD_CLOEXEC'
+without altering any other flags:
+
+     /* Set the `FD_CLOEXEC' flag of DESC if VALUE is nonzero,
+        or clear the flag if VALUE is 0.
+        Return 0 on success, or -1 on error with `errno' set. */
+     
+     int
+     set_cloexec_flag (int desc, int value)
+     {
+       int oldflags = fcntl (desc, F_GETFD, 0);
+       /* If reading the flags failed, return error indication now.
+       if (oldflags < 0)
+         return oldflags;
+       /* Set just the flag we want to set. */
+       if (value != 0)
+         oldflags |= FD_CLOEXEC;
+       else
+         oldflags &= ~FD_CLOEXEC;
+       /* Store modified flag word in the descriptor. */
+       return fcntl (desc, F_SETFD, oldflags);
+     }
+
+
+File: libc.info,  Node: File Status Flags,  Next: File Locks,  Prev: Descriptor Flags,  Up: Low-Level I/O
+
+File Status Flags
+=================
+
+   "File status flags" are used to specify attributes of the opening of
+a file.  Unlike the file descriptor flags discussed in *Note Descriptor
+Flags::, the file status flags are shared by duplicated file descriptors
+resulting from a single opening of the file.  The file status flags are
+specified with the FLAGS argument to `open'; *note Opening and Closing
+Files::..
+
+   File status flags fall into three categories, which are described in
+the following sections.
+
+   * *Note Access Modes::, specify what type of access is allowed to the
+     file: reading, writing, or both.  They are set by `open' and are
+     returned by `fcntl', but cannot be changed.
+
+   * *Note Open-time Flags::, control details of what `open' will do.
+     These flags are not preserved after the `open' call.
+
+   * *Note Operating Modes::, affect how operations such as `read' and
+     `write' are done.  They are set by `open', and can be fetched or
+     changed with `fcntl'.
+
+   The symbols in this section are defined in the header file `fcntl.h'.
+
+* Menu:
+
+* Access Modes::                Whether the descriptor can read or write.
+* Open-time Flags::             Details of `open'.
+* Operating Modes::             Special modes to control I/O operations.
+* Getting File Status Flags::   Fetching and changing these flags.
+
+
+File: libc.info,  Node: Access Modes,  Next: Open-time Flags,  Up: File Status Flags
+
+File Access Modes
+-----------------
+
+   The file access modes allow a file descriptor to be used for reading,
+writing, or both.  (In the GNU system, they can also allow none of
+these, and allow execution of the file as a program.)  The access modes
+are chosen when the file is opened, and never change.
+
+ - Macro: int O_RDONLY
+     Open the file for read access.
+
+ - Macro: int O_WRONLY
+     Open the file for write access.
+
+ - Macro: int O_RDWR
+     Open the file for both reading and writing.
+
+   In the GNU system (and not in other systems), `O_RDONLY' and
+`O_WRONLY' are independent bits that can be bitwise-ORed together, and
+it is valid for either bit to be set or clear.  This means that
+`O_RDWR' is the same as `O_RDONLY|O_WRONLY'.  A file access mode of
+zero is permissible; it allows no operations that do input or output to
+the file, but does allow other operations such as `fchmod'.  On the GNU
+system, since "read-only" or "write-only" is a misnomer, `fcntl.h'
+defines additional names for the file access modes.  These names are
+preferred when writing GNU-specific code.  But most programs will want
+to be portable to other POSIX.1 systems and should use the POSIX.1
+names above instead.
+
+ - Macro: int O_READ
+     Open the file for reading.  Same as `O_RDWR'; only defined on GNU.
+
+ - Macro: int O_WRITE
+     Open the file for reading.  Same as `O_WRONLY'; only defined on
+     GNU.
+
+ - Macro: int O_EXEC
+     Open the file for executing.  Only defined on GNU.
+
+   To determine the file access mode with `fcntl', you must extract the
+access mode bits from the retrieved file status flags.  In the GNU
+system, you can just test the `O_READ' and `O_WRITE' bits in the flags
+word.  But in other POSIX.1 systems, reading and writing access modes
+are not stored as distinct bit flags.  The portable way to extract the
+file access mode bits is with `O_ACCMODE'.
+
+ - Macro: int O_ACCMODE
+     This macro stands for a mask that can be bitwise-ANDed with the
+     file status flag value to produce a value representing the file
+     access mode.  The mode will be `O_RDONLY', `O_WRONLY', or `O_RDWR'.
+     (In the GNU system it could also be zero, and it never includes the
+     `O_EXEC' bit.)
+
+
+File: libc.info,  Node: Open-time Flags,  Next: Operating Modes,  Prev: Access Modes,  Up: File Status Flags
+
+Open-time Flags
+---------------
+
+   The open-time flags specify options affecting how `open' will behave.
+These options are not preserved once the file is open.  The exception to
+this is `O_NONBLOCK', which is also an I/O operating mode and so it
+*is* saved.  *Note Opening and Closing Files::, for how to call `open'.
+
+   There are two sorts of options specified by open-time flags.
+
+   * "File name translation flags" affect how `open' looks up the file
+     name to locate the file, and whether the file can be created.
+
+   * "Open-time action flags" specify extra operations that `open' will
+     perform on the file once it is open.
+
+   Here are the file name translation flags.
+
+ - Macro: int O_CREAT
+     If set, the file will be created if it doesn't already exist.
+
+ - Macro: int O_EXCL
+     If both `O_CREAT' and `O_EXCL' are set, then `open' fails if the
+     specified file already exists.  This is guaranteed to never
+     clobber an existing file.
+
+ - Macro: int O_NONBLOCK
+     This prevents `open' from blocking for a "long time" to open the
+     file.  This is only meaningful for some kinds of files, usually
+     devices such as serial ports; when it is not meaningful, it is
+     harmless and ignored.  Often opening a port to a modem blocks
+     until the modem reports carrier detection; if `O_NONBLOCK' is
+     specified, `open' will return immediately without a carrier.
+
+     Note that the `O_NONBLOCK' flag is overloaded as both an I/O
+     operating mode and a file name translation flag.  This means that
+     specifying `O_NONBLOCK' in `open' also sets nonblocking I/O mode;
+     *note Operating Modes::..  To open the file without blocking but
+     do normal I/O that blocks, you must call `open' with `O_NONBLOCK'
+     set and then call `fcntl' to turn the bit off.
+
+ - Macro: int O_NOCTTY
+     If the named file is a terminal device, don't make it the
+     controlling terminal for the process.  *Note Job Control::, for
+     information about what it means to be the controlling terminal.
+
+     In the GNU system and 4.4 BSD, opening a file never makes it the
+     controlling terminal and `O_NOCTTY' is zero.  However, other
+     systems may use a nonzero value for `O_NOCTTY' and set the
+     controlling terminal when you open a file that is a terminal
+     device; so to be portable, use `O_NOCTTY' when it is important to
+     avoid this.
+
+   The following three file name translation flags exist only in the
+GNU system.
+
+ - Macro: int O_IGNORE_CTTY
+     Do not recognize the named file as the controlling terminal, even
+     if it refers to the process's existing controlling terminal
+     device.  Operations on the new file descriptor will never induce
+     job control signals.  *Note Job Control::.
+
+ - Macro: int O_NOLINK
+     If the named file is a symbolic link, open the link itself instead
+     of the file it refers to.  (`fstat' on the new file descriptor will
+     return the information returned by `lstat' on the link's name.)
+
+ - Macro: int O_NOTRANS
+     If the named file is specially translated, do not invoke the
+     translator.  Open the bare file the translator itself sees.
+
+   The open-time action flags tell `open' to do additional operations
+which are not really related to opening the file.  The reason to do them
+as part of `open' instead of in separate calls is that `open' can do
+them atomically.
+
+ - Macro: int O_TRUNC
+     Truncate the file to zero length.  This option is only useful for
+     regular files, not special files such as directories or FIFOs.
+     POSIX.1 requires that you open the file for writing to use
+     `O_TRUNC'.  In BSD and GNU you must have permission to write the
+     file to truncate it, but you need not open for write access.
+
+     This is the only open-time action flag specified by POSIX.1.
+     There is no good reason for truncation to be done by `open',
+     instead of by calling `ftruncate' afterwards.  The `O_TRUNC' flag
+     existed in Unix before `ftruncate' was invented, and is retained
+     for backward compatibility.
+
+ - Macro: int O_SHLOCK
+     Acquire a shared lock on the file, as with `flock'.  *Note File
+     Locks::.
+
+     If `O_CREAT' is specified, the locking is done atomically when
+     creating the file.  You are guaranteed that no other process will
+     get the lock on the new file first.
+
+ - Macro: int O_EXLOCK
+     Acquire an exclusive lock on the file, as with `flock'.  *Note
+     File Locks::.  This is atomic like `O_SHLOCK'.
+

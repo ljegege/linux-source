@@ -1,0 +1,60 @@
+# @configure_input@
+# From $Id: config.make.in,v 1.33 1997/01/29 03:29:24 drepper Exp $.
+# Don't edit this file.  Put configuration parameters in configparms instead.
+
+# Installation prefixes.
+install_root =
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+slibdir = @libc_cv_slibdir@
+sysconfdir = @libc_cv_sysconfdir@
+rootsbindir = @libc_cv_rootsbindir@
+
+# If ldconfig exists.  This will go away as soon as `ldconfig' is available
+# in GNU libc.
+has-ldconfig = @has_ldconfig@
+
+# System configuration.
+config-machine = @host_cpu@
+base-machine = @base_machine@
+config-vendor = @host_vendor@
+config-os = @host_os@
+config-sysdirs = @sysnames@
+
+defines = @DEFINES@
+
+elf = @elf@
+have-initfini = @libc_cv_have_initfini@
+
+have-no-whole-archive = @libc_cv_ld_no_whole_archive@
+have-no-exceptions = @libc_cv_gcc_no_exceptions@
+have-bash2 = @libc_cv_have_bash2@
+have-ksh = @libc_cv_have_ksh@
+
+# Configuration options.
+gnu-as = @gnu_as@
+gnu-ld = @gnu_ld@
+build-shared = @shared@
+build-profile = @profile@
+build-omitfp = @omitfp@
+stdio = @stdio@
+add-ons = @subdirs@
+
+# Build tools.
+CC = @CC@
+BUILD_CC = @BUILD_CC@
+CFLAGS = @CFLAGS@
+AR = @AR@
+RANLIB = @RANLIB@
+AS = $(CC) -c
+
+# Installation tools.
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+LN_S = @LN_S@
+MSGFMT = @MSGFMT@
+BASH = @BASH@
+KSH = @KSH@
+
+# More variables may be inserted below by configure.

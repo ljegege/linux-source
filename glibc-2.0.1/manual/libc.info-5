@@ -1,0 +1,1049 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: String/Array Comparison,  Next: Collation Functions,  Prev: Copying and Concatenation,  Up: String and Array Utilities
+
+String/Array Comparison
+=======================
+
+   You can use the functions in this section to perform comparisons on
+the contents of strings and arrays.  As well as checking for equality,
+these functions can also be used as the ordering functions for sorting
+operations.  *Note Searching and Sorting::, for an example of this.
+
+   Unlike most comparison operations in C, the string comparison
+functions return a nonzero value if the strings are *not* equivalent
+rather than if they are.  The sign of the value indicates the relative
+ordering of the first characters in the strings that are not
+equivalent:  a negative value indicates that the first string is "less"
+than the second, while a positive value indicates that the first string
+is "greater".
+
+   The most common use of these functions is to check only for equality.
+This is canonically done with an expression like `! strcmp (s1, s2)'.
+
+   All of these functions are declared in the header file `string.h'.
+
+ - Function: int memcmp (const void *A1, const void *A2, size_t SIZE)
+     The function `memcmp' compares the SIZE bytes of memory beginning
+     at A1 against the SIZE bytes of memory beginning at A2.  The value
+     returned has the same sign as the difference between the first
+     differing pair of bytes (interpreted as `unsigned char' objects,
+     then promoted to `int').
+
+     If the contents of the two blocks are equal, `memcmp' returns `0'.
+
+   On arbitrary arrays, the `memcmp' function is mostly useful for
+testing equality.  It usually isn't meaningful to do byte-wise ordering
+comparisons on arrays of things other than bytes.  For example, a
+byte-wise comparison on the bytes that make up floating-point numbers
+isn't likely to tell you anything about the relationship between the
+values of the floating-point numbers.
+
+   You should also be careful about using `memcmp' to compare objects
+that can contain "holes", such as the padding inserted into structure
+objects to enforce alignment requirements, extra space at the end of
+unions, and extra characters at the ends of strings whose length is less
+than their allocated size.  The contents of these "holes" are
+indeterminate and may cause strange behavior when performing byte-wise
+comparisons.  For more predictable results, perform an explicit
+component-wise comparison.
+
+   For example, given a structure type definition like:
+
+     struct foo
+       {
+         unsigned char tag;
+         union
+           {
+             double f;
+             long i;
+             char *p;
+           } value;
+       };
+
+you are better off writing a specialized comparison function to compare
+`struct foo' objects instead of comparing them with `memcmp'.
+
+ - Function: int strcmp (const char *S1, const char *S2)
+     The `strcmp' function compares the string S1 against S2, returning
+     a value that has the same sign as the difference between the first
+     differing pair of characters (interpreted as `unsigned char'
+     objects, then promoted to `int').
+
+     If the two strings are equal, `strcmp' returns `0'.
+
+     A consequence of the ordering used by `strcmp' is that if S1 is an
+     initial substring of S2, then S1 is considered to be "less than"
+     S2.
+
+ - Function: int strcasecmp (const char *S1, const char *S2)
+     This function is like `strcmp', except that differences in case
+     are ignored.
+
+     `strcasecmp' is derived from BSD.
+
+ - Function: int strncasecmp (const char *S1, const char *S2, size_t N)
+     This function is like `strncmp', except that differences in case
+     are ignored.
+
+     `strncasecmp' is a GNU extension.
+
+ - Function: int strncmp (const char *S1, const char *S2, size_t SIZE)
+     This function is the similar to `strcmp', except that no more than
+     SIZE characters are compared.  In other words, if the two strings
+     are the same in their first SIZE characters, the return value is
+     zero.
+
+   Here are some examples showing the use of `strcmp' and `strncmp'.
+These examples assume the use of the ASCII character set.  (If some
+other character set--say, EBCDIC--is used instead, then the glyphs are
+associated with different numeric codes, and the return values and
+ordering may differ.)
+
+     strcmp ("hello", "hello")
+         => 0    /* These two strings are the same. */
+     strcmp ("hello", "Hello")
+         => 32   /* Comparisons are case-sensitive. */
+     strcmp ("hello", "world")
+         => -15  /* The character `'h'' comes before `'w''. */
+     strcmp ("hello", "hello, world")
+         => -44  /* Comparing a null character against a comma. */
+     strncmp ("hello", "hello, world"", 5)
+         => 0    /* The initial 5 characters are the same. */
+     strncmp ("hello, world", "hello, stupid world!!!", 5)
+         => 0    /* The initial 5 characters are the same. */
+
+ - Function: int bcmp (const void *A1, const void *A2, size_t SIZE)
+     This is an obsolete alias for `memcmp', derived from BSD.
+
+
+File: libc.info,  Node: Collation Functions,  Next: Search Functions,  Prev: String/Array Comparison,  Up: String and Array Utilities
+
+Collation Functions
+===================
+
+   In some locales, the conventions for lexicographic ordering differ
+from the strict numeric ordering of character codes.  For example, in
+Spanish most glyphs with diacritical marks such as accents are not
+considered distinct letters for the purposes of collation.  On the
+other hand, the two-character sequence `ll' is treated as a single
+letter that is collated immediately after `l'.
+
+   You can use the functions `strcoll' and `strxfrm' (declared in the
+header file `string.h') to compare strings using a collation ordering
+appropriate for the current locale.  The locale used by these functions
+in particular can be specified by setting the locale for the
+`LC_COLLATE' category; see *Note Locales::.
+
+   In the standard C locale, the collation sequence for `strcoll' is
+the same as that for `strcmp'.
+
+   Effectively, the way these functions work is by applying a mapping to
+transform the characters in a string to a byte sequence that represents
+the string's position in the collating sequence of the current locale.
+Comparing two such byte sequences in a simple fashion is equivalent to
+comparing the strings with the locale's collating sequence.
+
+   The function `strcoll' performs this translation implicitly, in
+order to do one comparison.  By contrast, `strxfrm' performs the
+mapping explicitly.  If you are making multiple comparisons using the
+same string or set of strings, it is likely to be more efficient to use
+`strxfrm' to transform all the strings just once, and subsequently
+compare the transformed strings with `strcmp'.
+
+ - Function: int strcoll (const char *S1, const char *S2)
+     The `strcoll' function is similar to `strcmp' but uses the
+     collating sequence of the current locale for collation (the
+     `LC_COLLATE' locale).
+
+   Here is an example of sorting an array of strings, using `strcoll'
+to compare them.  The actual sort algorithm is not written here; it
+comes from `qsort' (*note Array Sort Function::.).  The job of the code
+shown here is to say how to compare the strings while sorting them.
+(Later on in this section, we will show a way to do this more
+efficiently using `strxfrm'.)
+
+     /* This is the comparison function used with `qsort'. */
+     
+     int
+     compare_elements (char **p1, char **p2)
+     {
+       return strcoll (*p1, *p2);
+     }
+     
+     /* This is the entry point--the function to sort
+        strings using the locale's collating sequence. */
+     
+     void
+     sort_strings (char **array, int nstrings)
+     {
+       /* Sort `temp_array' by comparing the strings. */
+       qsort (array, sizeof (char *),
+              nstrings, compare_elements);
+     }
+
+ - Function: size_t strxfrm (char *TO, const char *FROM, size_t SIZE)
+     The function `strxfrm' transforms STRING using the collation
+     transformation determined by the locale currently selected for
+     collation, and stores the transformed string in the array TO.  Up
+     to SIZE characters (including a terminating null character) are
+     stored.
+
+     The behavior is undefined if the strings TO and FROM overlap; see
+     *Note Copying and Concatenation::.
+
+     The return value is the length of the entire transformed string.
+     This value is not affected by the value of SIZE, but if it is
+     greater or equal than SIZE, it means that the transformed string
+     did not entirely fit in the array TO.  In this case, only as much
+     of the string as actually fits was stored.  To get the whole
+     transformed string, call `strxfrm' again with a bigger output
+     array.
+
+     The transformed string may be longer than the original string, and
+     it may also be shorter.
+
+     If SIZE is zero, no characters are stored in TO.  In this case,
+     `strxfrm' simply returns the number of characters that would be
+     the length of the transformed string.  This is useful for
+     determining what size string to allocate.  It does not matter what
+     TO is if SIZE is zero; TO may even be a null pointer.
+
+   Here is an example of how you can use `strxfrm' when you plan to do
+many comparisons.  It does the same thing as the previous example, but
+much faster, because it has to transform each string only once, no
+matter how many times it is compared with other strings.  Even the time
+needed to allocate and free storage is much less than the time we save,
+when there are many strings.
+
+     struct sorter { char *input; char *transformed; };
+     
+     /* This is the comparison function used with `qsort'
+        to sort an array of `struct sorter'. */
+     
+     int
+     compare_elements (struct sorter *p1, struct sorter *p2)
+     {
+       return strcmp (p1->transformed, p2->transformed);
+     }
+     
+     /* This is the entry point--the function to sort
+        strings using the locale's collating sequence. */
+     
+     void
+     sort_strings_fast (char **array, int nstrings)
+     {
+       struct sorter temp_array[nstrings];
+       int i;
+     
+       /* Set up `temp_array'.  Each element contains
+          one input string and its transformed string. */
+       for (i = 0; i < nstrings; i++)
+         {
+           size_t length = strlen (array[i]) * 2;
+           char *transformed;
+           size_t transformed_lenght;
+     
+           temp_array[i].input = array[i];
+     
+           /* First try a buffer perhaps big enough.  */
+           transformed = (char *) xmalloc (length);
+     
+           /* Transform `array[i]'.  */
+           transformed_length = strxfrm (transformed, array[i], length);
+     
+           /* If the buffer was not large enough, resize it
+              and try again.  */
+           if (transformed_length >= length)
+             {
+               /* Allocate the needed space. +1 for terminating
+                  `NUL' character.  */
+               transformed = (char *) xrealloc (transformed,
+                                                transformed_length + 1);
+     
+               /* The return value is not interesting because we know
+                  how long the transformed string is.  */
+               (void) strxfrm (transformed, array[i], transformed_length + 1);
+             }
+     
+           temp_array[i].transformed = transformed;
+         }
+     
+       /* Sort `temp_array' by comparing transformed strings. */
+       qsort (temp_array, sizeof (struct sorter),
+              nstrings, compare_elements);
+     
+       /* Put the elements back in the permanent array
+          in their sorted order. */
+       for (i = 0; i < nstrings; i++)
+         array[i] = temp_array[i].input;
+     
+       /* Free the strings we allocated. */
+       for (i = 0; i < nstrings; i++)
+         free (temp_array[i].transformed);
+     }
+
+   *Compatibility Note:*  The string collation functions are a new
+feature of ISO C.  Older C dialects have no equivalent feature.
+
+
+File: libc.info,  Node: Search Functions,  Next: Finding Tokens in a String,  Prev: Collation Functions,  Up: String and Array Utilities
+
+Search Functions
+================
+
+   This section describes library functions which perform various kinds
+of searching operations on strings and arrays.  These functions are
+declared in the header file `string.h'.
+
+ - Function: void * memchr (const void *BLOCK, int C, size_t SIZE)
+     This function finds the first occurrence of the byte C (converted
+     to an `unsigned char') in the initial SIZE bytes of the object
+     beginning at BLOCK.  The return value is a pointer to the located
+     byte, or a null pointer if no match was found.
+
+ - Function: char * strchr (const char *STRING, int C)
+     The `strchr' function finds the first occurrence of the character
+     C (converted to a `char') in the null-terminated string beginning
+     at STRING.  The return value is a pointer to the located
+     character, or a null pointer if no match was found.
+
+     For example,
+          strchr ("hello, world", 'l')
+              => "llo, world"
+          strchr ("hello, world", '?')
+              => NULL
+
+     The terminating null character is considered to be part of the
+     string, so you can use this function get a pointer to the end of a
+     string by specifying a null character as the value of the C
+     argument.
+
+ - Function: char * index (const char *STRING, int C)
+     `index' is another name for `strchr'; they are exactly the same.
+
+ - Function: char * strrchr (const char *STRING, int C)
+     The function `strrchr' is like `strchr', except that it searches
+     backwards from the end of the string STRING (instead of forwards
+     from the front).
+
+     For example,
+          strrchr ("hello, world", 'l')
+              => "ld"
+
+ - Function: char * rindex (const char *STRING, int C)
+     `rindex' is another name for `strrchr'; they are exactly the same.
+
+ - Function: char * strstr (const char *HAYSTACK, const char *NEEDLE)
+     This is like `strchr', except that it searches HAYSTACK for a
+     substring NEEDLE rather than just a single character.  It returns
+     a pointer into the string HAYSTACK that is the first character of
+     the substring, or a null pointer if no match was found.  If NEEDLE
+     is an empty string, the function returns HAYSTACK.
+
+     For example,
+          strstr ("hello, world", "l")
+              => "llo, world"
+          strstr ("hello, world", "wo")
+              => "world"
+
+ - Function: void * memmem (const void *NEEDLE, size_t NEEDLE-LEN,
+          const void *HAYSTACK, size_t HAYSTACK-LEN)
+     This is like `strstr', but NEEDLE and HAYSTACK are byte arrays
+     rather than null-terminated strings.  NEEDLE-LEN is the length of
+     NEEDLE and HAYSTACK-LEN is the length of HAYSTACK.
+
+     This function is a GNU extension.
+
+ - Function: size_t strspn (const char *STRING, const char *SKIPSET)
+     The `strspn' ("string span") function returns the length of the
+     initial substring of STRING that consists entirely of characters
+     that are members of the set specified by the string SKIPSET.  The
+     order of the characters in SKIPSET is not important.
+
+     For example,
+          strspn ("hello, world", "abcdefghijklmnopqrstuvwxyz")
+              => 5
+
+ - Function: size_t strcspn (const char *STRING, const char *STOPSET)
+     The `strcspn' ("string complement span") function returns the
+     length of the initial substring of STRING that consists entirely
+     of characters that are *not* members of the set specified by the
+     string STOPSET.  (In other words, it returns the offset of the
+     first character in STRING that is a member of the set STOPSET.)
+
+     For example,
+          strcspn ("hello, world", " \t\n,.;!?")
+              => 5
+
+ - Function: char * strpbrk (const char *STRING, const char *STOPSET)
+     The `strpbrk' ("string pointer break") function is related to
+     `strcspn', except that it returns a pointer to the first character
+     in STRING that is a member of the set STOPSET instead of the
+     length of the initial substring.  It returns a null pointer if no
+     such character from STOPSET is found.
+
+     For example,
+
+          strpbrk ("hello, world", " \t\n,.;!?")
+              => ", world"
+
+
+File: libc.info,  Node: Finding Tokens in a String,  Prev: Search Functions,  Up: String and Array Utilities
+
+Finding Tokens in a String
+==========================
+
+   It's fairly common for programs to have a need to do some simple
+kinds of lexical analysis and parsing, such as splitting a command
+string up into tokens.  You can do this with the `strtok' function,
+declared in the header file `string.h'.
+
+ - Function: char * strtok (char *NEWSTRING, const char *DELIMITERS)
+     A string can be split into tokens by making a series of calls to
+     the function `strtok'.
+
+     The string to be split up is passed as the NEWSTRING argument on
+     the first call only.  The `strtok' function uses this to set up
+     some internal state information.  Subsequent calls to get
+     additional tokens from the same string are indicated by passing a
+     null pointer as the NEWSTRING argument.  Calling `strtok' with
+     another non-null NEWSTRING argument reinitializes the state
+     information.  It is guaranteed that no other library function ever
+     calls `strtok' behind your back (which would mess up this internal
+     state information).
+
+     The DELIMITERS argument is a string that specifies a set of
+     delimiters that may surround the token being extracted.  All the
+     initial characters that are members of this set are discarded.
+     The first character that is *not* a member of this set of
+     delimiters marks the beginning of the next token.  The end of the
+     token is found by looking for the next character that is a member
+     of the delimiter set.  This character in the original string
+     NEWSTRING is overwritten by a null character, and the pointer to
+     the beginning of the token in NEWSTRING is returned.
+
+     On the next call to `strtok', the searching begins at the next
+     character beyond the one that marked the end of the previous token.
+     Note that the set of delimiters DELIMITERS do not have to be the
+     same on every call in a series of calls to `strtok'.
+
+     If the end of the string NEWSTRING is reached, or if the remainder
+     of string consists only of delimiter characters, `strtok' returns
+     a null pointer.
+
+   *Warning:* Since `strtok' alters the string it is parsing, you
+always copy the string to a temporary buffer before parsing it with
+`strtok'.  If you allow `strtok' to modify a string that came from
+another part of your program, you are asking for trouble; that string
+may be part of a data structure that could be used for other purposes
+during the parsing, when alteration by `strtok' makes the data
+structure temporarily inaccurate.
+
+   The string that you are operating on might even be a constant.  Then
+when `strtok' tries to modify it, your program will get a fatal signal
+for writing in read-only memory.  *Note Program Error Signals::.
+
+   This is a special case of a general principle: if a part of a program
+does not have as its purpose the modification of a certain data
+structure, then it is error-prone to modify the data structure
+temporarily.
+
+   The function `strtok' is not reentrant.  *Note Nonreentrancy::, for
+a discussion of where and why reentrancy is important.
+
+   Here is a simple example showing the use of `strtok'.
+
+     #include <string.h>
+     #include <stddef.h>
+     
+     ...
+     
+     char string[] = "words separated by spaces -- and, punctuation!";
+     const char delimiters[] = " .,;:!-";
+     char *token;
+     
+     ...
+     
+     token = strtok (string, delimiters);  /* token => "words" */
+     token = strtok (NULL, delimiters);    /* token => "separated" */
+     token = strtok (NULL, delimiters);    /* token => "by" */
+     token = strtok (NULL, delimiters);    /* token => "spaces" */
+     token = strtok (NULL, delimiters);    /* token => "and" */
+     token = strtok (NULL, delimiters);    /* token => "punctuation" */
+     token = strtok (NULL, delimiters);    /* token => NULL */
+
+   The GNU C library contains two more functions for tokenizing a string
+which overcome the limitation of non-reentrancy.
+
+ - Function: char * strtok_r (char *NEWSTRING, const char *DELIMITERS,
+          char **SAVE_PTR)
+     Just like `strtok' this function splits the string into several
+     tokens which can be accessed be successive calls to `strtok_r'.
+     The difference is that the information about the next token is not
+     set up in some internal state information.  Instead the caller has
+     to provide another argument SAVE_PTR which is a pointer to a string
+     pointer.  Calling `strtok_r' with a null pointer for NEWSTRING and
+     leaving SAVE_PTR between the calls unchanged does the job without
+     limiting reentrancy.
+
+     This function was proposed for POSIX.1b and can be found on many
+     systems which support multi-threading.
+
+ - Function: char * strsep (char **STRING_PTR, const char *DELIMITER)
+     A second reentrant approach is to avoid the additional first
+     argument.  The initialization of the moving pointer has to be done
+     by the user.  Successive calls of `strsep' move the pointer along
+     the tokens separated by DELIMITER, returning the address of the
+     next token and updating STRING_PTR to point to the beginning of
+     the next token.
+
+     This function was introduced in 4.3BSD and therefore is widely
+     available.
+
+   Here is how the above example looks like when `strsep' is used.
+
+     #include <string.h>
+     #include <stddef.h>
+     
+     ...
+     
+     char string[] = "words separated by spaces -- and, punctuation!";
+     const char delimiters[] = " .,;:!-";
+     char *running;
+     char *token;
+     
+     ...
+     
+     running = string;
+     token = strsep (&running, delimiters);    /* token => "words" */
+     token = strsep (&running, delimiters);    /* token => "separated" */
+     token = strsep (&running, delimiters);    /* token => "by" */
+     token = strsep (&running, delimiters);    /* token => "spaces" */
+     token = strsep (&running, delimiters);    /* token => "and" */
+     token = strsep (&running, delimiters);    /* token => "punctuation" */
+     token = strsep (&running, delimiters);    /* token => NULL */
+
+
+File: libc.info,  Node: I/O Overview,  Next: I/O on Streams,  Prev: Pattern Matching,  Up: Top
+
+Input/Output Overview
+*********************
+
+   Most programs need to do either input (reading data) or output
+(writing data), or most frequently both, in order to do anything
+useful.  The GNU C library provides such a large selection of input and
+output functions that the hardest part is often deciding which function
+is most appropriate!
+
+   This chapter introduces concepts and terminology relating to input
+and output.  Other chapters relating to the GNU I/O facilities are:
+
+   * *Note I/O on Streams::, which covers the high-level functions that
+     operate on streams, including formatted input and output.
+
+   * *Note Low-Level I/O::, which covers the basic I/O and control
+     functions on file descriptors.
+
+   * *Note File System Interface::, which covers functions for
+     operating on directories and for manipulating file attributes such
+     as access modes and ownership.
+
+   * *Note Pipes and FIFOs::, which includes information on the basic
+     interprocess communication facilities.
+
+   * *Note Sockets::, which covers a more complicated interprocess
+     communication facility with support for networking.
+
+   * *Note Low-Level Terminal Interface::, which covers functions for
+     changing how input and output to terminal or other serial devices
+     are processed.
+
+* Menu:
+
+* I/O Concepts::       Some basic information and terminology.
+* File Names::         How to refer to a file.
+
+
+File: libc.info,  Node: I/O Concepts,  Next: File Names,  Up: I/O Overview
+
+Input/Output Concepts
+=====================
+
+   Before you can read or write the contents of a file, you must
+establish a connection or communications channel to the file.  This
+process is called "opening" the file.  You can open a file for reading,
+writing, or both.
+
+   The connection to an open file is represented either as a stream or
+as a file descriptor.  You pass this as an argument to the functions
+that do the actual read or write operations, to tell them which file to
+operate on.  Certain functions expect streams, and others are designed
+to operate on file descriptors.
+
+   When you have finished reading to or writing from the file, you can
+terminate the connection by "closing" the file.  Once you have closed a
+stream or file descriptor, you cannot do any more input or output
+operations on it.
+
+* Menu:
+
+* Streams and File Descriptors::    The GNU Library provides two ways
+			             to access the contents of files.
+* File Position::                   The number of bytes from the
+                                     beginning of the file.
+
+
+File: libc.info,  Node: Streams and File Descriptors,  Next: File Position,  Up: I/O Concepts
+
+Streams and File Descriptors
+----------------------------
+
+   When you want to do input or output to a file, you have a choice of
+two basic mechanisms for representing the connection between your
+program and the file: file descriptors and streams.  File descriptors
+are represented as objects of type `int', while streams are represented
+as `FILE *' objects.
+
+   File descriptors provide a primitive, low-level interface to input
+and output operations.  Both file descriptors and streams can represent
+a connection to a device (such as a terminal), or a pipe or socket for
+communicating with another process, as well as a normal file.  But, if
+you want to do control operations that are specific to a particular kind
+of device, you must use a file descriptor; there are no facilities to
+use streams in this way.  You must also use file descriptors if your
+program needs to do input or output in special modes, such as
+nonblocking (or polled) input (*note File Status Flags::.).
+
+   Streams provide a higher-level interface, layered on top of the
+primitive file descriptor facilities.  The stream interface treats all
+kinds of files pretty much alike--the sole exception being the three
+styles of buffering that you can choose (*note Stream Buffering::.).
+
+   The main advantage of using the stream interface is that the set of
+functions for performing actual input and output operations (as opposed
+to control operations) on streams is much richer and more powerful than
+the corresponding facilities for file descriptors.  The file descriptor
+interface provides only simple functions for transferring blocks of
+characters, but the stream interface also provides powerful formatted
+input and output functions (`printf' and `scanf') as well as functions
+for character- and line-oriented input and output.
+
+   Since streams are implemented in terms of file descriptors, you can
+extract the file descriptor from a stream and perform low-level
+operations directly on the file descriptor.  You can also initially open
+a connection as a file descriptor and then make a stream associated with
+that file descriptor.
+
+   In general, you should stick with using streams rather than file
+descriptors, unless there is some specific operation you want to do that
+can only be done on a file descriptor.  If you are a beginning
+programmer and aren't sure what functions to use, we suggest that you
+concentrate on the formatted input functions (*note Formatted Input::.)
+and formatted output functions (*note Formatted Output::.).
+
+   If you are concerned about portability of your programs to systems
+other than GNU, you should also be aware that file descriptors are not
+as portable as streams.  You can expect any system running ISO C to
+support streams, but non-GNU systems may not support file descriptors at
+all, or may only implement a subset of the GNU functions that operate on
+file descriptors.  Most of the file descriptor functions in the GNU
+library are included in the POSIX.1 standard, however.
+
+
+File: libc.info,  Node: File Position,  Prev: Streams and File Descriptors,  Up: I/O Concepts
+
+File Position
+-------------
+
+   One of the attributes of an open file is its "file position" that
+keeps track of where in the file the next character is to be read or
+written.  In the GNU system, and all POSIX.1 systems, the file position
+is simply an integer representing the number of bytes from the beginning
+of the file.
+
+   The file position is normally set to the beginning of the file when
+it is opened, and each time a character is read or written, the file
+position is incremented.  In other words, access to the file is normally
+"sequential".
+
+   Ordinary files permit read or write operations at any position within
+the file.  Some other kinds of files may also permit this.  Files which
+do permit this are sometimes referred to as "random-access" files.  You
+can change the file position using the `fseek' function on a stream
+(*note File Positioning::.) or the `lseek' function on a file
+descriptor (*note I/O Primitives::.).  If you try to change the file
+position on a file that doesn't support random access, you get the
+`ESPIPE' error.
+
+   Streams and descriptors that are opened for "append access" are
+treated specially for output: output to such files is *always* appended
+sequentially to the *end* of the file, regardless of the file position.
+However, the file position is still used to control where in the file
+reading is done.
+
+   If you think about it, you'll realize that several programs can read
+a given file at the same time.  In order for each program to be able to
+read the file at its own pace, each program must have its own file
+pointer, which is not affected by anything the other programs do.
+
+   In fact, each opening of a file creates a separate file position.
+Thus, if you open a file twice even in the same program, you get two
+streams or descriptors with independent file positions.
+
+   By contrast, if you open a descriptor and then duplicate it to get
+another descriptor, these two descriptors share the same file position:
+changing the file position of one descriptor will affect the other.
+
+
+File: libc.info,  Node: File Names,  Prev: I/O Concepts,  Up: I/O Overview
+
+File Names
+==========
+
+   In order to open a connection to a file, or to perform other
+operations such as deleting a file, you need some way to refer to the
+file.  Nearly all files have names that are strings--even files which
+are actually devices such as tape drives or terminals.  These strings
+are called "file names".  You specify the file name to say which file
+you want to open or operate on.
+
+   This section describes the conventions for file names and how the
+operating system works with them.
+
+* Menu:
+
+* Directories::                 Directories contain entries for files.
+* File Name Resolution::        A file name specifies how to look up a file.
+* File Name Errors::            Error conditions relating to file names.
+* File Name Portability::       File name portability and syntax issues.
+
+
+File: libc.info,  Node: Directories,  Next: File Name Resolution,  Up: File Names
+
+Directories
+-----------
+
+   In order to understand the syntax of file names, you need to
+understand how the file system is organized into a hierarchy of
+directories.
+
+   A "directory" is a file that contains information to associate other
+files with names; these associations are called "links" or "directory
+entries".  Sometimes, people speak of "files in a directory", but in
+reality, a directory only contains pointers to files, not the files
+themselves.
+
+   The name of a file contained in a directory entry is called a "file
+name component".  In general, a file name consists of a sequence of one
+or more such components, separated by the slash character (`/').  A
+file name which is just one component names a file with respect to its
+directory.  A file name with multiple components names a directory, and
+then a file in that directory, and so on.
+
+   Some other documents, such as the POSIX standard, use the term
+"pathname" for what we call a file name, and either "filename" or
+"pathname component" for what this manual calls a file name component.
+We don't use this terminology because a "path" is something completely
+different (a list of directories to search), and we think that
+"pathname" used for something else will confuse users.  We always use
+"file name" and "file name component" (or sometimes just "component",
+where the context is obvious) in GNU documentation.  Some macros use
+the POSIX terminology in their names, such as `PATH_MAX'.  These macros
+are defined by the POSIX standard, so we cannot change their names.
+
+   You can find more detailed information about operations on
+directories in *Note File System Interface::.
+
+
+File: libc.info,  Node: File Name Resolution,  Next: File Name Errors,  Prev: Directories,  Up: File Names
+
+File Name Resolution
+--------------------
+
+   A file name consists of file name components separated by slash
+(`/') characters.  On the systems that the GNU C library supports,
+multiple successive `/' characters are equivalent to a single `/'
+character.
+
+   The process of determining what file a file name refers to is called
+"file name resolution".  This is performed by examining the components
+that make up a file name in left-to-right order, and locating each
+successive component in the directory named by the previous component.
+Of course, each of the files that are referenced as directories must
+actually exist, be directories instead of regular files, and have the
+appropriate permissions to be accessible by the process; otherwise the
+file name resolution fails.
+
+   If a file name begins with a `/', the first component in the file
+name is located in the "root directory" of the process (usually all
+processes on the system have the same root directory).  Such a file name
+is called an "absolute file name".
+
+   Otherwise, the first component in the file name is located in the
+current working directory (*note Working Directory::.).  This kind of
+file name is called a "relative file name".
+
+   The file name components `.' ("dot") and `..' ("dot-dot") have
+special meanings.  Every directory has entries for these file name
+components.  The file name component `.' refers to the directory
+itself, while the file name component `..' refers to its "parent
+directory" (the directory that contains the link for the directory in
+question).  As a special case, `..' in the root directory refers to the
+root directory itself, since it has no parent; thus `/..' is the same
+as `/'.
+
+   Here are some examples of file names:
+
+`/a'
+     The file named `a', in the root directory.
+
+`/a/b'
+     The file named `b', in the directory named `a' in the root
+     directory.
+
+`a'
+     The file named `a', in the current working directory.
+
+`/a/./b'
+     This is the same as `/a/b'.
+
+`./a'
+     The file named `a', in the current working directory.
+
+`../a'
+     The file named `a', in the parent directory of the current working
+     directory.
+
+   A file name that names a directory may optionally end in a `/'.  You
+can specify a file name of `/' to refer to the root directory, but the
+empty string is not a meaningful file name.  If you want to refer to
+the current working directory, use a file name of `.' or `./'.
+
+   Unlike some other operating systems, the GNU system doesn't have any
+built-in support for file types (or extensions) or file versions as part
+of its file name syntax.  Many programs and utilities use conventions
+for file names--for example, files containing C source code usually
+have names suffixed with `.c'--but there is nothing in the file system
+itself that enforces this kind of convention.
+
+
+File: libc.info,  Node: File Name Errors,  Next: File Name Portability,  Prev: File Name Resolution,  Up: File Names
+
+File Name Errors
+----------------
+
+   Functions that accept file name arguments usually detect these
+`errno' error conditions relating to the file name syntax or trouble
+finding the named file.  These errors are referred to throughout this
+manual as the "usual file name errors".
+
+`EACCES'
+     The process does not have search permission for a directory
+     component of the file name.
+
+`ENAMETOOLONG'
+     This error is used when either the the total length of a file name
+     is greater than `PATH_MAX', or when an individual file name
+     component has a length greater than `NAME_MAX'.  *Note Limits for
+     Files::.
+
+     In the GNU system, there is no imposed limit on overall file name
+     length, but some file systems may place limits on the length of a
+     component.
+
+`ENOENT'
+     This error is reported when a file referenced as a directory
+     component in the file name doesn't exist, or when a component is a
+     symbolic link whose target file does not exist.  *Note Symbolic
+     Links::.
+
+`ENOTDIR'
+     A file that is referenced as a directory component in the file name
+     exists, but it isn't a directory.
+
+`ELOOP'
+     Too many symbolic links were resolved while trying to look up the
+     file name.  The system has an arbitrary limit on the number of
+     symbolic links that may be resolved in looking up a single file
+     name, as a primitive way to detect loops.  *Note Symbolic Links::.
+
+
+File: libc.info,  Node: File Name Portability,  Prev: File Name Errors,  Up: File Names
+
+Portability of File Names
+-------------------------
+
+   The rules for the syntax of file names discussed in *Note File
+Names::, are the rules normally used by the GNU system and by other
+POSIX systems.  However, other operating systems may use other
+conventions.
+
+   There are two reasons why it can be important for you to be aware of
+file name portability issues:
+
+   * If your program makes assumptions about file name syntax, or
+     contains embedded literal file name strings, it is more difficult
+     to get it to run under other operating systems that use different
+     syntax conventions.
+
+   * Even if you are not concerned about running your program on
+     machines that run other operating systems, it may still be
+     possible to access files that use different naming conventions.
+     For example, you may be able to access file systems on another
+     computer running a different operating system over a network, or
+     read and write disks in formats used by other operating systems.
+
+   The ISO C standard says very little about file name syntax, only that
+file names are strings.  In addition to varying restrictions on the
+length of file names and what characters can validly appear in a file
+name, different operating systems use different conventions and syntax
+for concepts such as structured directories and file types or
+extensions.  Some concepts such as file versions might be supported in
+some operating systems and not by others.
+
+   The POSIX.1 standard allows implementations to put additional
+restrictions on file name syntax, concerning what characters are
+permitted in file names and on the length of file name and file name
+component strings.  However, in the GNU system, you do not need to worry
+about these restrictions; any character except the null character is
+permitted in a file name string, and there are no limits on the length
+of file name strings.
+
+
+File: libc.info,  Node: I/O on Streams,  Next: Low-Level I/O,  Prev: I/O Overview,  Up: Top
+
+Input/Output on Streams
+***********************
+
+   This chapter describes the functions for creating streams and
+performing input and output operations on them.  As discussed in *Note
+I/O Overview::, a stream is a fairly abstract, high-level concept
+representing a communications channel to a file, device, or process.
+
+* Menu:
+
+* Streams::                     About the data type representing a stream.
+* Standard Streams::            Streams to the standard input and output
+                                 devices are created for you.
+* Opening Streams::             How to create a stream to talk to a file.
+* Closing Streams::             Close a stream when you are finished with it.
+* Simple Output::               Unformatted output by characters and lines.
+* Character Input::             Unformatted input by characters and words.
+* Line Input::                  Reading a line or a record from a stream.
+* Unreading::                   Peeking ahead/pushing back input just read.
+* Block Input/Output::          Input and output operations on blocks of data.
+* Formatted Output::            `printf' and related functions.
+* Customizing Printf::          You can define new conversion specifiers for
+                                 `printf' and friends.
+* Formatted Input::             `scanf' and related functions.
+* EOF and Errors::              How you can tell if an I/O error happens.
+* Binary Streams::              Some systems distinguish between text files
+                                 and binary files.
+* File Positioning::            About random-access streams.
+* Portable Positioning::        Random access on peculiar ISO C systems.
+* Stream Buffering::            How to control buffering of streams.
+* Other Kinds of Streams::      Streams that do not necessarily correspond
+                                 to an open file.
+
+
+File: libc.info,  Node: Streams,  Next: Standard Streams,  Up: I/O on Streams
+
+Streams
+=======
+
+   For historical reasons, the type of the C data structure that
+represents a stream is called `FILE' rather than "stream".  Since most
+of the library functions deal with objects of type `FILE *', sometimes
+the term "file pointer" is also used to mean "stream".  This leads to
+unfortunate confusion over terminology in many books on C.  This
+manual, however, is careful to use the terms "file" and "stream" only
+in the technical sense.
+
+   The `FILE' type is declared in the header file `stdio.h'.
+
+ - Data Type: FILE
+     This is the data type used to represent stream objects.  A `FILE'
+     object holds all of the internal state information about the
+     connection to the associated file, including such things as the
+     file position indicator and buffering information.  Each stream
+     also has error and end-of-file status indicators that can be
+     tested with the `ferror' and `feof' functions; see *Note EOF and
+     Errors::.
+
+   `FILE' objects are allocated and managed internally by the
+input/output library functions.  Don't try to create your own objects of
+type `FILE'; let the library do it.  Your programs should deal only
+with pointers to these objects (that is, `FILE *' values) rather than
+the objects themselves.
+
+
+File: libc.info,  Node: Standard Streams,  Next: Opening Streams,  Prev: Streams,  Up: I/O on Streams
+
+Standard Streams
+================
+
+   When the `main' function of your program is invoked, it already has
+three predefined streams open and available for use.  These represent
+the "standard" input and output channels that have been established for
+the process.
+
+   These streams are declared in the header file `stdio.h'.
+
+ - Variable: FILE * stdin
+     The "standard input" stream, which is the normal source of input
+     for the program.
+
+ - Variable: FILE * stdout
+     The "standard output" stream, which is used for normal output from
+     the program.
+
+ - Variable: FILE * stderr
+     The "standard error" stream, which is used for error messages and
+     diagnostics issued by the program.
+
+   In the GNU system, you can specify what files or processes
+correspond to these streams using the pipe and redirection facilities
+provided by the shell.  (The primitives shells use to implement these
+facilities are described in *Note File System Interface::.)  Most other
+operating systems provide similar mechanisms, but the details of how to
+use them can vary.
+
+   In the GNU C library, `stdin', `stdout', and `stderr' are normal
+variables which you can set just like any others.  For example, to
+redirect the standard output to a file, you could do:
+
+     fclose (stdout);
+     stdout = fopen ("standard-output-file", "w");
+
+   Note however, that in other systems `stdin', `stdout', and `stderr'
+are macros that you cannot assign to in the normal way.  But you can
+use `freopen' to get the effect of closing one and reopening it.  *Note
+Opening Streams::.
+

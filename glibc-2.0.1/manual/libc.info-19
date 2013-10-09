@@ -1,0 +1,1234 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: Converting One Char,  Next: Example of Conversion,  Prev: Length of Char,  Up: Extended Characters
+
+Conversion of Extended Characters One by One
+============================================
+
+   You can convert multibyte characters one at a time to wide characters
+with the `mbtowc' function.  The `wctomb' function does the reverse.
+These functions are declared in `stdlib.h'.
+
+ - Function: int mbtowc (wchar_t *RESULT, const char *STRING, size_t
+          SIZE)
+     The `mbtowc' ("multibyte to wide character") function when called
+     with non-null STRING converts the first multibyte character
+     beginning at STRING to its corresponding wide character code.  It
+     stores the result in `*RESULT'.
+
+     `mbtowc' never examines more than SIZE bytes.  (The idea is to
+     supply for SIZE the number of bytes of data you have in hand.)
+
+     `mbtowc' with non-null STRING distinguishes three possibilities:
+     the first SIZE bytes at STRING start with valid multibyte
+     character, they start with an invalid byte sequence or just part
+     of a character, or STRING points to an empty string (a null
+     character).
+
+     For a valid multibyte character, `mbtowc' converts it to a wide
+     character and stores that in `*RESULT', and returns the number of
+     bytes in that character (always at least `1', and never more than
+     SIZE).
+
+     For an invalid byte sequence, `mbtowc' returns `-1'.  For an empty
+     string, it returns `0', also storing `0' in `*RESULT'.
+
+     If the multibyte character code uses shift characters, then
+     `mbtowc' maintains and updates a shift state as it scans.  If you
+     call `mbtowc' with a null pointer for STRING, that initializes the
+     shift state to its standard initial value.  It also returns
+     nonzero if the multibyte character code in use actually has a
+     shift state.  *Note Shift State::.
+
+ - Function: int wctomb (char *STRING, wchar_t WCHAR)
+     The `wctomb' ("wide character to multibyte") function converts the
+     wide character code WCHAR to its corresponding multibyte character
+     sequence, and stores the result in bytes starting at STRING.  At
+     most `MB_CUR_MAX' characters are stored.
+
+     `wctomb' with non-null STRING distinguishes three possibilities
+     for WCHAR: a valid wide character code (one that can be translated
+     to a multibyte character), an invalid code, and `0'.
+
+     Given a valid code, `wctomb' converts it to a multibyte character,
+     storing the bytes starting at STRING.  Then it returns the number
+     of bytes in that character (always at least `1', and never more
+     than `MB_CUR_MAX').
+
+     If WCHAR is an invalid wide character code, `wctomb' returns `-1'.
+     If WCHAR is `0', it returns `0', also storing `0' in `*STRING'.
+
+     If the multibyte character code uses shift characters, then
+     `wctomb' maintains and updates a shift state as it scans.  If you
+     call `wctomb' with a null pointer for STRING, that initializes the
+     shift state to its standard initial value.  It also returns
+     nonzero if the multibyte character code in use actually has a
+     shift state.  *Note Shift State::.
+
+     Calling this function with a WCHAR argument of zero when STRING is
+     not null has the side-effect of reinitializing the stored shift
+     state *as well as* storing the multibyte character `0' and
+     returning `0'.
+
+
+File: libc.info,  Node: Example of Conversion,  Next: Shift State,  Prev: Converting One Char,  Up: Extended Characters
+
+Character-by-Character Conversion Example
+=========================================
+
+   Here is an example that reads multibyte character text from
+descriptor `input' and writes the corresponding wide characters to
+descriptor `output'.  We need to convert characters one by one for this
+example because `mbstowcs' is unable to continue past a null character,
+and cannot cope with an apparently invalid partial character by reading
+more input.
+
+     int
+     file_mbstowcs (int input, int output)
+     {
+       char buffer[BUFSIZ + MB_LEN_MAX];
+       int filled = 0;
+       int eof = 0;
+     
+       while (!eof)
+         {
+           int nread;
+           int nwrite;
+           char *inp = buffer;
+           wchar_t outbuf[BUFSIZ];
+           wchar_t *outp = outbuf;
+     
+           /* Fill up the buffer from the input file.  */
+           nread = read (input, buffer + filled, BUFSIZ);
+           if (nread < 0)
+             {
+               perror ("read");
+               return 0;
+             }
+           /* If we reach end of file, make a note to read no more. */
+           if (nread == 0)
+             eof = 1;
+     
+           /* `filled' is now the number of bytes in `buffer'. */
+           filled += nread;
+     
+           /* Convert those bytes to wide characters-as many as we can. */
+           while (1)
+             {
+               int thislen = mbtowc (outp, inp, filled);
+               /* Stop converting at invalid character;
+                  this can mean we have read just the first part
+                  of a valid character.  */
+               if (thislen == -1)
+                 break;
+               /* Treat null character like any other,
+                  but also reset shift state. */
+               if (thislen == 0) {
+                 thislen = 1;
+                 mbtowc (NULL, NULL, 0);
+               }
+               /* Advance past this character. */
+               inp += thislen;
+               filled -= thislen;
+               outp++;
+             }
+     
+           /* Write the wide characters we just made.  */
+           nwrite = write (output, outbuf,
+                           (outp - outbuf) * sizeof (wchar_t));
+           if (nwrite < 0)
+             {
+               perror ("write");
+               return 0;
+             }
+     
+           /* See if we have a *real* invalid character. */
+           if ((eof && filled > 0) || filled >= MB_CUR_MAX)
+             {
+               error ("invalid multibyte character");
+               return 0;
+             }
+     
+           /* If any characters must be carried forward,
+              put them at the beginning of `buffer'. */
+           if (filled > 0)
+             memcpy (inp, buffer, filled);
+           }
+         }
+     
+       return 1;
+     }
+
+
+File: libc.info,  Node: Shift State,  Prev: Example of Conversion,  Up: Extended Characters
+
+Multibyte Codes Using Shift Sequences
+=====================================
+
+   In some multibyte character codes, the *meaning* of any particular
+byte sequence is not fixed; it depends on what other sequences have come
+earlier in the same string.  Typically there are just a few sequences
+that can change the meaning of other sequences; these few are called
+"shift sequences" and we say that they set the "shift state" for other
+sequences that follow.
+
+   To illustrate shift state and shift sequences, suppose we decide that
+the sequence `0200' (just one byte) enters Japanese mode, in which
+pairs of bytes in the range from `0240' to `0377' are single
+characters, while `0201' enters Latin-1 mode, in which single bytes in
+the range from `0240' to `0377' are characters, and interpreted
+according to the ISO Latin-1 character set.  This is a multibyte code
+which has two alternative shift states ("Japanese mode" and "Latin-1
+mode"), and two shift sequences that specify particular shift states.
+
+   When the multibyte character code in use has shift states, then
+`mblen', `mbtowc' and `wctomb' must maintain and update the current
+shift state as they scan the string.  To make this work properly, you
+must follow these rules:
+
+   * Before starting to scan a string, call the function with a null
+     pointer for the multibyte character address--for example, `mblen
+     (NULL, 0)'.  This initializes the shift state to its standard
+     initial value.
+
+   * Scan the string one character at a time, in order.  Do not "back
+     up" and rescan characters already scanned, and do not intersperse
+     the processing of different strings.
+
+   Here is an example of using `mblen' following these rules:
+
+     void
+     scan_string (char *s)
+     {
+       int length = strlen (s);
+     
+       /* Initialize shift state. */
+       mblen (NULL, 0);
+     
+       while (1)
+         {
+           int thischar = mblen (s, length);
+           /* Deal with end of string and invalid characters. */
+           if (thischar == 0)
+             break;
+           if (thischar == -1)
+             {
+               error ("invalid multibyte character");
+               break;
+             }
+           /* Advance past this character. */
+           s += thischar;
+           length -= thischar;
+         }
+     }
+
+   The functions `mblen', `mbtowc' and `wctomb' are not reentrant when
+using a multibyte code that uses a shift state.  However, no other
+library functions call these functions, so you don't have to worry that
+the shift state will be changed mysteriously.
+
+
+File: libc.info,  Node: Locales,  Next: Searching and Sorting,  Prev: Extended Characters,  Up: Top
+
+Locales and Internationalization
+********************************
+
+   Different countries and cultures have varying conventions for how to
+communicate.  These conventions range from very simple ones, such as the
+format for representing dates and times, to very complex ones, such as
+the language spoken.
+
+   "Internationalization" of software means programming it to be able
+to adapt to the user's favorite conventions.  In ISO C,
+internationalization works by means of "locales".  Each locale
+specifies a collection of conventions, one convention for each purpose.
+The user chooses a set of conventions by specifying a locale (via
+environment variables).
+
+   All programs inherit the chosen locale as part of their environment.
+Provided the programs are written to obey the choice of locale, they
+will follow the conventions preferred by the user.
+
+* Menu:
+
+* Effects of Locale::           Actions affected by the choice of
+                                 locale.
+* Choosing Locale::             How the user specifies a locale.
+* Locale Categories::           Different purposes for which you can
+                                 select a locale.
+* Setting the Locale::          How a program specifies the locale
+                                 with library functions.
+* Standard Locales::            Locale names available on all systems.
+* Numeric Formatting::          How to format numbers according to the
+                                 chosen locale.
+
+
+File: libc.info,  Node: Effects of Locale,  Next: Choosing Locale,  Up: Locales
+
+What Effects a Locale Has
+=========================
+
+   Each locale specifies conventions for several purposes, including the
+following:
+
+   * What multibyte character sequences are valid, and how they are
+     interpreted (*note Extended Characters::.).
+
+   * Classification of which characters in the local character set are
+     considered alphabetic, and upper- and lower-case conversion
+     conventions (*note Character Handling::.).
+
+   * The collating sequence for the local language and character set
+     (*note Collation Functions::.).
+
+   * Formatting of numbers and currency amounts (*note Numeric
+     Formatting::.).
+
+   * Formatting of dates and times (*note Formatting Date and Time::.).
+
+   * What language to use for output, including error messages.  (The C
+     library doesn't yet help you implement this.)
+
+   * What language to use for user answers to yes-or-no questions.
+
+   * What language to use for more complex user input.  (The C library
+     doesn't yet help you implement this.)
+
+   Some aspects of adapting to the specified locale are handled
+automatically by the library subroutines.  For example, all your program
+needs to do in order to use the collating sequence of the chosen locale
+is to use `strcoll' or `strxfrm' to compare strings.
+
+   Other aspects of locales are beyond the comprehension of the library.
+For example, the library can't automatically translate your program's
+output messages into other languages.  The only way you can support
+output in the user's favorite language is to program this more or less
+by hand.  (Eventually, we hope to provide facilities to make this
+easier.)
+
+   This chapter discusses the mechanism by which you can modify the
+current locale.  The effects of the current locale on specific library
+functions are discussed in more detail in the descriptions of those
+functions.
+
+
+File: libc.info,  Node: Choosing Locale,  Next: Locale Categories,  Prev: Effects of Locale,  Up: Locales
+
+Choosing a Locale
+=================
+
+   The simplest way for the user to choose a locale is to set the
+environment variable `LANG'.  This specifies a single locale to use for
+all purposes.  For example, a user could specify a hypothetical locale
+named `espana-castellano' to use the standard conventions of most of
+Spain.
+
+   The set of locales supported depends on the operating system you are
+using, and so do their names.  We can't make any promises about what
+locales will exist, except for one standard locale called `C' or
+`POSIX'.
+
+   A user also has the option of specifying different locales for
+different purposes--in effect, choosing a mixture of multiple locales.
+
+   For example, the user might specify the locale `espana-castellano'
+for most purposes, but specify the locale `usa-english' for currency
+formatting.  This might make sense if the user is a Spanish-speaking
+American, working in Spanish, but representing monetary amounts in US
+dollars.
+
+   Note that both locales `espana-castellano' and `usa-english', like
+all locales, would include conventions for all of the purposes to which
+locales apply.  However, the user can choose to use each locale for a
+particular subset of those purposes.
+
+
+File: libc.info,  Node: Locale Categories,  Next: Setting the Locale,  Prev: Choosing Locale,  Up: Locales
+
+Categories of Activities that Locales Affect
+============================================
+
+   The purposes that locales serve are grouped into "categories", so
+that a user or a program can choose the locale for each category
+independently.  Here is a table of categories; each name is both an
+environment variable that a user can set, and a macro name that you can
+use as an argument to `setlocale'.
+
+`LC_COLLATE'
+     This category applies to collation of strings (functions `strcoll'
+     and `strxfrm'); see *Note Collation Functions::.
+
+`LC_CTYPE'
+     This category applies to classification and conversion of
+     characters, and to multibyte and wide characters; see *Note
+     Character Handling:: and *Note Extended Characters::.
+
+`LC_MONETARY'
+     This category applies to formatting monetary values; see *Note
+     Numeric Formatting::.
+
+`LC_NUMERIC'
+     This category applies to formatting numeric values that are not
+     monetary; see *Note Numeric Formatting::.
+
+`LC_TIME'
+     This category applies to formatting date and time values; see
+     *Note Formatting Date and Time::.
+
+`LC_MESSAGES'
+     This category applies to selecting the language used in the user
+     interface for message translation.
+
+`LC_ALL'
+     This is not an environment variable; it is only a macro that you
+     can use with `setlocale' to set a single locale for all purposes.
+
+`LANG'
+     If this environment variable is defined, its value specifies the
+     locale to use for all purposes except as overridden by the
+     variables above.
+
+
+File: libc.info,  Node: Setting the Locale,  Next: Standard Locales,  Prev: Locale Categories,  Up: Locales
+
+How Programs Set the Locale
+===========================
+
+   A C program inherits its locale environment variables when it starts
+up.  This happens automatically.  However, these variables do not
+automatically control the locale used by the library functions, because
+ISO C says that all programs start by default in the standard `C'
+locale.  To use the locales specified by the environment, you must call
+`setlocale'.  Call it as follows:
+
+     setlocale (LC_ALL, "");
+
+to select a locale based on the appropriate environment variables.
+
+   You can also use `setlocale' to specify a particular locale, for
+general use or for a specific category.
+
+   The symbols in this section are defined in the header file
+`locale.h'.
+
+ - Function: char * setlocale (int CATEGORY, const char *LOCALE)
+     The function `setlocale' sets the current locale for category
+     CATEGORY to LOCALE.
+
+     If CATEGORY is `LC_ALL', this specifies the locale for all
+     purposes.  The other possible values of CATEGORY specify an
+     individual purpose (*note Locale Categories::.).
+
+     You can also use this function to find out the current locale by
+     passing a null pointer as the LOCALE argument.  In this case,
+     `setlocale' returns a string that is the name of the locale
+     currently selected for category CATEGORY.
+
+     The string returned by `setlocale' can be overwritten by subsequent
+     calls, so you should make a copy of the string (*note Copying and
+     Concatenation::.) if you want to save it past any further calls to
+     `setlocale'.  (The standard library is guaranteed never to call
+     `setlocale' itself.)
+
+     You should not modify the string returned by `setlocale'.  It
+     might be the same string that was passed as an argument in a
+     previous call to `setlocale'.
+
+     When you read the current locale for category `LC_ALL', the value
+     encodes the entire combination of selected locales for all
+     categories.  In this case, the value is not just a single locale
+     name.  In fact, we don't make any promises about what it looks
+     like.  But if you specify the same "locale name" with `LC_ALL' in
+     a subsequent call to `setlocale', it restores the same combination
+     of locale selections.
+
+     When the LOCALE argument is not a null pointer, the string returned
+     by `setlocale' reflects the newly modified locale.
+
+     If you specify an empty string for LOCALE, this means to read the
+     appropriate environment variable and use its value to select the
+     locale for CATEGORY.
+
+     If you specify an invalid locale name, `setlocale' returns a null
+     pointer and leaves the current locale unchanged.
+
+   Here is an example showing how you might use `setlocale' to
+temporarily switch to a new locale.
+
+     #include <stddef.h>
+     #include <locale.h>
+     #include <stdlib.h>
+     #include <string.h>
+     
+     void
+     with_other_locale (char *new_locale,
+                        void (*subroutine) (int),
+                        int argument)
+     {
+       char *old_locale, *saved_locale;
+     
+       /* Get the name of the current locale.  */
+       old_locale = setlocale (LC_ALL, NULL);
+     
+       /* Copy the name so it won't be clobbered by `setlocale'. */
+       saved_locale = strdup (old_locale);
+       if (old_locale == NULL)
+         fatal ("Out of memory");
+     
+       /* Now change the locale and do some stuff with it. */
+       setlocale (LC_ALL, new_locale);
+       (*subroutine) (argument);
+     
+       /* Restore the original locale. */
+       setlocale (LC_ALL, saved_locale);
+       free (saved_locale);
+     }
+
+   *Portability Note:* Some ISO C systems may define additional locale
+categories.  For portability, assume that any symbol beginning with
+`LC_' might be defined in `locale.h'.
+
+
+File: libc.info,  Node: Standard Locales,  Next: Numeric Formatting,  Prev: Setting the Locale,  Up: Locales
+
+Standard Locales
+================
+
+   The only locale names you can count on finding on all operating
+systems are these three standard ones:
+
+`"C"'
+     This is the standard C locale.  The attributes and behavior it
+     provides are specified in the ISO C standard.  When your program
+     starts up, it initially uses this locale by default.
+
+`"POSIX"'
+     This is the standard POSIX locale.  Currently, it is an alias for
+     the standard C locale.
+
+`""'
+     The empty name says to select a locale based on environment
+     variables.  *Note Locale Categories::.
+
+   Defining and installing named locales is normally a responsibility of
+the system administrator at your site (or the person who installed the
+GNU C library).  Some systems may allow users to create locales, but we
+don't discuss that here.
+
+   If your program needs to use something other than the `C' locale, it
+will be more portable if you use whatever locale the user specifies
+with the environment, rather than trying to specify some non-standard
+locale explicitly by name.  Remember, different machines might have
+different sets of locales installed.
+
+
+File: libc.info,  Node: Numeric Formatting,  Prev: Standard Locales,  Up: Locales
+
+Numeric Formatting
+==================
+
+   When you want to format a number or a currency amount using the
+conventions of the current locale, you can use the function
+`localeconv' to get the data on how to do it.  The function
+`localeconv' is declared in the header file `locale.h'.
+
+ - Function: struct lconv * localeconv (void)
+     The `localeconv' function returns a pointer to a structure whose
+     components contain information about how numeric and monetary
+     values should be formatted in the current locale.
+
+     You shouldn't modify the structure or its contents.  The structure
+     might be overwritten by subsequent calls to `localeconv', or by
+     calls to `setlocale', but no other function in the library
+     overwrites this value.
+
+ - Data Type: struct lconv
+     This is the data type of the value returned by `localeconv'.
+
+   If a member of the structure `struct lconv' has type `char', and the
+value is `CHAR_MAX', it means that the current locale has no value for
+that parameter.
+
+* Menu:
+
+* General Numeric::             Parameters for formatting numbers and
+                                 currency amounts.
+* Currency Symbol::             How to print the symbol that identifies an
+                                 amount of money (e.g. `$').
+* Sign of Money Amount::        How to print the (positive or negative) sign
+                                 for a monetary amount, if one exists.
+
+
+File: libc.info,  Node: General Numeric,  Next: Currency Symbol,  Up: Numeric Formatting
+
+Generic Numeric Formatting Parameters
+-------------------------------------
+
+   These are the standard members of `struct lconv'; there may be
+others.
+
+`char *decimal_point'
+`char *mon_decimal_point'
+     These are the decimal-point separators used in formatting
+     non-monetary and monetary quantities, respectively.  In the `C'
+     locale, the value of `decimal_point' is `"."', and the value of
+     `mon_decimal_point' is `""'.
+
+`char *thousands_sep'
+`char *mon_thousands_sep'
+     These are the separators used to delimit groups of digits to the
+     left of the decimal point in formatting non-monetary and monetary
+     quantities, respectively.  In the `C' locale, both members have a
+     value of `""' (the empty string).
+
+`char *grouping'
+`char *mon_grouping'
+     These are strings that specify how to group the digits to the left
+     of the decimal point.  `grouping' applies to non-monetary
+     quantities and `mon_grouping' applies to monetary quantities.  Use
+     either `thousands_sep' or `mon_thousands_sep' to separate the digit
+     groups.
+
+     Each string is made up of decimal numbers separated by semicolons.
+     Successive numbers (from left to right) give the sizes of
+     successive groups (from right to left, starting at the decimal
+     point).  The last number in the string is used over and over for
+     all the remaining groups.
+
+     If the last integer is `-1', it means that there is no more
+     grouping--or, put another way, any remaining digits form one large
+     group without separators.
+
+     For example, if `grouping' is `"4;3;2"', the correct grouping for
+     the number `123456787654321' is `12', `34', `56', `78', `765',
+     `4321'.  This uses a group of 4 digits at the end, preceded by a
+     group of 3 digits, preceded by groups of 2 digits (as many as
+     needed).  With a separator of `,', the number would be printed as
+     `12,34,56,78,765,4321'.
+
+     A value of `"3"' indicates repeated groups of three digits, as
+     normally used in the U.S.
+
+     In the standard `C' locale, both `grouping' and `mon_grouping'
+     have a value of `""'.  This value specifies no grouping at all.
+
+`char int_frac_digits'
+`char frac_digits'
+     These are small integers indicating how many fractional digits (to
+     the right of the decimal point) should be displayed in a monetary
+     value in international and local formats, respectively.  (Most
+     often, both members have the same value.)
+
+     In the standard `C' locale, both of these members have the value
+     `CHAR_MAX', meaning "unspecified".  The ISO standard doesn't say
+     what to do when you find this the value; we recommend printing no
+     fractional digits.  (This locale also specifies the empty string
+     for `mon_decimal_point', so printing any fractional digits would be
+     confusing!)
+
+
+File: libc.info,  Node: Currency Symbol,  Next: Sign of Money Amount,  Prev: General Numeric,  Up: Numeric Formatting
+
+Printing the Currency Symbol
+----------------------------
+
+   These members of the `struct lconv' structure specify how to print
+the symbol to identify a monetary value--the international analog of
+`$' for US dollars.
+
+   Each country has two standard currency symbols.  The "local currency
+symbol" is used commonly within the country, while the "international
+currency symbol" is used internationally to refer to that country's
+currency when it is necessary to indicate the country unambiguously.
+
+   For example, many countries use the dollar as their monetary unit,
+and when dealing with international currencies it's important to specify
+that one is dealing with (say) Canadian dollars instead of U.S. dollars
+or Australian dollars.  But when the context is known to be Canada,
+there is no need to make this explicit--dollar amounts are implicitly
+assumed to be in Canadian dollars.
+
+`char *currency_symbol'
+     The local currency symbol for the selected locale.
+
+     In the standard `C' locale, this member has a value of `""' (the
+     empty string), meaning "unspecified".  The ISO standard doesn't
+     say what to do when you find this value; we recommend you simply
+     print the empty string as you would print any other string found
+     in the appropriate member.
+
+`char *int_curr_symbol'
+     The international currency symbol for the selected locale.
+
+     The value of `int_curr_symbol' should normally consist of a
+     three-letter abbreviation determined by the international standard
+     `ISO 4217 Codes for the Representation of Currency and Funds',
+     followed by a one-character separator (often a space).
+
+     In the standard `C' locale, this member has a value of `""' (the
+     empty string), meaning "unspecified".  We recommend you simply
+     print the empty string as you would print any other string found
+     in the appropriate member.
+
+`char p_cs_precedes'
+`char n_cs_precedes'
+     These members are `1' if the `currency_symbol' string should
+     precede the value of a monetary amount, or `0' if the string should
+     follow the value.  The `p_cs_precedes' member applies to positive
+     amounts (or zero), and the `n_cs_precedes' member applies to
+     negative amounts.
+
+     In the standard `C' locale, both of these members have a value of
+     `CHAR_MAX', meaning "unspecified".  The ISO standard doesn't say
+     what to do when you find this value, but we recommend printing the
+     currency symbol before the amount.  That's right for most
+     countries.  In other words, treat all nonzero values alike in
+     these members.
+
+     The POSIX standard says that these two members apply to the
+     `int_curr_symbol' as well as the `currency_symbol'.  The ISO C
+     standard seems to imply that they should apply only to the
+     `currency_symbol'--so the `int_curr_symbol' should always precede
+     the amount.
+
+     We can only guess which of these (if either) matches the usual
+     conventions for printing international currency symbols.  Our
+     guess is that they should always precede the amount.  If we find
+     out a reliable answer, we will put it here.
+
+`char p_sep_by_space'
+`char n_sep_by_space'
+     These members are `1' if a space should appear between the
+     `currency_symbol' string and the amount, or `0' if no space should
+     appear.  The `p_sep_by_space' member applies to positive amounts
+     (or zero), and the `n_sep_by_space' member applies to negative
+     amounts.
+
+     In the standard `C' locale, both of these members have a value of
+     `CHAR_MAX', meaning "unspecified".  The ISO standard doesn't say
+     what you should do when you find this value; we suggest you treat
+     it as one (print a space).  In other words, treat all nonzero
+     values alike in these members.
+
+     These members apply only to `currency_symbol'.  When you use
+     `int_curr_symbol', you never print an additional space, because
+     `int_curr_symbol' itself contains the appropriate separator.
+
+     The POSIX standard says that these two members apply to the
+     `int_curr_symbol' as well as the `currency_symbol'.  But an
+     example in the ISO C standard clearly implies that they should
+     apply only to the `currency_symbol'--that the `int_curr_symbol'
+     contains any appropriate separator, so you should never print an
+     additional space.
+
+     Based on what we know now, we recommend you ignore these members
+     when printing international currency symbols, and print no extra
+     space.
+
+
+File: libc.info,  Node: Sign of Money Amount,  Prev: Currency Symbol,  Up: Numeric Formatting
+
+Printing the Sign of an Amount of Money
+---------------------------------------
+
+   These members of the `struct lconv' structure specify how to print
+the sign (if any) in a monetary value.
+
+`char *positive_sign'
+`char *negative_sign'
+     These are strings used to indicate positive (or zero) and negative
+     (respectively) monetary quantities.
+
+     In the standard `C' locale, both of these members have a value of
+     `""' (the empty string), meaning "unspecified".
+
+     The ISO standard doesn't say what to do when you find this value;
+     we recommend printing `positive_sign' as you find it, even if it is
+     empty.  For a negative value, print `negative_sign' as you find it
+     unless both it and `positive_sign' are empty, in which case print
+     `-' instead.  (Failing to indicate the sign at all seems rather
+     unreasonable.)
+
+`char p_sign_posn'
+`char n_sign_posn'
+     These members have values that are small integers indicating how to
+     position the sign for nonnegative and negative monetary quantities,
+     respectively.  (The string used by the sign is what was specified
+     with `positive_sign' or `negative_sign'.)  The possible values are
+     as follows:
+
+    `0'
+          The currency symbol and quantity should be surrounded by
+          parentheses.
+
+    `1'
+          Print the sign string before the quantity and currency symbol.
+
+    `2'
+          Print the sign string after the quantity and currency symbol.
+
+    `3'
+          Print the sign string right before the currency symbol.
+
+    `4'
+          Print the sign string right after the currency symbol.
+
+    `CHAR_MAX'
+          "Unspecified".  Both members have this value in the standard
+          `C' locale.
+
+     The ISO standard doesn't say what you should do when the value is
+     `CHAR_MAX'.  We recommend you print the sign after the currency
+     symbol.
+
+   It is not clear whether you should let these members apply to the
+international currency format or not.  POSIX says you should, but
+intuition plus the examples in the ISO C standard suggest you should
+not.  We hope that someone who knows well the conventions for formatting
+monetary quantities will tell us what we should recommend.
+
+
+File: libc.info,  Node: Non-Local Exits,  Next: Signal Handling,  Prev: Date and Time,  Up: Top
+
+Non-Local Exits
+***************
+
+   Sometimes when your program detects an unusual situation inside a
+deeply nested set of function calls, you would like to be able to
+immediately return to an outer level of control.  This section
+describes how you can do such "non-local exits" using the `setjmp' and
+`longjmp' functions.
+
+* Menu:
+
+* Intro: Non-Local Intro.        When and how to use these facilities.
+* Details: Non-Local Details.   Functions for nonlocal exits.
+* Non-Local Exits and Signals::  Portability issues.
+
+
+File: libc.info,  Node: Non-Local Intro,  Next: Non-Local Details,  Up: Non-Local Exits
+
+Introduction to Non-Local Exits
+===============================
+
+   As an example of a situation where a non-local exit can be useful,
+suppose you have an interactive program that has a "main loop" that
+prompts for and executes commands.  Suppose the "read" command reads
+input from a file, doing some lexical analysis and parsing of the input
+while processing it.  If a low-level input error is detected, it would
+be useful to be able to return immediately to the "main loop" instead
+of having to make each of the lexical analysis, parsing, and processing
+phases all have to explicitly deal with error situations initially
+detected by nested calls.
+
+   (On the other hand, if each of these phases has to do a substantial
+amount of cleanup when it exits--such as closing files, deallocating
+buffers or other data structures, and the like--then it can be more
+appropriate to do a normal return and have each phase do its own
+cleanup, because a non-local exit would bypass the intervening phases
+and their associated cleanup code entirely.  Alternatively, you could
+use a non-local exit but do the cleanup explicitly either before or
+after returning to the "main loop".)
+
+   In some ways, a non-local exit is similar to using the `return'
+statement to return from a function.  But while `return' abandons only
+a single function call, transferring control back to the point at which
+it was called, a non-local exit can potentially abandon many levels of
+nested function calls.
+
+   You identify return points for non-local exits calling the function
+`setjmp'.  This function saves information about the execution
+environment in which the call to `setjmp' appears in an object of type
+`jmp_buf'.  Execution of the program continues normally after the call
+to `setjmp', but if a exit is later made to this return point by
+calling `longjmp' with the corresponding `jmp_buf' object, control is
+transferred back to the point where `setjmp' was called.  The return
+value from `setjmp' is used to distinguish between an ordinary return
+and a return made by a call to `longjmp', so calls to `setjmp' usually
+appear in an `if' statement.
+
+   Here is how the example program described above might be set up:
+
+     #include <setjmp.h>
+     #include <stdlib.h>
+     #include <stdio.h>
+     
+     jmp_buf main_loop;
+     
+     void
+     abort_to_main_loop (int status)
+     {
+       longjmp (main_loop, status);
+     }
+     
+     int
+     main (void)
+     {
+       while (1)
+         if (setjmp (main_loop))
+           puts ("Back at main loop....");
+         else
+           do_command ();
+     }
+     
+     
+     void
+     do_command (void)
+     {
+       char buffer[128];
+       if (fgets (buffer, 128, stdin) == NULL)
+         abort_to_main_loop (-1);
+       else
+         exit (EXIT_SUCCESS);
+     }
+
+   The function `abort_to_main_loop' causes an immediate transfer of
+control back to the main loop of the program, no matter where it is
+called from.
+
+   The flow of control inside the `main' function may appear a little
+mysterious at first, but it is actually a common idiom with `setjmp'.
+A normal call to `setjmp' returns zero, so the "else" clause of the
+conditional is executed.  If `abort_to_main_loop' is called somewhere
+within the execution of `do_command', then it actually appears as if
+the *same* call to `setjmp' in `main' were returning a second time with
+a value of `-1'.
+
+   So, the general pattern for using `setjmp' looks something like:
+
+     if (setjmp (BUFFER))
+       /* Code to clean up after premature return. */
+       ...
+     else
+       /* Code to be executed normally after setting up the return point. */
+       ...
+
+
+File: libc.info,  Node: Non-Local Details,  Next: Non-Local Exits and Signals,  Prev: Non-Local Intro,  Up: Non-Local Exits
+
+Details of Non-Local Exits
+==========================
+
+   Here are the details on the functions and data structures used for
+performing non-local exits.  These facilities are declared in
+`setjmp.h'.
+
+ - Data Type: jmp_buf
+     Objects of type `jmp_buf' hold the state information to be
+     restored by a non-local exit.  The contents of a `jmp_buf'
+     identify a specific place to return to.
+
+ - Macro: int setjmp (jmp_buf STATE)
+     When called normally, `setjmp' stores information about the
+     execution state of the program in STATE and returns zero.  If
+     `longjmp' is later used to perform a non-local exit to this STATE,
+     `setjmp' returns a nonzero value.
+
+ - Function: void longjmp (jmp_buf STATE, int VALUE)
+     This function restores current execution to the state saved in
+     STATE, and continues execution from the call to `setjmp' that
+     established that return point.  Returning from `setjmp' by means of
+     `longjmp' returns the VALUE argument that was passed to `longjmp',
+     rather than `0'.  (But if VALUE is given as `0', `setjmp' returns
+     `1').
+
+   There are a lot of obscure but important restrictions on the use of
+`setjmp' and `longjmp'.  Most of these restrictions are present because
+non-local exits require a fair amount of magic on the part of the C
+compiler and can interact with other parts of the language in strange
+ways.
+
+   The `setjmp' function is actually a macro without an actual function
+definition, so you shouldn't try to `#undef' it or take its address.
+In addition, calls to `setjmp' are safe in only the following contexts:
+
+   * As the test expression of a selection or iteration statement (such
+     as `if', `switch', or `while').
+
+   * As one operand of a equality or comparison operator that appears
+     as the test expression of a selection or iteration statement.  The
+     other operand must be an integer constant expression.
+
+   * As the operand of a unary `!' operator, that appears as the test
+     expression of a selection or iteration statement.
+
+   * By itself as an expression statement.
+
+   Return points are valid only during the dynamic extent of the
+function that called `setjmp' to establish them.  If you `longjmp' to a
+return point that was established in a function that has already
+returned, unpredictable and disastrous things are likely to happen.
+
+   You should use a nonzero VALUE argument to `longjmp'.  While
+`longjmp' refuses to pass back a zero argument as the return value from
+`setjmp', this is intended as a safety net against accidental misuse
+and is not really good programming style.
+
+   When you perform a non-local exit, accessible objects generally
+retain whatever values they had at the time `longjmp' was called.  The
+exception is that the values of automatic variables local to the
+function containing the `setjmp' call that have been changed since the
+call to `setjmp' are indeterminate, unless you have declared them
+`volatile'.
+
+
+File: libc.info,  Node: Non-Local Exits and Signals,  Prev: Non-Local Details,  Up: Non-Local Exits
+
+Non-Local Exits and Signals
+===========================
+
+   In BSD Unix systems, `setjmp' and `longjmp' also save and restore
+the set of blocked signals; see *Note Blocking Signals::.  However, the
+POSIX.1 standard requires `setjmp' and `longjmp' not to change the set
+of blocked signals, and provides an additional pair of functions
+(`sigsetjmp' and `sigsetjmp') to get the BSD behavior.
+
+   The behavior of `setjmp' and `longjmp' in the GNU library is
+controlled by feature test macros; see *Note Feature Test Macros::.  The
+default in the GNU system is the POSIX.1 behavior rather than the BSD
+behavior.
+
+   The facilities in this section are declared in the header file
+`setjmp.h'.
+
+ - Data Type: sigjmp_buf
+     This is similar to `jmp_buf', except that it can also store state
+     information about the set of blocked signals.
+
+ - Function: int sigsetjmp (sigjmp_buf STATE, int SAVESIGS)
+     This is similar to `setjmp'.  If SAVESIGS is nonzero, the set of
+     blocked signals is saved in STATE and will be restored if a
+     `siglongjmp' is later performed with this STATE.
+
+ - Function: void siglongjmp (sigjmp_buf STATE, int VALUE)
+     This is similar to `longjmp' except for the type of its STATE
+     argument.  If the `sigsetjmp' call that set this STATE used a
+     nonzero SAVESIGS flag, `siglongjmp' also restores the set of
+     blocked signals.
+
+
+File: libc.info,  Node: Signal Handling,  Next: Process Startup,  Prev: Non-Local Exits,  Up: Top
+
+Signal Handling
+***************
+
+   A "signal" is a software interrupt delivered to a process.  The
+operating system uses signals to report exceptional situations to an
+executing program.  Some signals report errors such as references to
+invalid memory addresses; others report asynchronous events, such as
+disconnection of a phone line.
+
+   The GNU C library defines a variety of signal types, each for a
+particular kind of event.  Some kinds of events make it inadvisable or
+impossible for the program to proceed as usual, and the corresponding
+signals normally abort the program.  Other kinds of signals that report
+harmless events are ignored by default.
+
+   If you anticipate an event that causes signals, you can define a
+handler function and tell the operating system to run it when that
+particular type of signal arrives.
+
+   Finally, one process can send a signal to another process; this
+allows a parent process to abort a child, or two related processes to
+communicate and synchronize.
+
+* Menu:
+
+* Concepts of Signals::         Introduction to the signal facilities.
+* Standard Signals::            Particular kinds of signals with
+                                 standard names and meanings.
+* Signal Actions::              Specifying what happens when a
+                                 particular signal is delivered.
+* Defining Handlers::           How to write a signal handler function.
+* Interrupted Primitives::	Signal handlers affect use of `open',
+				 `read', `write' and other functions.
+* Generating Signals::          How to send a signal to a process.
+* Blocking Signals::            Making the system hold signals temporarily.
+* Waiting for a Signal::        Suspending your program until a signal
+                                 arrives.
+* Signal Stack::                Using a Separate Signal Stack.
+* BSD Signal Handling::         Additional functions for backward
+			         compatibility with BSD.
+
+
+File: libc.info,  Node: Concepts of Signals,  Next: Standard Signals,  Up: Signal Handling
+
+Basic Concepts of Signals
+=========================
+
+   This section explains basic concepts of how signals are generated,
+what happens after a signal is delivered, and how programs can handle
+signals.
+
+* Menu:
+
+* Kinds of Signals::            Some examples of what can cause a signal.
+* Signal Generation::           Concepts of why and how signals occur.
+* Delivery of Signal::          Concepts of what a signal does to the
+                                 process.
+
+
+File: libc.info,  Node: Kinds of Signals,  Next: Signal Generation,  Up: Concepts of Signals
+
+Some Kinds of Signals
+---------------------
+
+   A signal reports the occurrence of an exceptional event.  These are
+some of the events that can cause (or "generate", or "raise") a signal:
+
+   * A program error such as dividing by zero or issuing an address
+     outside the valid range.
+
+   * A user request to interrupt or terminate the program.  Most
+     environments are set up to let a user suspend the program by
+     typing `C-z', or terminate it with `C-c'.  Whatever key sequence
+     is used, the operating system sends the proper signal to interrupt
+     the process.
+
+   * The termination of a child process.
+
+   * Expiration of a timer or alarm.
+
+   * A call to `kill' or `raise' by the same process.
+
+   * A call to `kill' from another process.  Signals are a limited but
+     useful form of interprocess communication.
+
+   * An attempt to perform an I/O operation that cannot be done.
+     Examples are reading from a pipe that has no writer (*note Pipes
+     and FIFOs::.), and reading or writing to a terminal in certain
+     situations (*note Job Control::.).
+
+   Each of these kinds of events (excepting explicit calls to `kill'
+and `raise') generates its own particular kind of signal.  The various
+kinds of signals are listed and described in detail in *Note Standard
+Signals::.
+
+
+File: libc.info,  Node: Signal Generation,  Next: Delivery of Signal,  Prev: Kinds of Signals,  Up: Concepts of Signals
+
+Concepts of Signal Generation
+-----------------------------
+
+   In general, the events that generate signals fall into three major
+categories: errors, external events, and explicit requests.
+
+   An error means that a program has done something invalid and cannot
+continue execution.  But not all kinds of errors generate signals--in
+fact, most do not.  For example, opening a nonexistent file is an error,
+but it does not raise a signal; instead, `open' returns `-1'.  In
+general, errors that are necessarily associated with certain library
+functions are reported by returning a value that indicates an error.
+The errors which raise signals are those which can happen anywhere in
+the program, not just in library calls.  These include division by zero
+and invalid memory addresses.
+
+   An external event generally has to do with I/O or other processes.
+These include the arrival of input, the expiration of a timer, and the
+termination of a child process.
+
+   An explicit request means the use of a library function such as
+`kill' whose purpose is specifically to generate a signal.
+
+   Signals may be generated "synchronously" or "asynchronously".  A
+synchronous signal pertains to a specific action in the program, and is
+delivered (unless blocked) during that action.  Most errors generate
+signals synchronously, and so do explicit requests by a process to
+generate a signal for that same process.  On some machines, certain
+kinds of hardware errors (usually floating-point exceptions) are not
+reported completely synchronously, but may arrive a few instructions
+later.
+
+   Asynchronous signals are generated by events outside the control of
+the process that receives them.  These signals arrive at unpredictable
+times during execution.  External events generate signals
+asynchronously, and so do explicit requests that apply to some other
+process.
+
+   A given type of signal is either typically synchronous or typically
+asynchronous.  For example, signals for errors are typically synchronous
+because errors generate signals synchronously.  But any type of signal
+can be generated synchronously or asynchronously with an explicit
+request.
+
+
+File: libc.info,  Node: Delivery of Signal,  Prev: Signal Generation,  Up: Concepts of Signals
+
+How Signals Are Delivered
+-------------------------
+
+   When a signal is generated, it becomes "pending".  Normally it
+remains pending for just a short period of time and then is "delivered"
+to the process that was signaled.  However, if that kind of signal is
+currently "blocked", it may remain pending indefinitely--until signals
+of that kind are "unblocked".  Once unblocked, it will be delivered
+immediately.  *Note Blocking Signals::.
+
+   When the signal is delivered, whether right away or after a long
+delay, the "specified action" for that signal is taken.  For certain
+signals, such as `SIGKILL' and `SIGSTOP', the action is fixed, but for
+most signals, the program has a choice: ignore the signal, specify a
+"handler function", or accept the "default action" for that kind of
+signal.  The program specifies its choice using functions such as
+`signal' or `sigaction' (*note Signal Actions::.).  We sometimes say
+that a handler "catches" the signal.  While the handler is running,
+that particular signal is normally blocked.
+
+   If the specified action for a kind of signal is to ignore it, then
+any such signal which is generated is discarded immediately.  This
+happens even if the signal is also blocked at the time.  A signal
+discarded in this way will never be delivered, not even if the program
+subsequently specifies a different action for that kind of signal and
+then unblocks it.
+
+   If a signal arrives which the program has neither handled nor
+ignored, its "default action" takes place.  Each kind of signal has its
+own default action, documented below (*note Standard Signals::.).  For
+most kinds of signals, the default action is to terminate the process.
+For certain kinds of signals that represent "harmless" events, the
+default action is to do nothing.
+
+   When a signal terminates a process, its parent process can determine
+the cause of termination by examining the termination status code
+reported by the `wait' or `waitpid' functions.  (This is discussed in
+more detail in *Note Process Completion::.)  The information it can get
+includes the fact that termination was due to a signal, and the kind of
+signal involved.  If a program you run from a shell is terminated by a
+signal, the shell typically prints some kind of error message.
+
+   The signals that normally represent program errors have a special
+property: when one of these signals terminates the process, it also
+writes a "core dump file" which records the state of the process at the
+time of termination.  You can examine the core dump with a debugger to
+investigate what caused the error.
+
+   If you raise a "program error" signal by explicit request, and this
+terminates the process, it makes a core dump file just as if the signal
+had been due directly to an error.
+

@@ -1,0 +1,555 @@
+\initial {{\_}}
+\entry {\code {{\_}{\_}free{\_}hook}}{39}
+\entry {\code {{\_}{\_}malloc{\_}hook}}{39}
+\entry {\code {{\_}{\_}realloc{\_}hook}}{39}
+\entry {\code {{\_}BSD{\_}SOURCE}}{8}
+\entry {\code {{\_}GNU{\_}SOURCE}}{9}
+\entry {\code {{\_}IOFBF \relax }}{137}
+\entry {\code {{\_}IOLBF \relax }}{137}
+\entry {\code {{\_}IONBF \relax }}{137}
+\entry {\code {{\_}POSIX{\_}C{\_}SOURCE}}{8}
+\entry {\code {{\_}POSIX{\_}CHOWN{\_}RESTRICTED \relax }}{538}
+\entry {\code {{\_}POSIX{\_}JOB{\_}CONTROL \relax }}{531}
+\entry {\code {{\_}POSIX{\_}NO{\_}TRUNC \relax }}{539}
+\entry {\code {{\_}POSIX{\_}SAVED{\_}IDS \relax }}{531}
+\entry {\code {{\_}POSIX{\_}SOURCE}}{8}
+\entry {\code {{\_}POSIX{\_}VDISABLE}}{276}
+\entry {\code {{\_}POSIX{\_}VDISABLE \relax }}{539}
+\entry {\code {{\_}POSIX{\_}VERSION \relax }}{532}
+\entry {\code {{\_}POSIX2{\_}C{\_}DEV \relax }}{531}
+\entry {\code {{\_}POSIX2{\_}C{\_}VERSION \relax }}{532}
+\entry {\code {{\_}POSIX2{\_}FORT{\_}DEV \relax }}{531}
+\entry {\code {{\_}POSIX2{\_}FORT{\_}RUN \relax }}{531}
+\entry {\code {{\_}POSIX2{\_}LOCALEDEF \relax }}{532}
+\entry {\code {{\_}POSIX2{\_}SW{\_}DEV \relax }}{532}
+\entry {\code {{\_}REENTRANT,{\_}THREAD{\_}SAFE}}{10}
+\entry {\code {{\_}SVID{\_}SOURCE}}{9}
+\entry {\code {{\_}XOPEN{\_}SOURCE}}{9}
+\initial {A}
+\entry {\code {AF{\_}FILE}}{216}
+\entry {\code {AF{\_}INET}}{216}
+\entry {\code {AF{\_}UNIX}}{216}
+\entry {\code {AF{\_}UNSPEC}}{217}
+\entry {\code {ALTWERASE \relax }}{274}
+\entry {\code {ARG{\_}MAX \relax }}{529}
+\initial {B}
+\entry {\code {B0}}{276}
+\entry {\code {B110}}{276}
+\entry {\code {B1200}}{276}
+\entry {\code {B134}}{276}
+\entry {\code {B150}}{276}
+\entry {\code {B1800}}{276}
+\entry {\code {B19200}}{276}
+\entry {\code {B200}}{276}
+\entry {\code {B2400}}{276}
+\entry {\code {B300}}{276}
+\entry {\code {B38400}}{276}
+\entry {\code {B4800}}{276}
+\entry {\code {B50}}{276}
+\entry {\code {B600}}{276}
+\entry {\code {B75}}{276}
+\entry {\code {B9600}}{276}
+\entry {\code {BC{\_}BASE{\_}MAX \relax }}{541}
+\entry {\code {BC{\_}DIM{\_}MAX \relax }}{542}
+\entry {\code {BC{\_}SCALE{\_}MAX \relax }}{541}
+\entry {\code {BC{\_}STRING{\_}MAX \relax }}{542}
+\entry {\code {BRKINT \relax }}{268}
+\entry {\code {BUFSIZ \relax }}{137}
+\initial {C}
+\entry {\code {CCTS{\_}OFLOW \relax }}{271}
+\entry {\code {CHILD{\_}MAX \relax }}{529}
+\entry {\code {CIGNORE \relax }}{271}
+\entry {\code {CLK{\_}TCK \relax }}{330}
+\entry {\code {CLOCAL \relax }}{270}
+\entry {\code {CLOCKS{\_}PER{\_}SEC \relax }}{330}
+\entry {\code {COLL{\_}WEIGHTS{\_}MAX \relax }}{542}
+\entry {\code {COREFILE}}{386}
+\entry {\code {CREAD \relax }}{270}
+\entry {\code {CRTS{\_}IFLOW \relax }}{271}
+\entry {\code {CS5 \relax }}{271}
+\entry {\code {CS6 \relax }}{271}
+\entry {\code {CS7 \relax }}{271}
+\entry {\code {CS8 \relax }}{271}
+\entry {\code {CSIZE \relax }}{271}
+\entry {\code {CSTOPB \relax }}{270}
+\initial {D}
+\entry {\code {daylight \relax }}{345}
+\initial {E}
+\entry {\code {E2BIG \relax }}{17}
+\entry {\code {EACCES \relax }}{18}
+\entry {\code {EADDRINUSE \relax }}{22}
+\entry {\code {EADDRNOTAVAIL \relax }}{22}
+\entry {\code {EADV \relax }}{26}
+\entry {\code {EAFNOSUPPORT \relax }}{22}
+\entry {\code {EAGAIN \relax }}{20}
+\entry {\code {EALREADY \relax }}{21}
+\entry {\code {EAUTH \relax }}{24}
+\entry {\code {EBACKGROUND \relax }}{25}
+\entry {\code {EBADE \relax }}{26}
+\entry {\code {EBADF}}{285}
+\entry {\code {EBADF \relax }}{17}
+\entry {\code {EBADFD \relax }}{26}
+\entry {\code {EBADMSG \relax }}{26}
+\entry {\code {EBADR \relax }}{26}
+\entry {\code {EBADRPC \relax }}{24}
+\entry {\code {EBADRQC \relax }}{26}
+\entry {\code {EBADSLT \relax }}{26}
+\entry {\code {EBFONT \relax }}{26}
+\entry {\code {EBUSY \relax }}{18}
+\entry {\code {ECHILD \relax }}{17}
+\entry {\code {ECHO \relax }}{272}
+\entry {\code {ECHOCTL \relax }}{273}
+\entry {\code {ECHOE \relax }}{272}
+\entry {\code {ECHOK \relax }}{272}
+\entry {\code {ECHOKE \relax }}{273}
+\entry {\code {ECHONL \relax }}{273}
+\entry {\code {ECHOPRT \relax }}{272}
+\entry {\code {ECHRNG \relax }}{25}
+\entry {\code {ECOMM \relax }}{26}
+\entry {\code {ECONNABORTED \relax }}{22}
+\entry {\code {ECONNREFUSED \relax }}{23}
+\entry {\code {ECONNRESET \relax }}{22}
+\entry {\code {ED \relax }}{25}
+\entry {\code {EDEADLK \relax }}{17}
+\entry {\code {EDEADLOCK \relax }}{26}
+\entry {\code {EDESTADDRREQ \relax }}{23}
+\entry {\code {EDIED \relax }}{25}
+\entry {\code {EDOM \relax }}{20}
+\entry {\code {EDOTDOT \relax }}{26}
+\entry {\code {EDQUOT \relax }}{24}
+\entry {\code {EEXIST \relax }}{18}
+\entry {\code {EFAULT \relax }}{18}
+\entry {\code {EFBIG \relax }}{19}
+\entry {\code {EFTYPE \relax }}{24}
+\entry {\code {EGRATUITOUS \relax }}{25}
+\entry {\code {EGREGIOUS \relax }}{25}
+\entry {\code {EHOSTDOWN \relax }}{23}
+\entry {\code {EHOSTUNREACH \relax }}{23}
+\entry {\code {EIDRM \relax }}{25}
+\entry {\code {EIEIO \relax }}{25}
+\entry {\code {EILSEQ \relax }}{25}
+\entry {\code {EINPROGRESS \relax }}{21}
+\entry {\code {EINTR \relax }}{17}
+\entry {\code {EINVAL}}{285}
+\entry {\code {EINVAL \relax }}{19}
+\entry {\code {EIO \relax }}{17}
+\entry {\code {EISCONN \relax }}{22}
+\entry {\code {EISDIR \relax }}{18}
+\entry {\code {EISNAM \relax }}{27}
+\entry {\code {EL2HLT \relax }}{26}
+\entry {\code {EL2NSYNC \relax }}{25}
+\entry {\code {EL3HLT \relax }}{25}
+\entry {\code {EL3RST \relax }}{26}
+\entry {\code {ELIBACC \relax }}{27}
+\entry {\code {ELIBBAD \relax }}{27}
+\entry {\code {ELIBEXEC \relax }}{27}
+\entry {\code {ELIBMAX \relax }}{27}
+\entry {\code {ELIBSCN \relax }}{27}
+\entry {\code {ELNRNG \relax }}{26}
+\entry {\code {ELOOP \relax }}{23}
+\entry {\code {EMFILE \relax }}{19}
+\entry {\code {EMLINK \relax }}{19}
+\entry {\code {EMSGSIZE \relax }}{21}
+\entry {\code {EMULTIHOP \relax }}{26}
+\entry {\code {ENAMETOOLONG \relax }}{23}
+\entry {\code {ENAVAIL \relax }}{27}
+\entry {\code {ENEEDAUTH \relax }}{24}
+\entry {\code {ENETDOWN \relax }}{22}
+\entry {\code {ENETRESET \relax }}{22}
+\entry {\code {ENETUNREACH \relax }}{22}
+\entry {\code {ENFILE \relax }}{19}
+\entry {\code {ENOANO \relax }}{26}
+\entry {\code {ENOBUFS \relax }}{22}
+\entry {\code {ENOCSI \relax }}{26}
+\entry {\code {ENODATA \relax }}{26}
+\entry {\code {ENODEV \relax }}{18}
+\entry {\code {ENOENT \relax }}{17}
+\entry {\code {ENOEXEC \relax }}{17}
+\entry {\code {ENOLCK \relax }}{24}
+\entry {\code {ENOLINK \relax }}{26}
+\entry {\code {ENOMEM \relax }}{18}
+\entry {\code {ENOMSG \relax }}{25}
+\entry {\code {ENONET \relax }}{26}
+\entry {\code {ENOPKG \relax }}{26}
+\entry {\code {ENOPROTOOPT \relax }}{21}
+\entry {\code {ENOSPC \relax }}{19}
+\entry {\code {ENOSR \relax }}{26}
+\entry {\code {ENOSTR \relax }}{26}
+\entry {\code {ENOSYS \relax }}{25}
+\entry {\code {ENOTBLK \relax }}{18}
+\entry {\code {ENOTCONN \relax }}{22}
+\entry {\code {ENOTDIR \relax }}{18}
+\entry {\code {ENOTEMPTY \relax }}{23}
+\entry {\code {ENOTNAM \relax }}{27}
+\entry {\code {ENOTSOCK \relax }}{21}
+\entry {\code {ENOTTY}}{285}
+\entry {\code {ENOTTY \relax }}{19}
+\entry {\code {ENOTUNIQ \relax }}{26}
+\entry {\code {environ \relax }}{449}
+\entry {\code {ENXIO \relax }}{17}
+\entry {\code {EOF \relax }}{130}
+\entry {\code {EOPNOTSUPP \relax }}{21}
+\entry {\code {EOVERFLOW \relax }}{26}
+\entry {\code {EPERM \relax }}{16}
+\entry {\code {EPFNOSUPPORT \relax }}{22}
+\entry {\code {EPIPE \relax }}{20}
+\entry {\code {EPROCLIM \relax }}{23}
+\entry {\code {EPROCUNAVAIL \relax }}{24}
+\entry {\code {EPROGMISMATCH \relax }}{24}
+\entry {\code {EPROGUNAVAIL \relax }}{24}
+\entry {\code {EPROTO \relax }}{26}
+\entry {\code {EPROTONOSUPPORT \relax }}{21}
+\entry {\code {EPROTOTYPE \relax }}{21}
+\entry {\code {EQUIV{\_}CLASS{\_}MAX \relax }}{542}
+\entry {\code {ERANGE \relax }}{20}
+\entry {\code {EREMCHG \relax }}{27}
+\entry {\code {EREMOTE \relax }}{24}
+\entry {\code {EREMOTEIO \relax }}{27}
+\entry {\code {ERESTART \relax }}{25}
+\entry {\code {EROFS \relax }}{19}
+\entry {\code {ERPCMISMATCH \relax }}{24}
+\entry {\code {errno \relax }}{15}
+\entry {\code {ESHUTDOWN \relax }}{23}
+\entry {\code {ESOCKTNOSUPPORT \relax }}{21}
+\entry {\code {ESPIPE \relax }}{19}
+\entry {\code {ESRCH \relax }}{17}
+\entry {\code {ESRMNT \relax }}{26}
+\entry {\code {ESTALE \relax }}{24}
+\entry {\code {ESTRPIPE \relax }}{27}
+\entry {\code {ethers}}{493}
+\entry {\code {ETIME \relax }}{26}
+\entry {\code {ETIMEDOUT \relax }}{23}
+\entry {\code {ETOOMANYREFS \relax }}{23}
+\entry {\code {ETXTBSY \relax }}{19}
+\entry {\code {EUCLEAN \relax }}{27}
+\entry {\code {EUNATCH \relax }}{26}
+\entry {\code {EUSERS \relax }}{23}
+\entry {\code {EWOULDBLOCK \relax }}{20}
+\entry {\code {EXDEV \relax }}{18}
+\entry {\code {EXFULL \relax }}{26}
+\entry {\code {EXIT{\_}FAILURE \relax }}{452}
+\entry {\code {EXIT{\_}SUCCESS \relax }}{452}
+\entry {\code {EXPR{\_}NEST{\_}MAX \relax }}{542}
+\entry {\code {EXTA}}{276}
+\entry {\code {EXTB}}{276}
+\initial {F}
+\entry {\code {F{\_}DUPFD \relax }}{161}
+\entry {\code {F{\_}GETFD \relax }}{162}
+\entry {\code {F{\_}GETFL \relax }}{168}
+\entry {\code {F{\_}GETLK \relax }}{171}
+\entry {\code {F{\_}GETOWN \relax }}{174}
+\entry {\code {F{\_}OK \relax }}{200}
+\entry {\code {F{\_}RDLCK}}{173}
+\entry {\code {F{\_}SETFD \relax }}{163}
+\entry {\code {F{\_}SETFL \relax }}{169}
+\entry {\code {F{\_}SETLK \relax }}{171}
+\entry {\code {F{\_}SETLKW \relax }}{172}
+\entry {\code {F{\_}SETOWN \relax }}{174}
+\entry {\code {F{\_}UNLCK}}{173}
+\entry {\code {F{\_}WRLCK}}{173}
+\entry {\code {FD{\_}CLOEXEC \relax }}{163}
+\entry {\code {FD{\_}SETSIZE \relax }}{157}
+\entry {\code {FILENAME{\_}MAX \relax }}{538}
+\entry {\code {FLUSHO \relax }}{274}
+\entry {\code {FOPEN{\_}MAX \relax }}{92}
+\entry {\code {FPE{\_}DECOVF{\_}TRAP}}{387}
+\entry {\code {FPE{\_}FLTDIV{\_}TRAP}}{387}
+\entry {\code {FPE{\_}FLTOVF{\_}TRAP}}{387}
+\entry {\code {FPE{\_}FLTUND{\_}TRAP}}{387}
+\entry {\code {FPE{\_}INTDIV{\_}TRAP}}{387}
+\entry {\code {FPE{\_}INTOVF{\_}TRAP}}{387}
+\entry {\code {FPE{\_}SUBRNG{\_}TRAP}}{387}
+\initial {G}
+\entry {\code {group}}{493}
+\initial {H}
+\entry {\code {h{\_}errno}}{227}
+\entry {\code {HOST{\_}NOT{\_}FOUND}}{227}
+\entry {\code {hosts}}{493}
+\entry {\code {HUGE{\_}VAL \relax }}{288}
+\entry {\code {HUGE{\_}VALf \relax }}{288}
+\entry {\code {HUGE{\_}VALl \relax }}{288}
+\entry {\code {HUPCL \relax }}{270}
+\initial {I}
+\entry {\code {ICANON \relax }}{272}
+\entry {\code {ICRNL \relax }}{268}
+\entry {\code {IEXTEN \relax }}{273}
+\entry {\code {IGNBRK \relax }}{268}
+\entry {\code {IGNCR \relax }}{268}
+\entry {\code {IGNPAR \relax }}{267}
+\entry {\code {IMAXBEL \relax }}{269}
+\entry {\code {INADDR{\_}ANY \relax }}{224}
+\entry {\code {INADDR{\_}BROADCAST \relax }}{224}
+\entry {\code {INADDR{\_}LOOPBACK \relax }}{224}
+\entry {\code {INADDR{\_}NONE \relax }}{224}
+\entry {\code {INLCR \relax }}{268}
+\entry {\code {INPCK \relax }}{267}
+\entry {\code {int}}{353}
+\entry {\code {IPPORT{\_}RESERVED \relax }}{228}
+\entry {\code {IPPORT{\_}USERRESERVED \relax }}{228}
+\entry {\code {ISIG \relax }}{273}
+\entry {\code {ISTRIP \relax }}{267}
+\entry {\code {IXANY \relax }}{268}
+\entry {\code {IXOFF \relax }}{268}
+\entry {\code {IXON \relax }}{268}
+\initial {L}
+\entry {\code {L{\_}ctermid \relax }}{489}
+\entry {\code {L{\_}cuserid \relax }}{513}
+\entry {\code {L{\_}INCR}}{133}
+\entry {\code {L{\_}SET}}{133}
+\entry {\code {L{\_}tmpnam \relax }}{204}
+\entry {\code {L{\_}XTND}}{133}
+\entry {\code {LANG}}{371}
+\entry {\code {LC{\_}ALL}}{371}
+\entry {\code {LC{\_}COLLATE}}{370}
+\entry {\code {LC{\_}CTYPE}}{370}
+\entry {\code {LC{\_}MONETARY}}{371}
+\entry {\code {LC{\_}NUMERIC}}{371}
+\entry {\code {LC{\_}TIME}}{371}
+\entry {\code {LINE{\_}MAX \relax }}{542}
+\entry {\code {LINK{\_}MAX \relax }}{537}
+\initial {M}
+\entry {\code {MAX{\_}CANON \relax }}{537}
+\entry {\code {MAX{\_}INPUT \relax }}{537}
+\entry {\code {MAXNAMLEN \relax }}{538}
+\entry {\code {MB{\_}CUR{\_}MAX \relax }}{360}
+\entry {\code {MB{\_}LEN{\_}MAX \relax }}{360}
+\entry {\code {MDMBUF \relax }}{271}
+\entry {\code {MINSIGSTKSZ}}{431}
+\entry {\code {MSG{\_}DONTROUTE \relax }}{243}
+\entry {\code {MSG{\_}OOB \relax }}{243}
+\entry {\code {MSG{\_}PEEK \relax }}{243}
+\initial {N}
+\entry {\code {NAME{\_}MAX \relax }}{537}
+\entry {\code {NAN \relax }}{295}
+\entry {\code {NCCS \relax }}{264}
+\entry {\code {NDEBUG}}{545}
+\entry {\code {netgroup}}{493}
+\entry {\code {network}}{494}
+\entry {\code {NGROUPS{\_}MAX \relax }}{530}
+\entry {\code {NO{\_}ADDRESS}}{227}
+\entry {\code {NO{\_}RECOVERY}}{227}
+\entry {\code {NOFLSH \relax }}{274}
+\entry {\code {NOKERNINFO \relax }}{274}
+\entry {\code {NSIG \relax }}{386}
+\entry {\code {NULL \relax }}{553}
+\initial {O}
+\entry {\code {O{\_}ACCMODE \relax }}{165}
+\entry {\code {O{\_}APPEND \relax }}{167}
+\entry {\code {O{\_}ASYNC \relax }}{168}
+\entry {\code {O{\_}CREAT \relax }}{166}
+\entry {\code {O{\_}EXCL \relax }}{166}
+\entry {\code {O{\_}EXEC \relax }}{165}
+\entry {\code {O{\_}EXLOCK \relax }}{167}
+\entry {\code {O{\_}FSYNC \relax }}{168}
+\entry {\code {O{\_}IGNORE{\_}CTTY \relax }}{166}
+\entry {\code {O{\_}NDELAY \relax }}{168}
+\entry {\code {O{\_}NOATIME \relax }}{168}
+\entry {\code {O{\_}NOCTTY \relax }}{166}
+\entry {\code {O{\_}NOLINK \relax }}{166}
+\entry {\code {O{\_}NONBLOCK \relax }}{166, 168}
+\entry {\code {O{\_}NOTRANS \relax }}{167}
+\entry {\code {O{\_}RDONLY \relax }}{164}
+\entry {\code {O{\_}RDWR \relax }}{164}
+\entry {\code {O{\_}READ \relax }}{165}
+\entry {\code {O{\_}SHLOCK \relax }}{167}
+\entry {\code {O{\_}SYNC \relax }}{168}
+\entry {\code {O{\_}TRUNC \relax }}{167}
+\entry {\code {O{\_}WRITE \relax }}{165}
+\entry {\code {O{\_}WRONLY \relax }}{164}
+\entry {\code {ONLCR \relax }}{269}
+\entry {\code {ONOEOT \relax }}{269}
+\entry {\code {OPEN{\_}MAX \relax }}{529}
+\entry {\code {OPOST \relax }}{269}
+\entry {\code {optarg \relax }}{439}
+\entry {\code {opterr \relax }}{439}
+\entry {\code {optind \relax }}{439}
+\entry {\code {optopt \relax }}{439}
+\entry {\code {OXTABS \relax }}{269}
+\initial {P}
+\entry {\code {P{\_}tmpdir \relax }}{205}
+\entry {\code {PA{\_}CHAR}}{114}
+\entry {\code {PA{\_}DOUBLE}}{114}
+\entry {\code {PA{\_}FLAG{\_}LONG}}{115}
+\entry {\code {PA{\_}FLAG{\_}LONG{\_}DOUBLE}}{115}
+\entry {\code {PA{\_}FLAG{\_}LONG{\_}LONG}}{115}
+\entry {\code {PA{\_}FLAG{\_}MASK \relax }}{114}
+\entry {\code {PA{\_}FLAG{\_}PTR}}{114}
+\entry {\code {PA{\_}FLAG{\_}SHORT}}{115}
+\entry {\code {PA{\_}FLOAT}}{114}
+\entry {\code {PA{\_}INT}}{114}
+\entry {\code {PA{\_}LAST}}{114}
+\entry {\code {PA{\_}POINTER}}{114}
+\entry {\code {PA{\_}STRING}}{114}
+\entry {\code {PARENB \relax }}{270}
+\entry {\code {PARMRK \relax }}{267}
+\entry {\code {PARODD \relax }}{271}
+\entry {\code {passwd}}{494}
+\entry {\code {PATH{\_}MAX \relax }}{537}
+\entry {\code {PENDIN \relax }}{274}
+\entry {\code {PF{\_}CCITT}}{234}
+\entry {\code {PF{\_}FILE \relax }}{219}
+\entry {\code {PF{\_}IMPLINK}}{234}
+\entry {\code {PF{\_}INET \relax }}{221}
+\entry {\code {PF{\_}ISO}}{234}
+\entry {\code {PF{\_}NS}}{234}
+\entry {\code {PF{\_}ROUTE}}{234}
+\entry {\code {PF{\_}UNIX \relax }}{219}
+\entry {\code {PIPE{\_}BUF \relax }}{538}
+\entry {\code {PRIO{\_}MAX}}{354}
+\entry {\code {PRIO{\_}MIN}}{354}
+\entry {\code {PRIO{\_}PGRP}}{355}
+\entry {\code {PRIO{\_}PROCESS}}{355}
+\entry {\code {PRIO{\_}USER}}{355}
+\entry {\code {program{\_}invocation{\_}name \relax }}{28}
+\entry {\code {program{\_}invocation{\_}short{\_}name \relax }}{28}
+\entry {\code {protocols}}{494}
+\initial {R}
+\entry {\code {R{\_}OK \relax }}{200}
+\entry {\code {RAND{\_}MAX \relax }}{292}
+\entry {\code {RE{\_}DUP{\_}MAX \relax }}{530}
+\entry {\code {RLIM{\_}NLIMITS}}{353}
+\entry {\code {RLIMIT{\_}CORE}}{353}
+\entry {\code {RLIMIT{\_}CPU}}{352}
+\entry {\code {RLIMIT{\_}DATA}}{352}
+\entry {\code {RLIMIT{\_}FSIZE}}{352}
+\entry {\code {RLIMIT{\_}NOFILE}}{353}
+\entry {\code {RLIMIT{\_}OFILE}}{353}
+\entry {\code {RLIMIT{\_}RSS}}{353}
+\entry {\code {RLIMIT{\_}STACK}}{353}
+\entry {\code {rpc}}{494}
+\initial {S}
+\entry {\code {S{\_}IEXEC}}{195}
+\entry {\code {S{\_}IFBLK}}{192}
+\entry {\code {S{\_}IFCHR}}{192}
+\entry {\code {S{\_}IFDIR}}{192}
+\entry {\code {S{\_}IFIFO}}{193}
+\entry {\code {S{\_}IFLNK}}{192}
+\entry {\code {S{\_}IFMT \relax }}{192}
+\entry {\code {S{\_}IFREG}}{192}
+\entry {\code {S{\_}IFSOCK}}{192}
+\entry {\code {S{\_}IREAD}}{194}
+\entry {\code {S{\_}IRGRP}}{195}
+\entry {\code {S{\_}IROTH}}{195}
+\entry {\code {S{\_}IRUSR}}{194}
+\entry {\code {S{\_}IRWXG}}{195}
+\entry {\code {S{\_}IRWXO}}{195}
+\entry {\code {S{\_}IRWXU}}{195}
+\entry {\code {S{\_}ISGID}}{195}
+\entry {\code {S{\_}ISUID}}{195}
+\entry {\code {S{\_}ISVTX}}{195}
+\entry {\code {S{\_}IWGRP}}{195}
+\entry {\code {S{\_}IWOTH}}{195}
+\entry {\code {S{\_}IWRITE}}{195}
+\entry {\code {S{\_}IWUSR}}{195}
+\entry {\code {S{\_}IXGRP}}{195}
+\entry {\code {S{\_}IXOTH}}{195}
+\entry {\code {S{\_}IXUSR}}{195}
+\entry {\code {SA{\_}DISABLE}}{431}
+\entry {\code {SA{\_}NOCLDSTOP \relax }}{402}
+\entry {\code {SA{\_}ONSTACK}}{431}
+\entry {\code {SA{\_}ONSTACK \relax }}{402}
+\entry {\code {SA{\_}RESTART \relax }}{402}
+\entry {\code {SEEK{\_}CUR \relax }}{133}
+\entry {\code {SEEK{\_}END \relax }}{133}
+\entry {\code {SEEK{\_}SET \relax }}{133}
+\entry {\code {services}}{494}
+\entry {\code {shadow}}{494}
+\entry {\code {SIG{\_}BLOCK}}{422}
+\entry {\code {SIG{\_}DFL}}{397}
+\entry {\code {SIG{\_}ERR \relax }}{398}
+\entry {\code {SIG{\_}IGN}}{397}
+\entry {\code {SIG{\_}SETMASK}}{422}
+\entry {\code {SIG{\_}UNBLOCK}}{422}
+\entry {\code {SIGABRT \relax }}{388}
+\entry {\code {SIGALRM \relax }}{391}
+\entry {\code {SIGBUS \relax }}{388}
+\entry {\code {SIGCHLD \relax }}{392}
+\entry {\code {SIGCLD \relax }}{392}
+\entry {\code {SIGCONT \relax }}{392}
+\entry {\code {SIGEMT \relax }}{389}
+\entry {\code {SIGFPE \relax }}{387}
+\entry {\code {SIGHUP \relax }}{390}
+\entry {\code {SIGILL \relax }}{388}
+\entry {\code {SIGINFO \relax }}{395}
+\entry {\code {SIGINT \relax }}{389}
+\entry {\code {SIGIO \relax }}{391}
+\entry {\code {SIGIOT \relax }}{388}
+\entry {\code {SIGKILL \relax }}{390}
+\entry {\code {SIGLOST \relax }}{394}
+\entry {\code {SIGPIPE \relax }}{394}
+\entry {\code {SIGPOLL \relax }}{392}
+\entry {\code {SIGPROF \relax }}{391}
+\entry {\code {SIGQUIT \relax }}{390}
+\entry {\code {SIGSEGV \relax }}{388}
+\entry {\code {SIGSTKSZ}}{431}
+\entry {\code {SIGSTOP \relax }}{392}
+\entry {\code {SIGSYS \relax }}{389}
+\entry {\code {SIGTERM \relax }}{389}
+\entry {\code {SIGTRAP \relax }}{389}
+\entry {\code {SIGTSTP \relax }}{392}
+\entry {\code {SIGTTIN \relax }}{393}
+\entry {\code {SIGTTOU \relax }}{393}
+\entry {\code {SIGURG \relax }}{391}
+\entry {\code {SIGUSR1 \relax }}{394}
+\entry {\code {SIGUSR2 \relax }}{394}
+\entry {\code {SIGVTALRM \relax }}{391}
+\entry {\code {SIGWINCH \relax }}{395}
+\entry {\code {SIGXCPU \relax }}{394}
+\entry {\code {SIGXFSZ \relax }}{394}
+\entry {\code {SOCK{\_}DGRAM \relax }}{214}
+\entry {\code {SOCK{\_}RAW \relax }}{215}
+\entry {\code {SOCK{\_}STREAM \relax }}{214}
+\entry {\code {SOL{\_}SOCKET \relax }}{256}
+\entry {\code {SSIZE{\_}MAX \relax }}{530}
+\entry {\code {stderr \relax }}{90}
+\entry {\code {STDERR{\_}FILENO}}{154}
+\entry {\code {stdin \relax }}{89}
+\entry {\code {STDIN{\_}FILENO}}{154}
+\entry {\code {stdout \relax }}{89}
+\entry {\code {STDOUT{\_}FILENO}}{154}
+\entry {\code {STREAM{\_}MAX \relax }}{530}
+\entry {\code {SV{\_}INTERRUPT \relax }}{434}
+\entry {\code {SV{\_}ONSTACK \relax }}{434}
+\entry {\code {SV{\_}RESETHAND \relax }}{434}
+\entry {\code {sys{\_}siglist}}{396}
+\initial {T}
+\entry {\code {TCIFLUSH}}{284}
+\entry {\code {TCIOFF}}{284}
+\entry {\code {TCIOFLUSH}}{284}
+\entry {\code {TCION}}{284}
+\entry {\code {TCOFLUSH}}{284}
+\entry {\code {TCOOFF}}{284}
+\entry {\code {TCOON}}{284}
+\entry {\code {TCSADRAIN}}{264}
+\entry {\code {TCSAFLUSH}}{265}
+\entry {\code {TCSANOW}}{264}
+\entry {\code {TCSASOFT}}{265}
+\entry {\code {timezone \relax }}{345}
+\entry {\code {TMP{\_}MAX \relax }}{204}
+\entry {\code {TOSTOP \relax }}{274}
+\entry {\code {TRY{\_}AGAIN}}{227}
+\entry {\code {tzname [2] \relax }}{344}
+\entry {\code {TZNAME{\_}MAX \relax }}{530}
+\initial {V}
+\entry {\code {VDISCARD \relax }}{281}
+\entry {\code {VDSUSP \relax }}{279}
+\entry {\code {VEOF \relax }}{277}
+\entry {\code {VEOL \relax }}{277}
+\entry {\code {VEOL2 \relax }}{277}
+\entry {\code {VERASE \relax }}{277}
+\entry {\code {VINTR \relax }}{278}
+\entry {\code {VKILL \relax }}{278}
+\entry {\code {VLNEXT \relax }}{280}
+\entry {\code {VMIN \relax }}{281}
+\entry {\code {VQUIT \relax }}{279}
+\entry {\code {VREPRINT \relax }}{278}
+\entry {\code {VSTART \relax }}{280}
+\entry {\code {VSTATUS \relax }}{281}
+\entry {\code {VSTOP \relax }}{280}
+\entry {\code {VSUSP \relax }}{279}
+\entry {\code {VTIME \relax }}{282}
+\entry {\code {VWERASE \relax }}{278}
+\initial {W}
+\entry {\code {W{\_}OK \relax }}{200}
+\initial {X}
+\entry {\code {X{\_}OK \relax }}{200}

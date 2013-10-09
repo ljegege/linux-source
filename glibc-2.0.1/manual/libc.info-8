@@ -1,0 +1,1094 @@
+This is Info file libc.info, produced by Makeinfo version 1.67 from the
+input file libc.texinfo.
+
+   This file documents the GNU C library.
+
+   This is Edition 0.07 DRAFT, last updated 4 Oct 1996, of `The GNU C
+Library Reference Manual', for Version 2.00 Beta.
+
+   Copyright (C) 1993, '94, '95, '96 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "GNU Library General Public License" is
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the text of the translation of the section
+entitled "GNU Library General Public License" must be approved for
+accuracy by the Foundation.
+
+
+File: libc.info,  Node: Formatted Input Functions,  Next: Variable Arguments Input,  Prev: Other Input Conversions,  Up: Formatted Input
+
+Formatted Input Functions
+-------------------------
+
+   Here are the descriptions of the functions for performing formatted
+input.  Prototypes for these functions are in the header file `stdio.h'.
+
+ - Function: int scanf (const char *TEMPLATE, ...)
+     The `scanf' function reads formatted input from the stream `stdin'
+     under the control of the template string TEMPLATE.  The optional
+     arguments are pointers to the places which receive the resulting
+     values.
+
+     The return value is normally the number of successful assignments.
+     If an end-of-file condition is detected before any matches are
+     performed (including matches against whitespace and literal
+     characters in the template), then `EOF' is returned.
+
+ - Function: int fscanf (FILE *STREAM, const char *TEMPLATE, ...)
+     This function is just like `scanf', except that the input is read
+     from the stream STREAM instead of `stdin'.
+
+ - Function: int sscanf (const char *S, const char *TEMPLATE, ...)
+     This is like `scanf', except that the characters are taken from the
+     null-terminated string S instead of from a stream.  Reaching the
+     end of the string is treated as an end-of-file condition.
+
+     The behavior of this function is undefined if copying takes place
+     between objects that overlap--for example, if S is also given as
+     an argument to receive a string read under control of the `%s'
+     conversion.
+
+
+File: libc.info,  Node: Variable Arguments Input,  Prev: Formatted Input Functions,  Up: Formatted Input
+
+Variable Arguments Input Functions
+----------------------------------
+
+   The functions `vscanf' and friends are provided so that you can
+define your own variadic `scanf'-like functions that make use of the
+same internals as the built-in formatted output functions.  These
+functions are analogous to the `vprintf' series of output functions.
+*Note Variable Arguments Output::, for important information on how to
+use them.
+
+   *Portability Note:* The functions listed in this section are GNU
+extensions.
+
+ - Function: int vscanf (const char *TEMPLATE, va_list AP)
+     This function is similar to `scanf' except that, instead of taking
+     a variable number of arguments directly, it takes an argument list
+     pointer AP of type `va_list' (*note Variadic Functions::.).
+
+ - Function: int vfscanf (FILE *STREAM, const char *TEMPLATE, va_list
+          AP)
+     This is the equivalent of `fscanf' with the variable argument list
+     specified directly as for `vscanf'.
+
+ - Function: int vsscanf (const char *S, const char *TEMPLATE, va_list
+          AP)
+     This is the equivalent of `sscanf' with the variable argument list
+     specified directly as for `vscanf'.
+
+   In GNU C, there is a special construct you can use to let the
+compiler know that a function uses a `scanf'-style format string.  Then
+it can check the number and types of arguments in each call to the
+function, and warn you when they do not match the format string.  *Note
+Declaring Attributes of Functions: (gcc.info)Function Attributes, for
+details.
+
+
+File: libc.info,  Node: EOF and Errors,  Next: Binary Streams,  Prev: Formatted Input,  Up: I/O on Streams
+
+End-Of-File and Errors
+======================
+
+   Many of the functions described in this chapter return the value of
+the macro `EOF' to indicate unsuccessful completion of the operation.
+Since `EOF' is used to report both end of file and random errors, it's
+often better to use the `feof' function to check explicitly for end of
+file and `ferror' to check for errors.  These functions check
+indicators that are part of the internal state of the stream object,
+indicators set if the appropriate condition was detected by a previous
+I/O operation on that stream.
+
+   These symbols are declared in the header file `stdio.h'.
+
+ - Macro: int EOF
+     This macro is an integer value that is returned by a number of
+     functions to indicate an end-of-file condition, or some other
+     error situation.  With the GNU library, `EOF' is `-1'.  In other
+     libraries, its value may be some other negative number.
+
+ - Function: void clearerr (FILE *STREAM)
+     This function clears the end-of-file and error indicators for the
+     stream STREAM.
+
+     The file positioning functions (*note File Positioning::.) also
+     clear the end-of-file indicator for the stream.
+
+ - Function: int feof (FILE *STREAM)
+     The `feof' function returns nonzero if and only if the end-of-file
+     indicator for the stream STREAM is set.
+
+ - Function: int ferror (FILE *STREAM)
+     The `ferror' function returns nonzero if and only if the error
+     indicator for the stream STREAM is set, indicating that an error
+     has occurred on a previous operation on the stream.
+
+   In addition to setting the error indicator associated with the
+stream, the functions that operate on streams also set `errno' in the
+same way as the corresponding low-level functions that operate on file
+descriptors.  For example, all of the functions that perform output to a
+stream--such as `fputc', `printf', and `fflush'--are implemented in
+terms of `write', and all of the `errno' error conditions defined for
+`write' are meaningful for these functions.  For more information about
+the descriptor-level I/O functions, see *Note Low-Level I/O::.
+
+
+File: libc.info,  Node: Binary Streams,  Next: File Positioning,  Prev: EOF and Errors,  Up: I/O on Streams
+
+Text and Binary Streams
+=======================
+
+   The GNU system and other POSIX-compatible operating systems organize
+all files as uniform sequences of characters.  However, some other
+systems make a distinction between files containing text and files
+containing binary data, and the input and output facilities of ISO C
+provide for this distinction.  This section tells you how to write
+programs portable to such systems.
+
+   When you open a stream, you can specify either a "text stream" or a
+"binary stream".  You indicate that you want a binary stream by
+specifying the `b' modifier in the OPENTYPE argument to `fopen'; see
+*Note Opening Streams::.  Without this option, `fopen' opens the file
+as a text stream.
+
+   Text and binary streams differ in several ways:
+
+   * The data read from a text stream is divided into "lines" which are
+     terminated by newline (`'\n'') characters, while a binary stream is
+     simply a long series of characters.  A text stream might on some
+     systems fail to handle lines more than 254 characters long
+     (including the terminating newline character).
+
+   * On some systems, text files can contain only printing characters,
+     horizontal tab characters, and newlines, and so text streams may
+     not support other characters.  However, binary streams can handle
+     any character value.
+
+   * Space characters that are written immediately preceding a newline
+     character in a text stream may disappear when the file is read in
+     again.
+
+   * More generally, there need not be a one-to-one mapping between
+     characters that are read from or written to a text stream, and the
+     characters in the actual file.
+
+   Since a binary stream is always more capable and more predictable
+than a text stream, you might wonder what purpose text streams serve.
+Why not simply always use binary streams?  The answer is that on these
+operating systems, text and binary streams use different file formats,
+and the only way to read or write "an ordinary file of text" that can
+work with other text-oriented programs is through a text stream.
+
+   In the GNU library, and on all POSIX systems, there is no difference
+between text streams and binary streams.  When you open a stream, you
+get the same kind of stream regardless of whether you ask for binary.
+This stream can handle any file content, and has none of the
+restrictions that text streams sometimes have.
+
+
+File: libc.info,  Node: File Positioning,  Next: Portable Positioning,  Prev: Binary Streams,  Up: I/O on Streams
+
+File Positioning
+================
+
+   The "file position" of a stream describes where in the file the
+stream is currently reading or writing.  I/O on the stream advances the
+file position through the file.  In the GNU system, the file position is
+represented as an integer, which counts the number of bytes from the
+beginning of the file.  *Note File Position::.
+
+   During I/O to an ordinary disk file, you can change the file position
+whenever you wish, so as to read or write any portion of the file.  Some
+other kinds of files may also permit this.  Files which support changing
+the file position are sometimes referred to as "random-access" files.
+
+   You can use the functions in this section to examine or modify the
+file position indicator associated with a stream.  The symbols listed
+below are declared in the header file `stdio.h'.
+
+ - Function: long int ftell (FILE *STREAM)
+     This function returns the current file position of the stream
+     STREAM.
+
+     This function can fail if the stream doesn't support file
+     positioning, or if the file position can't be represented in a
+     `long int', and possibly for other reasons as well.  If a failure
+     occurs, a value of `-1' is returned.
+
+ - Function: int fseek (FILE *STREAM, long int OFFSET, int WHENCE)
+     The `fseek' function is used to change the file position of the
+     stream STREAM.  The value of WHENCE must be one of the constants
+     `SEEK_SET', `SEEK_CUR', or `SEEK_END', to indicate whether the
+     OFFSET is relative to the beginning of the file, the current file
+     position, or the end of the file, respectively.
+
+     This function returns a value of zero if the operation was
+     successful, and a nonzero value to indicate failure.  A successful
+     call also clears the end-of-file indicator of STREAM and discards
+     any characters that were "pushed back" by the use of `ungetc'.
+
+     `fseek' either flushes any buffered output before setting the file
+     position or else remembers it so it will be written later in its
+     proper place in the file.
+
+   *Portability Note:* In non-POSIX systems, `ftell' and `fseek' might
+work reliably only on binary streams.  *Note Binary Streams::.
+
+   The following symbolic constants are defined for use as the WHENCE
+argument to `fseek'.  They are also used with the `lseek' function
+(*note I/O Primitives::.) and to specify offsets for file locks (*note
+Control Operations::.).
+
+ - Macro: int SEEK_SET
+     This is an integer constant which, when used as the WHENCE
+     argument to the `fseek' function, specifies that the offset
+     provided is relative to the beginning of the file.
+
+ - Macro: int SEEK_CUR
+     This is an integer constant which, when used as the WHENCE
+     argument to the `fseek' function, specifies that the offset
+     provided is relative to the current file position.
+
+ - Macro: int SEEK_END
+     This is an integer constant which, when used as the WHENCE
+     argument to the `fseek' function, specifies that the offset
+     provided is relative to the end of the file.
+
+ - Function: void rewind (FILE *STREAM)
+     The `rewind' function positions the stream STREAM at the begining
+     of the file.  It is equivalent to calling `fseek' on the STREAM
+     with an OFFSET argument of `0L' and a WHENCE argument of
+     `SEEK_SET', except that the return value is discarded and the
+     error indicator for the stream is reset.
+
+   These three aliases for the `SEEK_...' constants exist for the sake
+of compatibility with older BSD systems.  They are defined in two
+different header files: `fcntl.h' and `sys/file.h'.
+
+`L_SET'
+     An alias for `SEEK_SET'.
+
+`L_INCR'
+     An alias for `SEEK_CUR'.
+
+`L_XTND'
+     An alias for `SEEK_END'.
+
+
+File: libc.info,  Node: Portable Positioning,  Next: Stream Buffering,  Prev: File Positioning,  Up: I/O on Streams
+
+Portable File-Position Functions
+================================
+
+   On the GNU system, the file position is truly a character count.  You
+can specify any character count value as an argument to `fseek' and get
+reliable results for any random access file.  However, some ISO C
+systems do not represent file positions in this way.
+
+   On some systems where text streams truly differ from binary streams,
+it is impossible to represent the file position of a text stream as a
+count of characters from the beginning of the file.  For example, the
+file position on some systems must encode both a record offset within
+the file, and a character offset within the record.
+
+   As a consequence, if you want your programs to be portable to these
+systems, you must observe certain rules:
+
+   * The value returned from `ftell' on a text stream has no predictable
+     relationship to the number of characters you have read so far.
+     The only thing you can rely on is that you can use it subsequently
+     as the OFFSET argument to `fseek' to move back to the same file
+     position.
+
+   * In a call to `fseek' on a text stream, either the OFFSET must
+     either be zero; or WHENCE must be `SEEK_SET' and the OFFSET must
+     be the result of an earlier call to `ftell' on the same stream.
+
+   * The value of the file position indicator of a text stream is
+     undefined while there are characters that have been pushed back
+     with `ungetc' that haven't been read or discarded.  *Note
+     Unreading::.
+
+   But even if you observe these rules, you may still have trouble for
+long files, because `ftell' and `fseek' use a `long int' value to
+represent the file position.  This type may not have room to encode all
+the file positions in a large file.
+
+   So if you do want to support systems with peculiar encodings for the
+file positions, it is better to use the functions `fgetpos' and
+`fsetpos' instead.  These functions represent the file position using
+the data type `fpos_t', whose internal representation varies from
+system to system.
+
+   These symbols are declared in the header file `stdio.h'.
+
+ - Data Type: fpos_t
+     This is the type of an object that can encode information about the
+     file position of a stream, for use by the functions `fgetpos' and
+     `fsetpos'.
+
+     In the GNU system, `fpos_t' is equivalent to `off_t' or `long
+     int'.  In other systems, it might have a different internal
+     representation.
+
+ - Function: int fgetpos (FILE *STREAM, fpos_t *POSITION)
+     This function stores the value of the file position indicator for
+     the stream STREAM in the `fpos_t' object pointed to by POSITION.
+     If successful, `fgetpos' returns zero; otherwise it returns a
+     nonzero value and stores an implementation-defined positive value
+     in `errno'.
+
+ - Function: int fsetpos (FILE *STREAM, const fpos_t POSITION)
+     This function sets the file position indicator for the stream
+     STREAM to the position POSITION, which must have been set by a
+     previous call to `fgetpos' on the same stream.  If successful,
+     `fsetpos' clears the end-of-file indicator on the stream, discards
+     any characters that were "pushed back" by the use of `ungetc', and
+     returns a value of zero.  Otherwise, `fsetpos' returns a nonzero
+     value and stores an implementation-defined positive value in
+     `errno'.
+
+
+File: libc.info,  Node: Stream Buffering,  Next: Other Kinds of Streams,  Prev: Portable Positioning,  Up: I/O on Streams
+
+Stream Buffering
+================
+
+   Characters that are written to a stream are normally accumulated and
+transmitted asynchronously to the file in a block, instead of appearing
+as soon as they are output by the application program.  Similarly,
+streams often retrieve input from the host environment in blocks rather
+than on a character-by-character basis.  This is called "buffering".
+
+   If you are writing programs that do interactive input and output
+using streams, you need to understand how buffering works when you
+design the user interface to your program.  Otherwise, you might find
+that output (such as progress or prompt messages) doesn't appear when
+you intended it to, or other unexpected behavior.
+
+   This section deals only with controlling when characters are
+transmitted between the stream and the file or device, and *not* with
+how things like echoing, flow control, and the like are handled on
+specific classes of devices.  For information on common control
+operations on terminal devices, see *Note Low-Level Terminal
+Interface::.
+
+   You can bypass the stream buffering facilities altogether by using
+the low-level input and output functions that operate on file
+descriptors instead.  *Note Low-Level I/O::.
+
+* Menu:
+
+* Buffering Concepts::          Terminology is defined here.
+* Flushing Buffers::            How to ensure that output buffers are flushed.
+* Controlling Buffering::       How to specify what kind of buffering to use.
+
+
+File: libc.info,  Node: Buffering Concepts,  Next: Flushing Buffers,  Up: Stream Buffering
+
+Buffering Concepts
+------------------
+
+   There are three different kinds of buffering strategies:
+
+   * Characters written to or read from an "unbuffered" stream are
+     transmitted individually to or from the file as soon as possible.
+
+   * Characters written to a "line buffered" stream are transmitted to
+     the file in blocks when a newline character is encountered.
+
+   * Characters written to or read from a "fully buffered" stream are
+     transmitted to or from the file in blocks of arbitrary size.
+
+   Newly opened streams are normally fully buffered, with one
+exception: a stream connected to an interactive device such as a
+terminal is initially line buffered.  *Note Controlling Buffering::,
+for information on how to select a different kind of buffering.
+Usually the automatic selection gives you the most convenient kind of
+buffering for the file or device you open.
+
+   The use of line buffering for interactive devices implies that output
+messages ending in a newline will appear immediately--which is usually
+what you want.  Output that doesn't end in a newline might or might not
+show up immediately, so if you want them to appear immediately, you
+should flush buffered output explicitly with `fflush', as described in
+*Note Flushing Buffers::.
+
+
+File: libc.info,  Node: Flushing Buffers,  Next: Controlling Buffering,  Prev: Buffering Concepts,  Up: Stream Buffering
+
+Flushing Buffers
+----------------
+
+   "Flushing" output on a buffered stream means transmitting all
+accumulated characters to the file.  There are many circumstances when
+buffered output on a stream is flushed automatically:
+
+   * When you try to do output and the output buffer is full.
+
+   * When the stream is closed.  *Note Closing Streams::.
+
+   * When the program terminates by calling `exit'.  *Note Normal
+     Termination::.
+
+   * When a newline is written, if the stream is line buffered.
+
+   * Whenever an input operation on *any* stream actually reads data
+     from its file.
+
+   If you want to flush the buffered output at another time, call
+`fflush', which is declared in the header file `stdio.h'.
+
+ - Function: int fflush (FILE *STREAM)
+     This function causes any buffered output on STREAM to be delivered
+     to the file.  If STREAM is a null pointer, then `fflush' causes
+     buffered output on *all* open output streams to be flushed.
+
+     This function returns `EOF' if a write error occurs, or zero
+     otherwise.
+
+   *Compatibility Note:* Some brain-damaged operating systems have been
+known to be so thoroughly fixated on line-oriented input and output
+that flushing a line buffered stream causes a newline to be written!
+Fortunately, this "feature" seems to be becoming less common.  You do
+not need to worry about this in the GNU system.
+
+
+File: libc.info,  Node: Controlling Buffering,  Prev: Flushing Buffers,  Up: Stream Buffering
+
+Controlling Which Kind of Buffering
+-----------------------------------
+
+   After opening a stream (but before any other operations have been
+performed on it), you can explicitly specify what kind of buffering you
+want it to have using the `setvbuf' function.
+
+   The facilities listed in this section are declared in the header
+file `stdio.h'.
+
+ - Function: int setvbuf (FILE *STREAM, char *BUF, int MODE, size_t
+          SIZE)
+     This function is used to specify that the stream STREAM should
+     have the buffering mode MODE, which can be either `_IOFBF' (for
+     full buffering), `_IOLBF' (for line buffering), or `_IONBF' (for
+     unbuffered input/output).
+
+     If you specify a null pointer as the BUF argument, then `setvbuf'
+     allocates a buffer itself using `malloc'.  This buffer will be
+     freed when you close the stream.
+
+     Otherwise, BUF should be a character array that can hold at least
+     SIZE characters.  You should not free the space for this array as
+     long as the stream remains open and this array remains its buffer.
+     You should usually either allocate it statically, or `malloc'
+     (*note Unconstrained Allocation::.) the buffer.  Using an
+     automatic array is not a good idea unless you close the file
+     before exiting the block that declares the array.
+
+     While the array remains a stream buffer, the stream I/O functions
+     will use the buffer for their internal purposes.  You shouldn't
+     try to access the values in the array directly while the stream is
+     using it for buffering.
+
+     The `setvbuf' function returns zero on success, or a nonzero value
+     if the value of MODE is not valid or if the request could not be
+     honored.
+
+ - Macro: int _IOFBF
+     The value of this macro is an integer constant expression that can
+     be used as the MODE argument to the `setvbuf' function to specify
+     that the stream should be fully buffered.
+
+ - Macro: int _IOLBF
+     The value of this macro is an integer constant expression that can
+     be used as the MODE argument to the `setvbuf' function to specify
+     that the stream should be line buffered.
+
+ - Macro: int _IONBF
+     The value of this macro is an integer constant expression that can
+     be used as the MODE argument to the `setvbuf' function to specify
+     that the stream should be unbuffered.
+
+ - Macro: int BUFSIZ
+     The value of this macro is an integer constant expression that is
+     good to use for the SIZE argument to `setvbuf'.  This value is
+     guaranteed to be at least `256'.
+
+     The value of `BUFSIZ' is chosen on each system so as to make stream
+     I/O efficient.  So it is a good idea to use `BUFSIZ' as the size
+     for the buffer when you call `setvbuf'.
+
+     Actually, you can get an even better value to use for the buffer
+     size by means of the `fstat' system call: it is found in the
+     `st_blksize' field of the file attributes.  *Note Attribute
+     Meanings::.
+
+     Sometimes people also use `BUFSIZ' as the allocation size of
+     buffers used for related purposes, such as strings used to receive
+     a line of input with `fgets' (*note Character Input::.).  There is
+     no particular reason to use `BUFSIZ' for this instead of any other
+     integer, except that it might lead to doing I/O in chunks of an
+     efficient size.
+
+ - Function: void setbuf (FILE *STREAM, char *BUF)
+     If BUF is a null pointer, the effect of this function is
+     equivalent to calling `setvbuf' with a MODE argument of `_IONBF'.
+     Otherwise, it is equivalent to calling `setvbuf' with BUF, and a
+     MODE of `_IOFBF' and a SIZE argument of `BUFSIZ'.
+
+     The `setbuf' function is provided for compatibility with old code;
+     use `setvbuf' in all new programs.
+
+ - Function: void setbuffer (FILE *STREAM, char *BUF, size_t SIZE)
+     If BUF is a null pointer, this function makes STREAM unbuffered.
+     Otherwise, it makes STREAM fully buffered using BUF as the buffer.
+     The SIZE argument specifies the length of BUF.
+
+     This function is provided for compatibility with old BSD code.  Use
+     `setvbuf' instead.
+
+ - Function: void setlinebuf (FILE *STREAM)
+     This function makes STREAM be line buffered, and allocates the
+     buffer for you.
+
+     This function is provided for compatibility with old BSD code.  Use
+     `setvbuf' instead.
+
+
+File: libc.info,  Node: Other Kinds of Streams,  Prev: Stream Buffering,  Up: I/O on Streams
+
+Other Kinds of Streams
+======================
+
+   The GNU library provides ways for you to define additional kinds of
+streams that do not necessarily correspond to an open file.
+
+   One such type of stream takes input from or writes output to a
+string.  These kinds of streams are used internally to implement the
+`sprintf' and `sscanf' functions.  You can also create such a stream
+explicitly, using the functions described in *Note String Streams::.
+
+   More generally, you can define streams that do input/output to
+arbitrary objects using functions supplied by your program.  This
+protocol is discussed in *Note Custom Streams::.
+
+   *Portability Note:* The facilities described in this section are
+specific to GNU.  Other systems or C implementations might or might not
+provide equivalent functionality.
+
+* Menu:
+
+* String Streams::              Streams that get data from or put data in
+                                 a string or memory buffer.
+* Obstack Streams::		Streams that store data in an obstack.
+* Custom Streams::              Defining your own streams with an arbitrary
+                                 input data source and/or output data sink.
+
+
+File: libc.info,  Node: String Streams,  Next: Obstack Streams,  Up: Other Kinds of Streams
+
+String Streams
+--------------
+
+   The `fmemopen' and `open_memstream' functions allow you to do I/O to
+a string or memory buffer.  These facilities are declared in `stdio.h'.
+
+ - Function: FILE * fmemopen (void *BUF, size_t SIZE, const char
+          *OPENTYPE)
+     This function opens a stream that allows the access specified by
+     the OPENTYPE argument, that reads from or writes to the buffer
+     specified by the argument BUF.  This array must be at least SIZE
+     bytes long.
+
+     If you specify a null pointer as the BUF argument, `fmemopen'
+     dynamically allocates (as with `malloc'; *note Unconstrained
+     Allocation::.) an array SIZE bytes long.  This is really only
+     useful if you are going to write things to the buffer and then
+     read them back in again, because you have no way of actually
+     getting a pointer to the buffer (for this, try `open_memstream',
+     below).  The buffer is freed when the stream is open.
+
+     The argument OPENTYPE is the same as in `fopen' (*Note Opening
+     Streams::).  If the OPENTYPE specifies append mode, then the
+     initial file position is set to the first null character in the
+     buffer.  Otherwise the initial file position is at the beginning
+     of the buffer.
+
+     When a stream open for writing is flushed or closed, a null
+     character (zero byte) is written at the end of the buffer if it
+     fits.  You should add an extra byte to the SIZE argument to
+     account for this.  Attempts to write more than SIZE bytes to the
+     buffer result in an error.
+
+     For a stream open for reading, null characters (zero bytes) in the
+     buffer do not count as "end of file".  Read operations indicate
+     end of file only when the file position advances past SIZE bytes.
+     So, if you want to read characters from a null-terminated string,
+     you should supply the length of the string as the SIZE argument.
+
+   Here is an example of using `fmemopen' to create a stream for
+reading from a string:
+
+     #include <stdio.h>
+     
+     static char buffer[] = "foobar";
+     
+     int
+     main (void)
+     {
+       int ch;
+       FILE *stream;
+     
+       stream = fmemopen (buffer, strlen (buffer), "r");
+       while ((ch = fgetc (stream)) != EOF)
+         printf ("Got %c\n", ch);
+       fclose (stream);
+     
+       return 0;
+     }
+
+   This program produces the following output:
+
+     Got f
+     Got o
+     Got o
+     Got b
+     Got a
+     Got r
+
+ - Function: FILE * open_memstream (char **PTR, size_t *SIZELOC)
+     This function opens a stream for writing to a buffer.  The buffer
+     is allocated dynamically (as with `malloc'; *note Unconstrained
+     Allocation::.) and grown as necessary.
+
+     When the stream is closed with `fclose' or flushed with `fflush',
+     the locations PTR and SIZELOC are updated to contain the pointer
+     to the buffer and its size.  The values thus stored remain valid
+     only as long as no further output on the stream takes place.  If
+     you do more output, you must flush the stream again to store new
+     values before you use them again.
+
+     A null character is written at the end of the buffer.  This null
+     character is *not* included in the size value stored at SIZELOC.
+
+     You can move the stream's file position with `fseek' (*note File
+     Positioning::.).  Moving the file position past the end of the data
+     already written fills the intervening space with zeroes.
+
+   Here is an example of using `open_memstream':
+
+     #include <stdio.h>
+     
+     int
+     main (void)
+     {
+       char *bp;
+       size_t size;
+       FILE *stream;
+     
+       stream = open_memstream (&bp, &size);
+       fprintf (stream, "hello");
+       fflush (stream);
+       printf ("buf = `%s', size = %d\n", bp, size);
+       fprintf (stream, ", world");
+       fclose (stream);
+       printf ("buf = `%s', size = %d\n", bp, size);
+     
+       return 0;
+     }
+
+   This program produces the following output:
+
+     buf = `hello', size = 5
+     buf = `hello, world', size = 12
+
+
+File: libc.info,  Node: Obstack Streams,  Next: Custom Streams,  Prev: String Streams,  Up: Other Kinds of Streams
+
+Obstack Streams
+---------------
+
+   You can open an output stream that puts it data in an obstack.
+*Note Obstacks::.
+
+ - Function: FILE * open_obstack_stream (struct obstack *OBSTACK)
+     This function opens a stream for writing data into the obstack
+     OBSTACK.  This starts an object in the obstack and makes it grow
+     as data is written (*note Growing Objects::.).
+
+     Calling `fflush' on this stream updates the current size of the
+     object to match the amount of data that has been written.  After a
+     call to `fflush', you can examine the object temporarily.
+
+     You can move the file position of an obstack stream with `fseek'
+     (*note File Positioning::.).  Moving the file position past the
+     end of the data written fills the intervening space with zeros.
+
+     To make the object permanent, update the obstack with `fflush', and
+     then use `obstack_finish' to finalize the object and get its
+     address.  The following write to the stream starts a new object in
+     the obstack, and later writes add to that object until you do
+     another `fflush' and `obstack_finish'.
+
+     But how do you find out how long the object is?  You can get the
+     length in bytes by calling `obstack_object_size' (*note Status of
+     an Obstack::.), or you can null-terminate the object like this:
+
+          obstack_1grow (OBSTACK, 0);
+
+     Whichever one you do, you must do it *before* calling
+     `obstack_finish'.  (You can do both if you wish.)
+
+   Here is a sample function that uses `open_obstack_stream':
+
+     char *
+     make_message_string (const char *a, int b)
+     {
+       FILE *stream = open_obstack_stream (&message_obstack);
+       output_task (stream);
+       fprintf (stream, ": ");
+       fprintf (stream, a, b);
+       fprintf (stream, "\n");
+       fclose (stream);
+       obstack_1grow (&message_obstack, 0);
+       return obstack_finish (&message_obstack);
+     }
+
+
+File: libc.info,  Node: Custom Streams,  Prev: Obstack Streams,  Up: Other Kinds of Streams
+
+Programming Your Own Custom Streams
+-----------------------------------
+
+   This section describes how you can make a stream that gets input
+from an arbitrary data source or writes output to an arbitrary data sink
+programmed by you.  We call these "custom streams".
+
+* Menu:
+
+* Streams and Cookies::         The "cookie" records where to fetch or
+                                 store data that is read or written.
+* Hook Functions::              How you should define the four "hook
+                                 functions" that a custom stream needs.
+
+
+File: libc.info,  Node: Streams and Cookies,  Next: Hook Functions,  Up: Custom Streams
+
+Custom Streams and Cookies
+..........................
+
+   Inside every custom stream is a special object called the "cookie".
+This is an object supplied by you which records where to fetch or store
+the data read or written.  It is up to you to define a data type to use
+for the cookie.  The stream functions in the library never refer
+directly to its contents, and they don't even know what the type is;
+they record its address with type `void *'.
+
+   To implement a custom stream, you must specify *how* to fetch or
+store the data in the specified place.  You do this by defining "hook
+functions" to read, write, change "file position", and close the
+stream.  All four of these functions will be passed the stream's cookie
+so they can tell where to fetch or store the data.  The library
+functions don't know what's inside the cookie, but your functions will
+know.
+
+   When you create a custom stream, you must specify the cookie pointer,
+and also the four hook functions stored in a structure of type
+`cookie_io_functions_t'.
+
+   These facilities are declared in `stdio.h'.
+
+ - Data Type: cookie_io_functions_t
+     This is a structure type that holds the functions that define the
+     communications protocol between the stream and its cookie.  It has
+     the following members:
+
+    `cookie_read_function_t *read'
+          This is the function that reads data from the cookie.  If the
+          value is a null pointer instead of a function, then read
+          operations on ths stream always return `EOF'.
+
+    `cookie_write_function_t *write'
+          This is the function that writes data to the cookie.  If the
+          value is a null pointer instead of a function, then data
+          written to the stream is discarded.
+
+    `cookie_seek_function_t *seek'
+          This is the function that performs the equivalent of file
+          positioning on the cookie.  If the value is a null pointer
+          instead of a function, calls to `fseek' on this stream can
+          only seek to locations within the buffer; any attempt to seek
+          outside the buffer will return an `ESPIPE' error.
+
+    `cookie_close_function_t *close'
+          This function performs any appropriate cleanup on the cookie
+          when closing the stream.  If the value is a null pointer
+          instead of a function, nothing special is done to close the
+          cookie when the stream is closed.
+
+ - Function: FILE * fopencookie (void *COOKIE, const char *OPENTYPE,
+          cookie_io_functions_t IO-FUNCTIONS)
+     This function actually creates the stream for communicating with
+     the COOKIE using the functions in the IO-FUNCTIONS argument.  The
+     OPENTYPE argument is interpreted as for `fopen'; see *Note Opening
+     Streams::.  (But note that the "truncate on open" option is
+     ignored.)  The new stream is fully buffered.
+
+     The `fopencookie' function returns the newly created stream, or a
+     null pointer in case of an error.
+
+
+File: libc.info,  Node: Hook Functions,  Prev: Streams and Cookies,  Up: Custom Streams
+
+Custom Stream Hook Functions
+............................
+
+   Here are more details on how you should define the four hook
+functions that a custom stream needs.
+
+   You should define the function to read data from the cookie as:
+
+     ssize_t READER (void *COOKIE, void *BUFFER, size_t SIZE)
+
+   This is very similar to the `read' function; see *Note I/O
+Primitives::.  Your function should transfer up to SIZE bytes into the
+BUFFER, and return the number of bytes read, or zero to indicate
+end-of-file.  You can return a value of `-1' to indicate an error.
+
+   You should define the function to write data to the cookie as:
+
+     ssize_t WRITER (void *COOKIE, const void *BUFFER, size_t SIZE)
+
+   This is very similar to the `write' function; see *Note I/O
+Primitives::.  Your function should transfer up to SIZE bytes from the
+buffer, and return the number of bytes written.  You can return a value
+of `-1' to indicate an error.
+
+   You should define the function to perform seek operations on the
+cookie as:
+
+     int SEEKER (void *COOKIE, fpos_t *POSITION, int WHENCE)
+
+   For this function, the POSITION and WHENCE arguments are interpreted
+as for `fgetpos'; see *Note Portable Positioning::.  In the GNU
+library, `fpos_t' is equivalent to `off_t' or `long int', and simply
+represents the number of bytes from the beginning of the file.
+
+   After doing the seek operation, your function should store the
+resulting file position relative to the beginning of the file in
+POSITION.  Your function should return a value of `0' on success and
+`-1' to indicate an error.
+
+   You should define the function to do cleanup operations on the cookie
+appropriate for closing the stream as:
+
+     int CLEANER (void *COOKIE)
+
+   Your function should return `-1' to indicate an error, and `0'
+otherwise.
+
+ - Data Type: cookie_read_function
+     This is the data type that the read function for a custom stream
+     should have.  If you declare the function as shown above, this is
+     the type it will have.
+
+ - Data Type: cookie_write_function
+     The data type of the write function for a custom stream.
+
+ - Data Type: cookie_seek_function
+     The data type of the seek function for a custom stream.
+
+ - Data Type: cookie_close_function
+     The data type of the close function for a custom stream.
+
+
+File: libc.info,  Node: Low-Level I/O,  Next: File System Interface,  Prev: I/O on Streams,  Up: Top
+
+Low-Level Input/Output
+**********************
+
+   This chapter describes functions for performing low-level
+input/output operations on file descriptors.  These functions include
+the primitives for the higher-level I/O functions described in *Note
+I/O on Streams::, as well as functions for performing low-level control
+operations for which there are no equivalents on streams.
+
+   Stream-level I/O is more flexible and usually more convenient;
+therefore, programmers generally use the descriptor-level functions only
+when necessary.  These are some of the usual reasons:
+
+   * For reading binary files in large chunks.
+
+   * For reading an entire file into core before parsing it.
+
+   * To perform operations other than data transfer, which can only be
+     done with a descriptor.  (You can use `fileno' to get the
+     descriptor corresponding to a stream.)
+
+   * To pass descriptors to a child process.  (The child can create its
+     own stream to use a descriptor that it inherits, but cannot
+     inherit a stream directly.)
+
+* Menu:
+
+* Opening and Closing Files::           How to open and close file
+                                         descriptors.
+* I/O Primitives::                      Reading and writing data.
+* File Position Primitive::             Setting a descriptor's file
+                                         position.
+* Descriptors and Streams::             Converting descriptor to stream
+                                         or vice-versa.
+* Stream/Descriptor Precautions::       Precautions needed if you use both
+                                         descriptors and streams.
+* Waiting for I/O::                     How to check for input or output
+					 on multiple file descriptors.
+* Control Operations::                  Various other operations on file
+					 descriptors.
+* Duplicating Descriptors::             Fcntl commands for duplicating
+                                         file descriptors.
+* Descriptor Flags::                    Fcntl commands for manipulating
+                                         flags associated with file
+                                         descriptors.
+* File Status Flags::                   Fcntl commands for manipulating
+                                         flags associated with open files.
+* File Locks::                          Fcntl commands for implementing
+                                         file locking.
+* Interrupt Input::                     Getting an asynchronous signal when
+                                         input arrives.
+
+
+File: libc.info,  Node: Opening and Closing Files,  Next: I/O Primitives,  Up: Low-Level I/O
+
+Opening and Closing Files
+=========================
+
+   This section describes the primitives for opening and closing files
+using file descriptors.  The `open' and `creat' functions are declared
+in the header file `fcntl.h', while `close' is declared in `unistd.h'.
+
+ - Function: int open (const char *FILENAME, int FLAGS[, mode_t MODE])
+     The `open' function creates and returns a new file descriptor for
+     the file named by FILENAME.  Initially, the file position
+     indicator for the file is at the beginning of the file.  The
+     argument MODE is used only when a file is created, but it doesn't
+     hurt to supply the argument in any case.
+
+     The FLAGS argument controls how the file is to be opened.  This is
+     a bit mask; you create the value by the bitwise OR of the
+     appropriate parameters (using the `|' operator in C).  *Note File
+     Status Flags::, for the parameters available.
+
+     The normal return value from `open' is a non-negative integer file
+     descriptor.  In the case of an error, a value of `-1' is returned
+     instead.  In addition to the usual file name errors (*note File
+     Name Errors::.), the following `errno' error conditions are defined
+     for this function:
+
+    `EACCES'
+          The file exists but is not readable/writable as requested by
+          the FLAGS argument, the file does not exist and the directory
+          is unwritable so it cannot be created.
+
+    `EEXIST'
+          Both `O_CREAT' and `O_EXCL' are set, and the named file
+          already exists.
+
+    `EINTR'
+          The `open' operation was interrupted by a signal.  *Note
+          Interrupted Primitives::.
+
+    `EISDIR'
+          The FLAGS argument specified write access, and the file is a
+          directory.
+
+    `EMFILE'
+          The process has too many files open.  The maximum number of
+          file descriptors is controlled by the `RLIMIT_NOFILE'
+          resource limit; *note Limits on Resources::..
+
+    `ENFILE'
+          The entire system, or perhaps the file system which contains
+          the directory, cannot support any additional open files at
+          the moment.  (This problem cannot happen on the GNU system.)
+
+    `ENOENT'
+          The named file does not exist, and `O_CREAT' is not specified.
+
+    `ENOSPC'
+          The directory or file system that would contain the new file
+          cannot be extended, because there is no disk space left.
+
+    `ENXIO'
+          `O_NONBLOCK' and `O_WRONLY' are both set in the FLAGS
+          argument, the file named by FILENAME is a FIFO (*note Pipes
+          and FIFOs::.), and no process has the file open for reading.
+
+    `EROFS'
+          The file resides on a read-only file system and any of
+          `O_WRONLY', `O_RDWR', and `O_TRUNC' are set in the FLAGS
+          argument, or `O_CREAT' is set and the file does not already
+          exist.
+
+     The `open' function is the underlying primitive for the `fopen'
+     and `freopen' functions, that create streams.
+
+ - Obsolete function: int creat (const char *FILENAME, mode_t MODE)
+     This function is obsolete.  The call:
+
+          creat (FILENAME, MODE)
+
+     is equivalent to:
+
+          open (FILENAME, O_WRONLY | O_CREAT | O_TRUNC, MODE)
+
+ - Function: int close (int FILEDES)
+     The function `close' closes the file descriptor FILEDES.  Closing
+     a file has the following consequences:
+
+        * The file descriptor is deallocated.
+
+        * Any record locks owned by the process on the file are
+          unlocked.
+
+        * When all file descriptors associated with a pipe or FIFO have
+          been closed, any unread data is discarded.
+
+     The normal return value from `close' is `0'; a value of `-1' is
+     returned in case of failure.  The following `errno' error
+     conditions are defined for this function:
+
+    `EBADF'
+          The FILEDES argument is not a valid file descriptor.
+
+    `EINTR'
+          The `close' call was interrupted by a signal.  *Note
+          Interrupted Primitives::.  Here is an example of how to
+          handle `EINTR' properly:
+
+               TEMP_FAILURE_RETRY (close (desc));
+
+    `ENOSPC'
+    `EIO'
+    `EDQUOT'
+          When the file is accessed by NFS, these errors from `write'
+          can sometimes not be detected until `close'.  *Note I/O
+          Primitives::, for details on their meaning.
+
+   To close a stream, call `fclose' (*note Closing Streams::.) instead
+of trying to close its underlying file descriptor with `close'.  This
+flushes any buffered output and updates the stream object to indicate
+that it is closed.
+
