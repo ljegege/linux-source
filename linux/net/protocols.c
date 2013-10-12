@@ -2,8 +2,8 @@
  *	Protocol initializer table. Here separately for convenience
  *
  */
- 
- 
+
+
 #include <linux/config.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -35,19 +35,21 @@
 
 /*
  *	Protocol Table
+ *  通过宏的条件编译，将各种协议的初始化函数存储在protocols
+ *  数组中，供网络协议栈初始化时调用。
  */
- 
+
 struct net_proto protocols[] = {
 #ifdef	CONFIG_UNIX
   { "UNIX",	unix_proto_init	},
 #endif
-#if defined(CONFIG_IPX)||defined(CONFIG_ATALK)  
+#if defined(CONFIG_IPX)||defined(CONFIG_ATALK)
   { "802.2",	p8022_proto_init },
   { "SNAP",	snap_proto_init },
 #endif
-#ifdef CONFIG_AX25  
+#ifdef CONFIG_AX25
   { "AX.25",	ax25_proto_init },
-#endif  
+#endif
 #ifdef	CONFIG_INET
   { "INET",	inet_proto_init	},
 #endif
