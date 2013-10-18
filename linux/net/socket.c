@@ -203,6 +203,7 @@ static int get_fd(struct inode *inode)
  *
  * The original socket implementation wasn't very clever, which is
  * why this exists at all..
+ *
  */
 inline struct socket *socki_lookup(struct inode *inode)
 {
@@ -211,6 +212,7 @@ inline struct socket *socki_lookup(struct inode *inode)
 
 /*
  *	Go from a file number to its socket slot.
+ *  pfile指向对应的文件结构
  */
 
 static inline struct socket *sockfd_lookup(int fd, struct file **pfile)
@@ -233,6 +235,9 @@ static inline struct socket *sockfd_lookup(int fd, struct file **pfile)
 
 /*
  *	Allocate a socket.
+ *  实质是分配一个inode节点，每一个socket对应一个inode结点
+ *  将inode节点里面的u.socket_i变量返回给用户
+ *  并对该socket进行初始化。
  */
 
 struct socket *sock_alloc(void)
@@ -266,6 +271,7 @@ struct socket *sock_alloc(void)
 
 /*
  *	Release a socket.
+ *  仅对UNIX域有效
  */
 
 static inline void sock_release_peer(struct socket *peer)
@@ -300,7 +306,7 @@ void sock_release(struct socket *sock)
 
 	peersock = (oldstate == SS_CONNECTED) ? sock->conn : NULL;
 	if (sock->ops)
-		sock->ops->release(sock, peersock);
+		sock->ops->release(sock, peersock);// 对于不同的域ops会被初始化成不同的处理函数集合，对于INET而言，就被初始化为inet_proto_ops：里面就是一堆create，read这里的函数
 	if (peersock)
 		sock_release_peer(peersock);
 	--sockets_in_use;	/* Bookkeeping.. */
@@ -493,7 +499,10 @@ static int sock_fasync(struct inode *inode, struct file *filp, int on)
 	restore_flags(flags);
 	return 0;
 }
-
+/*
+ *  唤醒等待该sock状态改变的进程。查how的影响？？
+ *  kill_fasync实质时向文件拥有者发送信号（fasync_struct里面有file指针，而file指针有一个变量指向对应的进程）
+ */
 int sock_wake_async(struct socket *sock, int how)
 {
 	if (!sock || !sock->fasync_list)
@@ -521,6 +530,7 @@ int sock_wake_async(struct socket *sock, int how)
 
 /*
  *	Wait for a connection.
+ *  只用于UNIX域，处理客户端的连接请求
  */
 
 int sock_awaitconn(struct socket *mysock, struct socket *servsock, int flags)
@@ -550,6 +560,7 @@ int sock_awaitconn(struct socket *mysock, struct socket *servsock, int flags)
 		last->next = mysock;
 	}
 	mysock->state = SS_CONNECTING;
+	// 将本socket的服务器端设置为servsock
 	mysock->conn = servsock;
 	sti();
 
@@ -560,6 +571,7 @@ int sock_awaitconn(struct socket *mysock, struct socket *servsock, int flags)
 	wake_up_interruptible(servsock->wait);
 	sock_wake_async(servsock, 0);
 
+    // 因为服务器进程通常没有这么块就进行出来，所以通常会进入if语句等待唤醒
 	if (mysock->state != SS_CONNECTED)
 	{
 		if (flags & O_NONBLOCK)
@@ -599,6 +611,7 @@ int sock_awaitconn(struct socket *mysock, struct socket *servsock, int flags)
 /*
  *	Perform the socket system call. we locate the appropriate
  *	family, then create a fresh socket.
+ *  分配socket，sock，inode和file结构，设置对应的操作函数集合。之后分配一个文件描述符
  */
 
 static int sock_socket(int family, int type, int protocol)
@@ -665,6 +678,7 @@ static int sock_socket(int family, int type, int protocol)
 
 /*
  *	Create a pair of connected sockets.
+ *  创建两个连接了的socket，用于本机模拟网络通信。有点像管道。只用于UNIX域
  */
 
 static int sock_socketpair(int family, int type, int protocol, unsigned long usockvec[2])
