@@ -76,11 +76,11 @@ struct socket {
   struct proto_ops	*ops;		/* protocols do most everything	*/
   void			*data;		/* protocol data		*/
   struct socket		*conn;		/* server socket connected to	*/
-  struct socket		*iconn;		/* incomplete client conn.s	*/
+  struct socket		*iconn;		/* incomplete client conn.s， 只用于服务器端*/
   struct socket		*next;
   struct wait_queue	**wait;		/* ptr to place to wait on	*/
   struct inode		*inode;
-  struct fasync_struct  *fasync_list;	/* Asynchronous wake up list	*/
+  struct fasync_struct  *fasync_list;	/* Asynchronous wake up list	等待该socket状态改变的进程的file结构链表*/
 };
 
 #define SOCK_INODE(S)	((S)->inode)
@@ -123,7 +123,7 @@ struct proto_ops {
   int	(*getsockopt)	(struct socket *sock, int level, int optname,
 			 char *optval, int *optlen);
   int	(*fcntl)	(struct socket *sock, unsigned int cmd,
-			 unsigned long arg);	
+			 unsigned long arg);
 };
 
 struct net_proto {
